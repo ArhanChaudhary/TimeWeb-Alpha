@@ -21,11 +21,13 @@ from os import remove # Removes Backups if they are Disabled
 file_directory = 'Time Management'
 update_backups = True
 
-# repalce "immediate delete" to "Would you like to delete this assignment since you have compelted it?"
-# rearrange "display_status_priority" ebcause it is false and everything else is true
-# move "select for more info" so that they are all together
-# write adding/removing settings procedure
-#['Quantum Numbers Science GC', datetime.datetime(2020, 10, 2, 0, 0), 3, 35, [0], 1, 2.4, 1, 1, (4,), True, 1, 'Minute', False, 1, False, 30]
+# Settings Procedure:
+# Add/remove it on the boolean settings and Adjust values for other settings
+# Change range value
+# Change setting "Restore all def setting values" x2
+# Change dat[0]
+# command F
+
 # "fin" in the home page
 # "d" too many days (no format)
 # min work time work with the blue line 3
@@ -55,14 +57,15 @@ try:
    # Loads Data from Memory if it is found
    with open(file_directory,'rb') as datfile:
       dat = load(datfile)
+   print(dat)
       
    # Loads setting data
-   date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,order_direction,display_instructions,autofill,show_past,ignore_ends,dark_mode,immediate_delete,show_progress_bar,display_status_priority,do_after_midnight,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup = dat[0]
+   date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,show_past,ignore_ends,dark_mode,show_progress_bar,display_status_priority,do_after_midnight,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup = dat[0]
 
    if do_after_midnight and after_midnight:
       print('!!!\n!!!\n!!!\nYOU HAVE RAN THIS PROGRAM AFTER MIDNIGHT!\nTHE DAY IN THE PROGRAM WILL STILL BE SET AS '+date_now.strftime('%B %-d, %Y')+'\nAND WILL ONLY CHANGE TO THE NEXT DAY AFTER 4 A.M\nALL ASSIGNMENTS WILL BE MARKED AS COMPLETED SO YOU CAN SLEEP\nTHIS CAN BE TOGGLED OFF IN THE DEFAULTS\nYOU SHOULD SLEEP AS SOON AS POSSIBLE!\n!!!\n!!!\n!!!')
       
-except:
+except SyntaxError:
 
    # If the data is not found, create a new file which will hold all the data
    if after_midnight:
@@ -78,11 +81,11 @@ except:
    # Initialize Default settings in a new file
    
    # Each Item in the List of the Settings corresponds to the Variable Name above it
-   #       date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,order_direction,display_instructions,autofill,show_past,ignore_ends,dark_mode,immediate_delete,show_progress_bar,display_status_priority,do_after_midnight,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup
-   dat = [[date_now        ,750  ,750   ,35                   ,1                 ,30               ,()     ,0              ,True                ,True    ,True     ,True       ,True     ,False           ,True             ,False                  ,True             ,True              ,True         ,True        ,True         ,False         ]]
+   #       date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,show_past,ignore_ends,dark_mode,show_progress_bar,display_status_priority,do_after_midnight,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup
+   dat = [[date_now        ,750  ,750   ,35                   ,1                 ,30               ,()     ,True                ,True    ,True     ,True       ,True     ,True             ,False                  ,True             ,True              ,True         ,True        ,True         ,False         ]]
 
    # Loads setting data
-   date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,order_direction,display_instructions,autofill,show_past,ignore_ends,dark_mode,immediate_delete,show_progress_bar,display_status_priority,do_after_midnight,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup = dat[0]
+   date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,show_past,ignore_ends,dark_mode,show_progress_bar,display_status_priority,do_after_midnight,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup = dat[0]
    print('Welcome to Time Management! ^_^\nThis program splits up work for different types of projects, such as a money goal, school project, or a reading book.')
          
 # Function that stores the main data
@@ -138,7 +141,7 @@ font4 = pygame.font.SysFont(font_type,20)
 
 # Main assignment home function
 def home(init=False,autofill_override=False,last_sel=0):
-   global date_now, min_work_time, sel, x, y, ad, ctime, dif_assign, works, day, skew_ratio, file_sel, adone, date_file_created, disyear, dat, screen, ndif, xdif, rem_zero, lw, start_lw, assign_day_of_week, wlen, funct_round, nwd, len_nwd, fixed_mode, dynamic_start, stry, slash_x_counter, red_line_start, unit, wCon, hCon, total_mode, set_start, set_skew_ratio, clicked_once, fixed_start, remainder_mode, smart_skew_ratio, due_date, selected_assignment, order_direction,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,order_direction,display_instructions,autofill,show_past,ignore_ends,dark_mode,immediate_delete,show_progress_bar,display_status_priority,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup,manual_backup,do_after_midnight, file_directory, black, border, gray, gray1, gray2, gray3, gray4, gray5, white, min_work_time_funct_round, left_adjust_cutoff, up_adjust_cutoff, point_text_width, point_text_height, y_fremainder, y_mremainder, original_min_work_time
+   global date_now, min_work_time, sel, x, y, ad, ctime, dif_assign, works, day, skew_ratio, file_sel, adone, date_file_created, disyear, dat, screen, ndif, xdif, rem_zero, lw, start_lw, assign_day_of_week, wlen, funct_round, nwd, len_nwd, fixed_mode, dynamic_start, stry, slash_x_counter, red_line_start, unit, wCon, hCon, total_mode, set_start, set_skew_ratio, clicked_once, fixed_start, remainder_mode, smart_skew_ratio, due_date, selected_assignment, width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,show_past,ignore_ends,dark_mode,show_progress_bar,display_status_priority,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup,manual_backup,do_after_midnight, file_directory, black, border, gray, gray1, gray2, gray3, gray4, gray5, white, min_work_time_funct_round, left_adjust_cutoff, up_adjust_cutoff, point_text_width, point_text_height, y_fremainder, y_mremainder, original_min_work_time
    next_day = False
    while 1:
 
@@ -237,14 +240,8 @@ def home(init=False,autofill_override=False,last_sel=0):
                
                # Checks if Assignment is completed
                if lw >= y or dayleft + x < 1:
-
-                  # Delete assignment if immediate_delete is enabled
-                  if immediate_delete:
-                     delete_assignment = file_index
-                     continue
-                  else:
-                     status_message = '*　Amazing Effort! You have Finished this Assignment!'
-                     status_value = 6
+                  status_message = '*　Amazing Effort! You have Finished this Assignment!'
+                  status_value = 6
                else:
                   
                   # Distance between today's date and the date assignment was made
@@ -344,8 +341,6 @@ def home(init=False,autofill_override=False,last_sel=0):
                start_lw = 0
                skew_ratio = 1
                pset()
-               if not order_direction:
-                  order_direction = -1
 
                # todo*ctime is the total amount of minutes it will take to complete the work for that day
                # x-dif_assign-wlen is the amount of days until the assignment is due
@@ -353,7 +348,7 @@ def home(init=False,autofill_override=False,last_sel=0):
                   if x-dif_assign-wlen:
                      
                      # Set todo*ctime to 1 in the algorithm if
-                     status_priority = (1-sum(works[i]-funct(i) for i in range(wlen+1))/(wlen+1)/y)             /(x-dif_assign-wlen) * order_direction
+                     status_priority = -(1-sum(works[i]-funct(i) for i in range(wlen+1))/(wlen+1)/y)             /(x-dif_assign-wlen)
                      
                   else:
                      status_priority = 0
@@ -365,9 +360,7 @@ def home(init=False,autofill_override=False,last_sel=0):
                   # Then, the program loops through each work input and calculates the distance between each work input and where your progress was actually supposed to be on that day
                   # In English, it calculates the average of how well you followed the red line
                   # Then, more calculations are done to find a constant, which is between 0 and 2, to multiply by the first value in the algorithm
-                  status_priority =    (1-sum(works[i]-funct(i) for i in range(wlen+1))/(wlen+1)/y) * todo*ctime/(x-dif_assign-wlen) * order_direction
-               if order_direction == -1:
-                  order_direction = 0
+                  status_priority =    -(1-sum(works[i]-funct(i) for i in range(wlen+1))/(wlen+1)/y) * todo*ctime/(x-dif_assign-wlen)
 
             # Appends the status value (calculated above), the status priority, and the file index to a list called ordli
             # After each assignment appends to ordli, ordli is then sorted
@@ -399,11 +392,6 @@ def home(init=False,autofill_override=False,last_sel=0):
             file_index += 1
          autofill_override = False
 
-         # Delete completed assignment if immediate_delete is True
-         if delete_assignment:
-            del dat[delete_assignment]
-            amount_of_assignments -= 1
-
          # Sorts ordli with the logic stated above
          ordli = sorted(ordli)
 
@@ -416,31 +404,22 @@ def home(init=False,autofill_override=False,last_sel=0):
          # Since ordli is sorted, the first occurance will have the highest status priority
          # That value is stored into the variable maxsp, which is the highest status priority
          statuses = [i[0] for i in ordli]
-         if order_direction:
-
-            # If the order direction is reversed, then reverse the statuses to find the one with the lowest status priority
+         if 3 in statuses:
+            maxsp = ordli[statuses.index(3)][1]
             if 1 in statuses:
-               maxsp = ordli[amount_of_assignments - statuses[::-1].index(1) - 1][1]
-            elif 3 in statuses:
-               maxsp = ordli[amount_of_assignments - statuses[::-1].index(3) - 1][1]
-            
-         else:
-            if 1 in statuses:
-               maxsp = ordli[statuses.index(1)][1]
-            elif 3 in statuses:
-               maxsp = ordli[statuses.index(3)][1]
+               maxsp *= 2
    
-            # Once maxsp has been defined, ignore the first loop and run this next loop
-            # This loop loops again through all the assignments
-            # If it finds an assignment with status value 3, it adds the status priority percentage at the end of the assignment by dividing its status priority by maxsp
-            for j in ordli:
-               if j[0] == 3:
-                  daysleft[j[2]-1] += f' SP: {ceil(j[1] / maxsp * 100 - 0.5)}%'
+         # Once maxsp has been defined, ignore the first loop and run this next loop
+         # This loop loops again through all the assignments
+         # If it finds an assignment with status value 3, it adds the status priority percentage at the end of the assignment by dividing its status priority by maxsp
+         for j in ordli:
+            if j[0] == 3:
+               daysleft[j[2]-1] += f' SP: {ceil(j[1] / maxsp * 100 - 0.5)}%'
 
-               # If the status priority is 1 instead of 3, that means the assignment is due tomorrow
-               # Obviously, the assignments due tomorrow are the most important, so set its status priority to 100%
-               elif j[0] == 1:
-                  daysleft[j[2]-1] += ' SP: 100%'
+            # If the status priority is 1 instead of 3, that means the assignment is due tomorrow
+            # Obviously, the assignments due tomorrow are the most important, so set its status priority to 100%
+            elif j[0] == 1:
+               daysleft[j[2]-1] += ' SP: 100%'
 
          # Formatting
          massign = len(max(assign,key=len))
@@ -453,7 +432,7 @@ def home(init=False,autofill_override=False,last_sel=0):
          #        assignment                                                        message, and the estimated time until completion      left and the status priority
          assign = [(str(ordli.index(ordas)+1)+')').ljust(max_assignment_name_len) + assign[ordas[2]-1].ljust(massign)                  +  daysleft[ordas[2]-1]          for ordas in ordli]
          
-         # Saves sorted data to memory if it changed after it was sorted
+         # Saves sorted data to memory if it changed after sorting
          if any(ordli[ordindex][2] != ordindex + 1 for ordindex in range(len(ordli))):
             dat = [dat[0]] + [dat[assignment[2]] for assignment in ordli]
             save_data()
@@ -601,30 +580,28 @@ def home(init=False,autofill_override=False,last_sel=0):
 4)  Warning Flexibility              : {100-int(warning_acceptance*100)}% (Select for More Info)
 5)  Default Minimum Work Time        : {def_min_work_time} Minutes
 6)  Default Not Working Days         : {format_not_working_days()}
-7)  Assignment Order Direction       : {"Least Important to Most Important" if order_direction else "Most Important to Least Important"}
+7) Display Status Priority           : {display_status_priority} (Select for More Info)
 8)  Display Instructions             : {display_instructions}
 9)  Autofill Work*                   : {autofill} (Select for More Info)
-10) Show Past Inputs in Schedule     : {show_past}
+10)  Show Past Inputs in Schedule    : {show_past}
 11) Ignore Min Work Time Ends*       : {ignore_ends} (Select for More Info)
 12) Dark Mode                        : {dark_mode}
-13) Delete Assignment After Finish   : {immediate_delete}
-14) Show Progress Bar in Graph       : {show_progress_bar}
-15) Display Status Priority          : {display_status_priority} (Select for More Info)
-16) After Midnight Assignment Pass*  : {do_after_midnight} (Select for More Info)
-17) Backup Every time Program is Run*: {last_opened_backup}
-18) Backup Every Hour*               : {hourly_backup}
-19) Backup Every Day                 : {daily_backup}
-20) Backup Every Week                : {weekly_backup}
-21) Backup Every Month               : {monthly_backup}
-22) Set Skew Ratio for All Assignments
-23) Manual Backup
-24) Load Backups
-25) Restore all Default Values
+13) Show Progress Bar in Graph       : {show_progress_bar}
+14) After Midnight Assignment Pass*  : {do_after_midnight} (Select for More Info)
+15) Backup Every time Program is Run*: {last_opened_backup}
+16) Backup Every Hour*               : {hourly_backup}
+17) Backup Every Day                 : {daily_backup}
+18) Backup Every Week                : {weekly_backup}
+19) Backup Every Month               : {monthly_backup}
+20) Set Skew Ratio for All Assignments
+21) Manual Backup
+22) Load Backups
+23) Restore all Default Values
 
 A Star next to a Setting means its Default Setting Value is Recommended
 Return to Escape
 Select a Setting you would like to Change by Entering its Corresponding Number:
- '''
+'''
                            
                            # All settings in an input
                            change_setting = input(change_setting)
@@ -635,7 +612,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  outercon = True
                                  break
                               change_setting = int(change_setting)
-                              if 0 < change_setting and change_setting < 26:
+                              if 0 < change_setting and change_setting < 24:
                                  break
                               print('!!!\nInput Number is not Valid!\n!!!')
                            except:
@@ -710,7 +687,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            def_nwd = new_value
 
                         # Toggles boolean settings
-                        elif change_setting in range(7,22):
+                        elif change_setting in range(7,20):
 
                            # A lot of if's here
                            # I could save a lot of lines of code by using a dictionary
@@ -724,9 +701,11 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            # Toggles True to False and False to True
                            new_value = not settings[change_setting]
 
-                           # Order Direction
+                           # Display status priority
                            if change_setting == 7:
-                              order_direction = new_value
+                              display_status_priority = new_value
+                              print(f'\nDisplays the Percentage of an Assignment\'s Priority on the home Assignment Page\nAbbreviated as "SP"\nThis Setting is now Toggled to {new_value}\n')
+                              input('Enter Anything to Continue:')
 
                            # Display Instructions
                            elif change_setting == 8:
@@ -771,22 +750,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  gray5 = (120,120,120)
                                  white = (255,255,255)
 
-                           # Immediate Delete
-                           elif change_setting == 13:
-                              immediate_delete = new_value
-
                            # Show progress bar
-                           elif change_setting == 14:
+                           elif change_setting == 13:
                               show_progress_bar = new_value
 
-                           # Display status priority
-                           elif change_setting == 15:
-                              display_status_priority = new_value
-                              print(f'\nDisplays the Percentage of an Assignment\'s Priority on the home Assignment Page\nAbbreviated as "SP"\nThis Setting is now Toggled to {new_value}\n')
-                              input('Enter Anything to Continue:')
-
                            # Do after midnight pass
-                           elif change_setting == 16:
+                           elif change_setting == 14:
                               do_after_midnight = new_value
                               mpass = 0
                               print(f'\nThe after Midnight assignment Pass is a pass that sets all your current Assignments to Completed, regardless even if they are not.\nThis is to Encourage you to Sleep, as sleep is Extremely important.\nThis can be toggled to False if you do not want this to Happen, but is not Recommended\nThis Setting is now Toggled to {new_value}\n')
@@ -796,7 +765,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                               # If none of the above ifs ran, then that means a backup was toggled
                               # This code runs removing and creating backups
                               
-                              backups = {17:' Every Run Backup',18:' Hourly Backup',19:' Daily Backup',20:' Weekly Backup',21:' Monthly Backup'}
+                              backups = {15:' Every Run Backup',16:' Hourly Backup',17:' Daily Backup',18:' Weekly Backup',19:' Monthly Backup'}
                               if new_value:
 
                                  # If the backup is toggled to True, use the backups dictionary to figure out the name of the backup file to create (so it can be referred to later)
@@ -810,26 +779,26 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  file_directory = original_file_directory
 
                               # If the backup is toggled to False, then ask for confirmation and then delete the backup
-                              elif input(f'The{backups[change_setting]} will be Deleted Forever because you have Disabled it. Enter "YES" in caps lock to confirm:').strip() == 'YES':
+                              elif input(f'The{backups[change_setting]} will be Deleted Forever because you have Disabled it. Enter "YES" in capital letters to confirm:').strip() == 'YES':
                                  remove(file_directory + backups[change_setting])
                               else:
                                  continue
                               # Updates the variable of each backup
 
                               # Every run backup
-                              if change_setting == 17:
+                              if change_setting == 15:
                                  last_opened_backup = new_value
 
                               # Hourly backup
-                              elif change_setting == 18:
+                              elif change_setting == 16:
                                  hourly_backup = new_value
 
                               # Daily backup
-                              elif change_setting == 19:
+                              elif change_setting == 17:
                                  daily_backup = new_value
 
                               # Weekly backup
-                              elif change_setting == 20:
+                              elif change_setting == 18:
                                  weekly_backup = new_value
 
                               # Monthly backup
@@ -837,7 +806,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  monthly_backup = new_value
                                  
                         # Sets skew ratio for every assignment
-                        elif change_setting == 22:
+                        elif change_setting == 20:
                            outercon = True
                            while 1:
                               try:
@@ -878,7 +847,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  print('!!!\nInput is Not an Integer!\n!!!')
                                  
                         # Updates the Manual Backup
-                        elif change_setting == 23:
+                        elif change_setting == 21:
                            outercon = True
                            if manual_backup:
                               input_message = 'Updating the Manual Backup will Override and Permanently delete the Last manual backup. Enter "YES" in capital letters to Confirm\nOr, Enter "DELETE" in capital letters to Permanently Delete the Last Manual Backup:'
@@ -903,7 +872,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                               remove(file_directory + ' Manual Backup')
                               
                         # Loads Backups
-                        elif change_setting == 24:
+                        elif change_setting == 22:
                            outercon = True
                            backups = []
 
@@ -954,13 +923,13 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  break
                               continue
                            print('!!!\nThere are no Available Backups to Load!\n!!!')
-                        elif change_setting == 25:
+                        elif change_setting == 23:
                            outercon = True
-                           if input('Are you Sure you Want to Restore all Default Setting Values? Enter "YES" in capital letters to Confirm:').strip() == 'YES':
+                           if input('Are you Sure you Want to Restore all Default Setting Values? (This will NOT affect the backup settings) Enter "YES" in capital letters to Confirm:').strip() == 'YES':
                               
                               # Resets Setting Data
-                              dat[0][1:18] = [750,750,35,1,0,(),0,True,True,True,True,True,False,True,False,True,True]
-                              width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,order_direction,display_instructions,autofill,show_past,ignore_ends,dark_mode,immediate_delete,show_progress_bar,display_status_priority,do_after_midnight = dat[0][1:18]
+                              dat[0][1:15] = [750,750,35,1,30,(),False,True,True,True,True,True,True,True]
+                              width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,show_past,ignore_ends,dark_mode,show_progress_bar,display_status_priority,do_after_midnight = dat[0][1:15]
 
                         if not outercon:
 
@@ -3497,6 +3466,8 @@ That's all, and have a nice day
                                 draw(0,0)
                                 pygame.event.pump()
                                 if ndif in [wlen-1,wlen] or lw >= y:
+                                   if ndif == wlen - 1:
+                                      home()
                                    break
                                 continue
 
@@ -3568,9 +3539,13 @@ That's all, and have a nice day
 
                              # Check if the assignment is finished
                              if lw >= y:
-                                print('\nFinish! You have completed your assignment. Good job!\n')
-                             if ndif in [wlen-1,wlen] or lw >= y:
-                                break
+                                 if input('\nFinish! You have completed your assignment. Good job!\nWould you like to Delete this? Enter "YES" in capital letters to Confirm:').strip() == 'YES':
+                                    del selected_assignment
+                                    save_data()
+                                 break
+                        
+                             if ndif in [wlen-1,wlen]:
+                                 break
                              first_loop = False
                          except:
                             print('!!!\nInvalid Number!\n!!!')
