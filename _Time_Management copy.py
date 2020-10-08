@@ -18,7 +18,7 @@ from os.path import exists # Checks if a file exists
 from os import remove # Removes Backups if they are Disabled
 
 # File Directory where the data will be stored
-file_directory = 'Test2'
+file_directory = 'Time Management'
 update_backups = True
 debug_mode = True
 
@@ -34,15 +34,18 @@ debug_mode = True
 # "quit" at any time
 # "fin" in the home page (would you like to delete this assingment because youve already completed it? enter "NO" to confirm)
 # "d" too many days (no format)
-# dont know the amount of units? ONLy if due date is known
+# replace "unit" to "minute" if u press enter
+# replace dat[0] with "settings" in the settings 3
+# change warning_flexibility so its displayed value is its actual value in the code 3 (so it works with "Old Value: ")
+# dont know the amount of units? ONLy if due date is known ("none" with y)
 # min work time work with the blue line 3
 # fix "next" (still displays same date) 3
-# htiting return in the naming unit thing should set unit to "minutes" instead of "units" 4
+# something like "h" to hide graph 3
 # daily assignments 5
-# coordinate parabola needs to hit when entering due date 
 # maximum work time 7
 # multiple points, to hit (piecewise) (combining assignments into one big x axis graph) 9
 # time table 10
+## coordinate parabola needs to hit when entering due date 
 ## When reenter nwd, ask if user would like to change due date 2
 
    
@@ -143,9 +146,10 @@ font_type = 'freesansbold.ttf'
 pygame.init()
 font = font3 = pygame.font.SysFont(font_type,25)
 font4 = pygame.font.SysFont(font_type,20)
+max_w, max_h = pygame.display.Info().current_w, pygame.display.Info().current_h
 
 # Main assignment home function
-def home(init=False,last_sel=0):
+def home(last_sel=0):
    autofill_override = False
    global date_now, min_work_time, sel, x, y, ad, ctime, dif_assign, works, day, skew_ratio, file_sel, adone, date_file_created, disyear, dat, screen, ndif, xdif, rem_zero, lw, start_lw, assign_day_of_week, wlen, funct_round, nwd, len_nwd, fixed_mode, dynamic_start, stry, slash_x_counter, red_line_start, unit, wCon, hCon, total_mode, set_start, set_skew_ratio, clicked_once, fixed_start, remainder_mode, smart_skew_ratio, due_date, selected_assignment, width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,show_past,ignore_ends,dark_mode,show_progress_bar,display_status_priority,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup,manual_backup,do_after_midnight, file_directory, black, border, gray, gray1, gray2, gray3, gray4, gray5, white, min_work_time_funct_round, left_adjust_cutoff, up_adjust_cutoff, point_text_width, point_text_height, y_fremainder, y_mremainder, original_min_work_time, internal_error
    next_day = False
@@ -185,10 +189,26 @@ def home(init=False,last_sel=0):
             if min_work_time > y:
                min_work_time = y
                
+            assign_day_of_week = ad.weekday() # Weekday of assign date
+            len_nwd = len(nwd) # Length of not working days
+            # Calculates the start of the red line (used in other functions) and the value of the work input the start is at
+            if fixed_mode:
+               start_lw = works[fixed_start - dif_assign]
+               red_line_start = fixed_start
+            else:
+               start_lw = works[dynamic_start - dif_assign]
+               red_line_start = dynamic_start
+               
+            x1 = x - red_line_start
+            if nwd:
+               # Defines the tuple mods for not working days (explained later)
+               set_mod_days()
+               x1 -= x1//7 * len_nwd + mods[x1 % 7]
+
             # If the minimum work time is less than the grouping value, that means
             # The minimum work time is always fulfilled by the grouping value, making
             # It completely irrelevant
-            if min_work_time <= funct_round or x == 2 and ignore_ends:
+            if min_work_time <= funct_round or x1 == 2 and ignore_ends:
                min_work_time = 0
 
             # Let funct_round be 4 and min_work_time be 5
@@ -205,25 +225,11 @@ def home(init=False,last_sel=0):
             else:
                min_work_time_funct_round = funct_round
                
-            len_nwd = len(nwd) # Length of not working days
-            assign_day_of_week = ad.weekday() # Weekday of ad
             wlen = len(works) - 1 # Length of work inputs subtracted by 1 to not count the 0th work input
             lw = works[wlen] # Last work input
 
-            # Defines the start of the red line and the value of the work input the start is at (used in other functions)
-            if fixed_mode:
-               start_lw = works[fixed_start - dif_assign]
-               red_line_start = fixed_start
-            else:
-               start_lw = works[dynamic_start - dif_assign]
-               red_line_start = dynamic_start
             y_fremainder = (y - start_lw) % funct_round # Remainder when the total number of units left in the assignment is divided by funct_round, or the grouping value
             y_mremainder = (y - start_lw) % min_work_time_funct_round # Remainder when the total number of units left in the assignment is divided by min_work_time_funct_round, or the minimum a use will work in a day
-            
-            # Handles not working days (explained later)
-            if nwd:
-               day = wlen
-               set_mod_days()
 
             # Define a and b for the parabola
             pset()
@@ -469,9 +475,9 @@ def home(init=False,last_sel=0):
          if last_sel:
             print(projects + project_time)
          else:
-            print(projects + project_time + '\n\nEnter "new" to Create an Assignment\nEnter "delete" to Remove an Assignment\nEnter "re" to Re-Enter Data values of an Assignment\nEnter "settings" to Customize the Settings\nEnter "quit" at any time to exit and backup\nReturn to Select the First Assignment')
+            print(projects + project_time + '\n\nEnter "new" to Create an Assignment\nEnter "delete" to Remove an Assignment\nEnter "re" to Re-Enter Data values of an Assignment\nEnter "settings" to Customize the Settings\nEnter "quit" at any time to exit and backup\nPress Return to Select the First Assignment')
             input_message = 'Select an Assignment by Entering in its Corresponding Number:'
-      except:
+      except SyntaxError:
 
          # If file is empty, print the instructions
          print('\nThis is the assignment page where all of your assignments will be organized, sorted, and listed daily.\nThe assignments with higher priority will be closer to the beginning of the list.\n\nCurrently, You have not created an assignment yet!\n')
@@ -535,7 +541,7 @@ def home(init=False,last_sel=0):
                      except:
                         print('!!!\nInput Number is not Valid!\n!!!')
                   if outercon:
-                     if internal_error:
+                     if not internal_error:
                         raise Exception
                      continue
                   break
@@ -619,7 +625,7 @@ def home(init=False,last_sel=0):
 23) Restore all Default Values
 
 A Star next to a Setting means its Default Setting Value is Recommended
-Return to Escape
+Press Return to Escape
 Select a Setting you would like to Change by Entering its Corresponding Number:
 '''
                            
@@ -649,9 +655,9 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         # Settings with Numeric Values
                         if change_setting in range(1,6):
                            if change_setting == 4:
-                              print('\nWarning flexibility is how much percent of the amount of work for a day does not have to be done in order to trigger a warning\nFor example, suppose you have to read 10 pages of a book one day\nIf your warning flexibility is 0%, then that means you have to read all 10 pages to not trigger a warning\nIf your warning flexibility is 40%, then you can read 6 pages of the 10 pages and still not trigger a warning\nEnter the percent of warning flexibility, from 1 - 100\nNOTE: A WARNING DOES NOT MEAN ANYTHING TO THE PROGRAM. IT IS THERE TO PROVIDE URGENCY TO AN ASSIGNMENT\n')
+                              print('\nWarning flexibility is how much percent of the amount of work for a day does not have to be done in order to trigger a warning\nFor example, suppose you have to read 10 pages of a book one day\nIf your warning flexibility is 0%, then that means you have to read all 10 pages to not trigger a warning\nIf your warning flexibility is 40%, then you can read 6 pages of the 10 pages and still not trigger a warning\nEnter the percent of warning flexibility, from 1 - 100\nNOTE: A warning is ONLY there to provide urgency to an Assignment\n')
                            while 1:
-                              new_value = input('What would you Like the New value of this Setting to be:').rstrip('%')
+                              new_value = input(f'What would you Like the New value of this Setting to be (Old Value: {settings[change_setting]}):').rstrip('%')
                               try:
                                  if not new_value:
                                     outercon = True
@@ -659,16 +665,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  new_value = int(new_value)
 
                                  # Width
-                                 if change_setting == 1 and new_value > 349:
+                                 if change_setting == 1 and new_value > 349 and new_value <= max_w:
                                     width = new_value
-                                    if not init:
-                                       screen = pygame.display.set_mode((width,height), pygame.RESIZABLE)
 
                                  # Height
-                                 elif change_setting == 2 and new_value > 374:
+                                 elif change_setting == 2 and new_value > 374 and new_value <= max_h:
                                     height = new_value
-                                    if not init:
-                                       screen = pygame.display.set_mode((width,height), pygame.RESIZABLE)
 
                                  # Animation frame count
                                  elif change_setting == 3 and new_value > 0:
@@ -697,7 +699,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
 
                         # Change default not working days
                         if change_setting == 6:
-                           new_value = input(f'\nEnter the Default Days of the Week you will Not Work on any assignment separated by a Space as your Default Setting\nReturn to set as None\nExample: mon tue wed thu fri sat sun\n').strip().lower().replace(',',' ').replace('.',' ')
+                           new_value = input(f'\nEnter the Default Days of the Week you will Not Work on any assignment separated by a Space as your Default Setting\nPress Return to set as None\nExample: mon tue wed thu fri sat sun\n').strip().lower().replace(',',' ').replace('.',' ')
                            if new_value:
                               new_value = new_value.split(' ')
                               valid_days = {'mon':0,'mond':0,'tue':1,'tues':1,'wed':2,'wedn':2,'thu':3,'thur':3,'thurs':3,'fri':4,'frid':4,'sat':5,'satu':5,'sun':6,'sund':6}
@@ -733,11 +735,11 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            
                            # Prints settings that have instructions on how to use
                            if change_setting in range(8,12):
-                              print([f'\nDisplays the Percentage of an Assignment\'s Priority on the home Assignment Page\nAbbreviated as "SP"',
-                                     f"\nIf you do not have to work for a day in the assignment and you forget to input work for that day, it is assumed you did nothing and the program auto fills in no work done on that day because you anyways did not have to do anything\nWorks over periods of a time longer than a day",
-                                     f'\nThe after Midnight assignment Pass is a pass that sets all your current Assignments to Completed, regardless even if they are not.\nThis is to Encourage you to Sleep, as sleep is Extremely important.\nThis can be set to False if you do not want this to Happen, but is not Recommended',
-                                     f"\nIgnore Ends is only relevant when Minimum Work Time is also Enabled for an Assignment\nIgnores the Minimum Work Time on the first and last Working Day to make the Work Distribution smoother\nThis also fixes an Issue that causes you to Work a Lot More on the First and Last days of the Assignment"
-                                     ][change_setting-8]+"\nThis Setting\'s new value is {new_value}\n")
+                              print(('\nDisplays the Percentage of an Assignment\'s Priority on the home Assignment Page\nAbbreviated as "SP"',
+                                     "\nIf you do not have to work for a day in the assignment and you forget to input work for that day, it is assumed you did nothing and the program auto fills in no work done on that day because you anyways did not have to do anything\nWorks over periods of a time longer than a day",
+                                     '\nThe after Midnight assignment Pass is a pass that sets all your current Assignments to Completed, regardless even if they are not.\nThis is to Encourage you to Sleep, as sleep is Extremely important.\nThis can be set to False if you do not want this to Happen, but is not Recommended',
+                                     "\nIgnore Ends is only relevant when Minimum Work Time is also Enabled for an Assignment\nIgnores the Minimum Work Time on the first and last Working Day to make the Work Distribution smoother\nThis also fixes an Issue that causes you to Work a Lot More on the First and Last days of the Assignment"
+                                     )[change_setting-8]+f"\nThis Setting\'s new value is {new_value} (Old Value: {not new_value})\n")
                               if input('Enter Anything to Continue:').strip().lower() == 'quit':
                                  internal_error = False
                                  raise Exception
@@ -830,7 +832,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         # Updates the Manual Backup
                         elif change_setting == 21:
                            if manual_backup:
-                              selected_backup = input('Updating the Manual Backup will Override and Permanently delete the Last manual backup.\nEnter "YES" in capital letters to Confirm\nOr, Enter "DELETE" in capital letters to Permanently Delete the Last Manual Backup (Enter anything other than "YES" or "DELETE" to cancel):').strip()
+                              selected_backup = input('Updating the Manual Backup will Override and Permanently delete the Last manual backup.\nEnter "YES" in capital letters to Confirm\nEnter "DELETE" in capital letters to Permanently Delete the Last Manual Backup\n(Enter anything other than "YES" or "DELETE" to cancel):').strip()
                            else:
                               print('Successfully Backed up')
                            if not manual_backup or selected_backup == 'YES':
@@ -880,7 +882,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  try:
 
                                     # Asks which backup will be loaded and asks for confirmation
-                                    selected_backup = input(f'\nAll Available Backups (Sorted from Newest to Oldest):\nCurrent Version Size: {len(dumps(dat[1:],protocol=4))-14} Bytes\n'+'\n'.join(f'{i + 1}){backups[i][2]} (Last Backed Up on {backups[i][1]}' for i in range(len(backups)))+ '\n\nReturn to Escape\nChanging anything after you have loaded a backup does not affect the backup itself\nSelect which Backup you would Like to Load by Entering its Corresponding Number:')
+                                    selected_backup = input(f'\nAll Available Backups (Sorted from Newest to Oldest):\nCurrent Version Size: {len(dumps(dat[1:],protocol=4))-14} Bytes\n'+'\n'.join(f'{i + 1}){backups[i][2]} (Last Backed Up on {backups[i][1]}' for i in range(len(backups)))+ '\n\nPress Return to Escape\nChanging anything after you have loaded a backup does not affect the backup itself\nSelect which Backup you would Like to Load by Entering its Corresponding Number:')
                                     if not selected_backup or input('\nAre you Sure you Want to load this Backup? This will transfer All Backup Data from this Backup to the Current Version\nThis Will Override the current version and Replace it with the Backup Version\nEnter "YES" in capital letters to Confirm (Enter anything other than "YES" to cancel):').strip() != 'YES':
                                        break
                                     selected_backup = int(selected_backup) - 1
@@ -962,12 +964,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          # Name of the assignment
          while 1:
             if reenter_mode:
-               reenter_input = input(f'\nReturn at any Time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" at Any Time to stop Re-Entering Data and keep the Original Version\n\nWhat would you Like to Rename your Assignment (Old Value: {old_values[0]})\n').strip()
+               reenter_input = input(f'\nPress Return at any Time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" at Any Time to stop Re-Entering Data and keep the Original Version\n\nWhat would you Like to Rename your Assignment (Old Value: {old_values[0]})\n').strip()
                if not reenter_input:
                   break
                file_sel = reenter_input
             else:
-               file_sel = input('\nEnter in "cancel" at Any Time to stop Entering in Data\n\nWhat would you Like to Name your Assignment\n').strip()
+               file_sel = input('\nEnter in "cancel" at Any Time to stop Entering in Data\nTry not to enter Inputs faster than 0.2 seconds, as Python glitches out (Nothing I can do about that)\n\nWhat would you Like to Name your Assignment\n').strip()
                if not file_sel:
                   outercon = True
             if file_sel.lower() == 'cancel':
@@ -985,14 +987,14 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          while 1:
             try:
                if reenter_mode:
-                  reenter_input = input(f'Re-enter the Assignment Date of this assignment or Enter "today" (Old Value: {old_values[1].strftime("%-m/%-d/%Y")})\nFormat: Month/Day/Year\nExample: 3/2 or mar/2/{str(date_now.year)[-2:]}\nYou can Assign in the Future\n').replace(' ','')
+                  reenter_input = input(f'Re-enter the Assignment Date of this assignment or Enter "today" (Old Value: {old_values[1].strftime("%-m/%-d/%Y")})\nFormat: Month/Day/Year\nExample: 3/2 or mar/2/{str(date_now.year)[-2:]} or mar/2\nYou can Assign in the Future\n').replace(' ','')
                   if not reenter_input:
                      if date_now >= ad:
                         dif_assign = (date_now-ad).days
                      break
                   ad = reenter_input
                else:
-                  ad = input(f'Enter the Assignment Date of this assignment or Enter "today"\nFormat: Month/Day/Year\nExample: 3/2 or mar/2/{str(date_now.year)[-2:]}\nYou can Assign in the Future\n').replace(' ','')
+                  ad = input(f'Enter the Assignment Date of this assignment or Enter "today"\nFormat: Month/Day/Year\nExample: 3/2 or mar/2/{str(date_now.year)[-2:]} or mar/2\nYou can Assign in the Future\n').replace(' ','')
                   if not ad:
                       outercon = True
                       break
@@ -1023,13 +1025,13 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          while 1:
               try:
                   if reenter_mode:
-                     reenter_input = input(f'Re-enter the Due Date of this assignment OR the amount of days in which this is due from the reentered assign date (As a Whole Number) (Old Value: {old_values[2].strftime("%-m/%-d/%Y")})\nFormat: Month/Day/Year\nExample: 2/16/{str(date_now.year)[-2:]}, nov/5, or 10\n(Don\'t Have a Due Date? Enter in "none" to proceed)\n').replace(' ','').lower()
+                     reenter_input = input(f'Re-enter the Due Date of this assignment OR the amount of days in which this is due from the reentered assign date (As a Whole Number) (Old Value: {old_values[2].strftime("%-m/%-d/%Y")})\nFormat: Month/Day/Year\nExample: 3/2 or mar/2/{str(date_now.year)[-2:]} or mar/2\n(Don\'t Have a Due Date? Enter in "none" to proceed)\n').replace(' ','').lower()
                      if not reenter_input:
                         x -= (ad - old_values[1]).days
                         break
                      x = reenter_input
                   else:
-                     x = input(f'Enter the Due Date of this assignment OR the Amount of Days in which this Assignment is Due from the Assign Date (As a Whole Number)\nFormat: Month/Day/Year\nExample: 2/16/{str(date_now.year)[-2:]}, nov/5, or 10\n(Don\'t Have a Due Date? Enter in "none" to proceed)\n').replace(' ','').lower()
+                     x = input(f'Enter the Due Date of this assignment OR the Amount of Days in which this Assignment is Due from the Assign Date (As a Whole Number)\nFormat: Month/Day/Year\nExample: 3/2 or mar/2/{str(date_now.year)[-2:]} or mar/2\n(Don\'t Have a Due Date? Enter in "none" to proceed)\n').replace(' ','').lower()
                      if not x:
                         outercon = True
                         break
@@ -1071,11 +1073,11 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
 
          # Name of each unit of the assignment
          if reenter_mode:
-            reenter_input = input(f'What would you Like to Rename each Unit of Work in your Assignment (Old Value: {unit})\nExample: If the assignment is reading a book, enter "page". If the assignment is a money goal, enter "dollar"\n').strip().lower()
+            reenter_input = input(f'What would you Like to Rename each Unit of Work in your Assignment (Old Value: {unit})\nExample: If the assignment is reading a book, enter "page"\nIf you are not sure what to name each Unit of work, Press Return to set it as "Unit"\n').strip().lower()
             if reenter_input:
                unit = reenter_input.rstrip('s').capitalize()
          else:
-            unit = input('What would you Like to Name each Unit of Work in your Assignment (Not Sure? Return to set as "Unit")\nExample: If the assignment is reading a book, enter "page". If the assignment is a Money Goal, enter "dollar"\n').strip().lower()
+            unit = input('What would you Like to Name each Unit of Work in your Assignment\nExample: If the assignment is reading a book, enter "page"\nIf you are not sure what to name each Unit of work, Press Return to set it as "Unit"\n').strip().lower()
             if unit:
                unit = unit.rstrip('s').capitalize()
             else:
@@ -1183,7 +1185,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         break
                      funct_round = reenter_input
                   else:
-                     funct_round = input(f'Enter what would you Like the Grouping Value of each {unit} to be (Allows Decimal Input) (Return to group to the nearest whole number)\nFor example, if you Enter in 3 as your Grouping Value, you will always work in multiples of 3 (such as 3, 6, 12...)\n')
+                     funct_round = input(f'Enter what would you Like the Grouping Value of each {unit} to be (Allows Decimal Input) (Press Return to group to the nearest whole number)\nFor example, if you Enter in 3 as your Grouping Value, you will always work in multiples of 3 (such as 3, 6, 12...)\n')
                      if not funct_round:
                         funct_round = 1
                         break
@@ -1216,9 +1218,9 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         min_work_time = str(old_values[8]*old_values[7])
                   else:
                      if def_min_work_time:
-                        return_message = f'(Return to set as Default: {def_min_work_time} Minutes) (Enter "none" to skip)'
+                        return_message = f'(Press Return to set as Default: {def_min_work_time} Minutes) (Enter "none" to skip)'
                      else:
-                        return_message = '(Return to Skip)'
+                        return_message = '(Press Return to Skip)'
                      min_work_time = input(f'Enter the Minimum Work Time for each Day you will Work in Minutes (Allows Decimal Inputs) {return_message}:\n').strip().lower()
                   if min_work_time == 'cancel':
                      outercon = True
@@ -1252,9 +1254,9 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                nwd = reenter_input
             else:
                if def_nwd:
-                  return_message = f'(Return to Set as Default: {format_not_working_days()}) (Enter "none" to skip)'
+                  return_message = f'(Press Return to Set as Default: {format_not_working_days()}) (Enter "none" to skip)'
                else:
-                  return_message = '(Return to Skip)'
+                  return_message = '(Press Return to Skip)'
                nwd = input(f'Enter the Days of the Week you will Not Work on this assignment separated by a Space {return_message}\nExample: mon tue wed thu fri sat sun\nAnything Other than the Days of the Week will be Ignored\n').strip().lower().replace(',',' ').replace('.',' ')
             if nwd == 'cancel':
                outercon = True
@@ -1383,10 +1385,26 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       if min_work_time > y:
          min_work_time = y
          
+      assign_day_of_week = ad.weekday() # Weekday of assign date
+      len_nwd = len(nwd) # Length of not working days
+      # Calculates the start of the red line (used in other functions) and the value of the work input the start is at
+      if fixed_mode:
+         start_lw = works[fixed_start - dif_assign]
+         red_line_start = fixed_start
+      else:
+         start_lw = works[dynamic_start - dif_assign]
+         red_line_start = dynamic_start
+         
+      x1 = x - red_line_start
+      if nwd:
+         # Defines the tuple mods for not working days (explained later)
+         set_mod_days()
+         x1 -= x1//7 * len_nwd + mods[x1 % 7]
+
       # If the minimum work time is less than the grouping value, that means
       # The minimum work time is always fulfilled by the grouping value, making
       # It completely irrelevant
-      if min_work_time <= funct_round or x == 2 and ignore_ends:
+      if min_work_time <= funct_round or x1 == 2 and ignore_ends:
          min_work_time = 0
          
       # Fixes a rounding bug with min_work_time
@@ -1425,9 +1443,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       xdif = (date_now-ad).days # Distance between today and assign date
       rem_zero = x - dif_assign > 15 # Determines if to overlook zero values in the schedule        
       wlen = len(works) - 1 # Length of inputs
-      len_nwd = len(nwd) # Length of not working days
       day = wlen # Day of the assignment you will be at
-      assign_day_of_week = ad.weekday() # Weekday of ad
       smart_skew_ratio = x < 200 # Cutoff from using smart skew ratio (explained later)
       lw = works[wlen] # Last work input
       stry = '%g' % y # Formatted Total Units of Work
@@ -1440,19 +1456,8 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       left_adjust_cutoff = (width - 50 - point_text_width)/wCon
       up_adjust_cutoff = point_text_height/hCon
       
-      # Calculates the start of the red line (used in other functions) and the value of the work input the start is at
-      if fixed_mode:
-         start_lw = works[fixed_start - dif_assign]
-         red_line_start = fixed_start
-      else:
-         start_lw = works[dynamic_start - dif_assign]
-         red_line_start = dynamic_start
       y_fremainder = (y - start_lw) % funct_round # Remainder when the total number of units left in the assignment is divided by funct_round, or the grouping value
       y_mremainder = (y - start_lw) % min_work_time_funct_round # Remainder when the total number of units left in the assignment is divided by min_work_time_funct_round, or the minimum a use will work in a day
-
-      # Handles not working days (explained later)
-      if nwd:
-         set_mod_days()
 
       # Initializing assignment
       calc_skew_ratio_lim()
@@ -1472,11 +1477,10 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       # x and y are set to 1 at the beginning of the animation
       x = 1
       y = 1
-      if init:
          
-         # Initializes Screen
-         pygame.display.set_caption('Time Management')
-         screen = pygame.display.set_mode((width,height), pygame.RESIZABLE)
+      # Initializes Screen
+      pygame.display.set_caption('Time Management')
+      screen = pygame.display.set_mode((width,height), pygame.RESIZABLE)
          
       # Used for positioning the slashes in the progress bar during the animation
       slash_x_counter = width-145
@@ -1612,7 +1616,7 @@ def pset():
                      elif skew_ratio < 2 - skew_ratio_lim:
                         skew_ratio = 2 - skew_ratio_lim
 
-                     # Locks to linear if the skew ratio is +-0.2 away from linear
+                     # Locks to linear if the skew ratio is +-0.025 away from linear
                      elif 0.975 < skew_ratio and skew_ratio < 1.025:
                         skew_ratio = 1
                         a = 0
@@ -1707,8 +1711,8 @@ def pset():
                            output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5)
                         else:
                            output = funct_round * ceil(n*(a*n+b)/funct_round-0.5)
-                        if output < 0:
-                           print(7457367)
+                        if debug_mode and output < 0:
+                           print('output less than 0')
                         if remainder_mode and output:
                            output += y_fremainder
                         if first_loop:
@@ -1784,7 +1788,7 @@ def pset():
          # First, I need to calculate the x value when the function first returns y
          # This was actually a lot more complicated than I originally thought
          # This equation determines whether the function output rounds to the minimum work time or not at the return_y_cutoff
-         return_y_cutoff = 0
+         return_y_cutoff = 1e-10
          if funct_round < min_work_time and (not a and b < min_work_time_funct_round or skew_ratio < 1 and x1 <= cutoff_to_use_round or skew_ratio > 1 and cutoff_to_use_round < ceil(((b*b+4*a*y1)**0.5-b)/a/2-1)):
 
                if ignore_ends:
@@ -1803,7 +1807,7 @@ def pset():
                      
                         # (x1-1) * ((x1-1) * a + b) > y_value_to_cutoff makes sure the line doesn't accidentally go over y because of return_y_cutoff if the first condition is true
                         
-                        return_y_cutoff = 1
+                        return_y_cutoff += 1
                   
                else:
                
@@ -1900,27 +1904,27 @@ def pset():
             else:
                return_y_cutoff = 0
 
-         # Fixes a glitch when the cutoff_transition_value causes the output value right before the return_y_cutoff to exceed y
-         # It does this by running a modified version of funct() and checking whether it exceeds y
-         # If it does, subtract 1 from the return_y_cutoff
-         first_loop = True
-         for n in range(ceil(return_y_cutoff - 2),ceil(return_y_cutoff)):
-            if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (skew_ratio < 1) == (n <= cutoff_to_use_round)):
-               original_output = output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5)
-               if skew_ratio > 1:
-                  output += cutoff_transition_value
+            # Fixes a glitch when the cutoff_transition_value causes the output value right before the return_y_cutoff to exceed y
+            # It does this by running a modified version of funct() and checking whether it exceeds y
+            # If it does, subtract 1 from the return_y_cutoff
+            first_loop = True
+            for n in range(ceil(return_y_cutoff - 2),ceil(return_y_cutoff)):
+               if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (skew_ratio < 1) == (n <= cutoff_to_use_round)):
+                  original_output = output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5)
+                  if skew_ratio > 1:
+                     output += cutoff_transition_value
+                  else:
+                     output -= cutoff_transition_value
                else:
-                  output -= cutoff_transition_value
-            else:
-               original_output = output = funct_round * ceil(n*(a*n+b)/funct_round-0.5)
-            if remainder_mode:
-               output += y_fremainder
-               original_output += y_fremainder
-            if first_loop:
-               difference = output
-            first_loop = False
-         if output > original_output and output + start_lw > y:
-            return_y_cutoff -= 1
+                  original_output = output = funct_round * ceil(n*(a*n+b)/funct_round-0.5)
+               if remainder_mode:
+                  output += y_fremainder
+                  original_output += y_fremainder
+               if first_loop:
+                  difference = output
+               first_loop = False
+            if output > original_output and output + start_lw > y:
+               return_y_cutoff -= 1
 
          # The same data collected from the modified version of funct() from above is also used to set the variable add
          # This variable adds the min_work_time_funct_round on the very last day of the assignment in order to make linear graphs more smooth
@@ -2549,8 +2553,6 @@ def draw(doing_animation=0,do_return=1):
 
       # Displays today's line
       today_x = xdif*wCon+47.5
-      if today_x < 53:
-         today_x = 53
       if xdif > -1:
          pygame.draw.line(screen,gray3,(today_x+2.5,0),(today_x+2.5,height-50),5)
          screen.blit(pygame.transform.rotate(font3.render('Today Line',1,black),270),(today_x-6,(height-50-gw(font3,'Today Line'))/2))
@@ -2601,7 +2603,7 @@ def draw(doing_animation=0,do_return=1):
             rcircle_y = ceil(height-rfunct(i)*hCon-50.5)
 
             # Doesn't draw green line if it is covered by the red line (same position)
-            if circle_y < rcircle_y - 1 or circle_y > rcircle_y + 1:
+            if circle_y < rcircle_y - 3 or circle_y > rcircle_y + 3:
                pygame.draw.line(screen,green,(prev_circle_x,prev_rcircle_y),(circle_x,rcircle_y),circle_r-2)
                pygame.draw.circle(screen,green,(circle_x,rcircle_y),circle_r)
                end = True
@@ -2767,7 +2769,7 @@ def draw(doing_animation=0,do_return=1):
          elif after_midnight == '':
             center('Welcome to the Graph!',row_height*12)
             center('Please read the Instructions displayed on the Idle',row_height*13)
-            center('Enter the Return Key to enter your first Work Input',row_height*14)
+            center('Click on the Graph and Press the Return Key to enter your first Work Input',row_height*14)
          if xdif < 0:
             center('This Assignment has Not Yet been Assigned!',row_height*11)
          elif dist_from_today > 0:
@@ -2796,7 +2798,7 @@ try:
     # Runs the Assignment Page
     internal_error = True
     draw_point = False
-    home(True)
+    home()
     last_mouse_x2 = -1
     first_loop = True
     if display_instructions:
@@ -2846,7 +2848,7 @@ This allows you to choose whether you would like to do the remainder of work on 
 
 KEYBINDS
 --------
-CLICK ON THE GRAPH WINDOW AND THEN PRESS THE DESIRED KEY FOR IT TO WORK
+IMPORTANT NOTE: You HAVE to click on before pressing the desired key in order for it to be registered
 click to enable/disable showing the value of the closest point to the mouse (not 100% accurate)
 "f" to toggle dynamic mode/fixed mode
 "d" to get the entire schedule of an assignment
@@ -2857,7 +2859,7 @@ click to enable/disable showing the value of the closest point to the mouse (not
 "r" to toggle remainder first/last
 "a" to return to the assignment page
 "n" to automatically go to the next assignment
-Return to enter a work input
+Press Return to enter a work input
 Backspace to delete a work input
 Up/down arrow keys to control the skew ratio
 
@@ -2945,6 +2947,7 @@ That's all, and have a nice day
             # Goes back to assignment page
             # 97 is the 'a' key
             if key == 97:
+               pygame.display.set_mode((1,1))
                home()
 
             # Initializes manually setting the start of the red line
@@ -3366,12 +3369,13 @@ That's all, and have a nice day
                # If you anyways click "n" again, go to the next assignment
                else:
                   clicked_once = False
+                  pygame.display.set_mode((1,1))
                   if sel == len(dat) - 1:
-                     home(False,2)
+                     home(2)
                   elif lw < y:
-                     home(False,sel + 2)
+                     home(sel + 2)
                   else:
-                     home(False,sel + 1)
+                     home(sel + 1)
 
             # Toggles fixed mode to dynamic mode
             #f  102 is the 'f' key
@@ -3431,7 +3435,7 @@ That's all, and have a nice day
                              elif ndif - day == 1:
                                 formatted_date += ' (Yesterday)'
                              if first_loop:
-                                print('Return to Escape')
+                                print('Press Return to Escape')
                                 if ndif - day > 1:
                                    formatted_date += ' (Don\'t Remember? Enter "remember" to Proceed)'
 
@@ -3471,6 +3475,7 @@ That's all, and have a nice day
                                 pygame.event.pump()
                                 if ndif in [wlen-1,wlen] or lw >= y:
                                    if ndif == wlen - 1:
+                                      pygame.display.set_mode((1,1))
                                       home()
                                    break
                                 continue
@@ -3567,6 +3572,8 @@ That's all, and have a nice day
                height = 375
             if width < 350:
                width = 350
+            dat[0][1],dat[0][2] = width,height
+            save_data()
             wCon = (width-55)/x
             hCon = (height-55)/y
 
@@ -3584,17 +3591,16 @@ That's all, and have a nice day
 
         # 12 is the quit event
         elif etype == 12:
-            pygame.quit()
             internal_error = False
             raise Exception
          
 except:
 
+   if not debug_mode:
+      pygame.quit()
    # Prints error info
    from traceback import format_exc # Prints the Exception if an Error Occurs
    error_info = format_exc().replace('\n\n','\n')
-   print(error_info)
-   print(0/0)
    if internal_error and error_info.split('\n')[-2] != 'KeyboardInterrupt':
       print(f'\n\n\n\nCOPY ALL INFORMATION STARTING FROM HERE\n\n{dat}\n\n\n{error_info}\n\nAND ENDING AT HERE\n\n\nIt seems like there was an Internal Error somewhere in the code... :/\nPlease copy all of the Data Above and send it to me on G-mail at arhan.ch@gmail.com so I can fix the Error\nThank you')
    else:
