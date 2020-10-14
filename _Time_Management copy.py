@@ -29,23 +29,26 @@ debug_mode = True
 # Change dat[0]
 # command F
 
-# Bucket list:
-# adone to none
-# "fin" in the home page (would you like to delete this assingment because youve already completed it? enter "NO" to confirm)
-# "d" too many days (no format)
-# replace "unit" to "minute" if u press enter
-# change warning_flexibility so its displayed value is its actual value in the code 3 (so it works with "Old Value: ")
-# dont know the amount of units? ONLy if due date is known ("none" with y)
-# remove after midnight
-# min work time work with the blue line
-# fix "next" (still displays same date)
-# daily assignments
-# maximum work time
-# multiple points, to hit (piecewise) (combining assignments into one big x axis graph)
-# time table (this assignment is complete because there is no time left in today)
-## coordinate parabola needs to hit when entering due date 
-## When reenter nwd, ask if user would like to change due date
+# QOL todo list:
+# nwd in priority alg
+# "fin" in the home page 5 mins
+# max animation frame count for small x assignments 10 mins
+# "d" too many days (no format) 15 mins
+# function to set date_now and also take into account "next_day" variable
+# replace "unit" to "minute" if u press enter 20 mins
+# change warning_flexibility so its displayed value is its actual value in the code 3 (so it works with "Old Value: ") 15 mins
+# dont know the amount of units? ONLy if due date is known ("none" with y) 15 mins
+# remove after midnight 15 mins
+# fix next_day (make it values 0,1,2,3,etc) (still displays same date) 20 mins
 
+# More Complicated todo list:
+# min work time work with the blue line
+# daily assignments (x and y will change with the assignment, x will always be (DUE TOMORROW!!!), y will always be the min_work_time)
+# maximum work time
+# multiple points to hit (piecewise) (combining assignments into one big x axis graph)
+# replace "change skew ratio" to "change a property for all assignment" in settings (skew_ratio, nwd, fixed_mode, total mode, min_work_time)
+# spread out work time for assignments based on work on tomorrow, the next day, etc, use (this assignment is complete because [you have too much work today, it has been moved to tmrw])
+# time table, use (this assignment is complete because there is no time left in today)
    
 # Gets today's date
 date_now = date.now()
@@ -64,11 +67,11 @@ try:
    with open(file_directory,'rb') as datfile:
       dat = load(datfile)
    if debug_mode:
-      print(dat)
+      print(dat,'\n')
       
    # Loads setting data
    date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,display_status_priority,autofill,do_after_midnight,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup = dat[0]
-
+   tomorrow = (date_now.year,date_now.month,date_now.day) != (date_last_closed.year,date_last_closed.month,date_last_closed.day)
    if do_after_midnight and after_midnight:
       print('!!!\n!!!\n!!!\nYOU HAVE RAN THIS PROGRAM AFTER MIDNIGHT!\nTHE DAY IN THE PROGRAM WILL STILL BE SET AS '+date_now.strftime('%B %-d, %Y')+'\nAND WILL ONLY CHANGE TO THE NEXT DAY AFTER 4 A.M\nALL ASSIGNMENTS WILL BE MARKED AS COMPLETED SO YOU CAN SLEEP\nTHIS CAN BE TOGGLED OFF IN THE DEFAULTS\nYOU SHOULD SLEEP AS SOON AS POSSIBLE!\n!!!\n!!!\n!!!')
       
@@ -89,11 +92,11 @@ except:
    
    # Each Item in the List of the Settings corresponds to the Variable Name above it
    #       date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,display_status_priority,autofill,do_after_midnight,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup
-   dat = [[date_now        ,750  ,750   ,35                   ,1                 ,30               ,()     ,True                ,False                  ,True    ,True             ,True       ,True     ,True             ,True     ,True              ,True         ,True        ,False         ,False         ]]
+   dat = [[date_now        ,750  ,750   ,35                   ,1                 ,15               ,()     ,True                ,False                  ,True    ,True             ,True       ,True     ,True             ,True     ,True              ,True         ,True        ,False         ,False         ]]
 
    # Loads setting data
    date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,display_status_priority,autofill,do_after_midnight,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup = dat[0]
-   print('Welcome to Time Management! ^_^\nThis program splits up work for different types of projects, such as a money goal, school project, or a reading book.')
+   print('Welcome to Time Management Beta!\nThis program will help you properly manage time by spliting up work for all of your assignments and ordering them in an organized manner\nIf you have any question on how to use or suggestions for the program, contact me at arhan.ch@gmail.com')
          
 # Function that stores the main data
 def save_data():
@@ -161,12 +164,13 @@ def qinput(input_message):
 # Main assignment home function
 def home(last_sel=0):
    autofill_override = False
-   global date_now, min_work_time, sel, x, y, ad, ctime, dif_assign, works, day, skew_ratio, file_sel, adone, date_file_created, disyear, dat, screen, ndif, xdif, rem_zero, lw, start_lw, assign_day_of_week, wlen, funct_round, nwd, len_nwd, fixed_mode, dynamic_start, stry, slash_x_counter, red_line_start, unit, wCon, hCon, total_mode, set_start, set_skew_ratio, clicked_once, fixed_start, remainder_mode, smart_skew_ratio, due_date, selected_assignment, width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,show_past,ignore_ends,ignore_ends_mwt,dark_mode,show_progress_bar,display_status_priority,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup,manual_backup,do_after_midnight, file_directory, black, border, gray, gray1, gray2, gray3, gray4, gray5, white, min_work_time_funct_round, left_adjust_cutoff, up_adjust_cutoff, point_text_width, point_text_height, y_fremainder, y_mremainder, original_min_work_time
+   global date_now, min_work_time, sel, x, y, ad, ctime, dif_assign, works, day, skew_ratio, file_sel, adone, date_file_created, disyear, dat, screen, ndif, xdif, rem_zero, lw, start_lw, assign_day_of_week, wlen, funct_round, nwd, len_nwd, fixed_mode, dynamic_start, stry, slash_x_counter, red_line_start, unit, wCon, hCon, total_mode, set_start, set_skew_ratio, clicked_once, fixed_start, remainder_mode, smart_skew_ratio, due_date, selected_assignment, width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,show_past,ignore_ends,ignore_ends_mwt,dark_mode,show_progress_bar,display_status_priority,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup,manual_backup,do_after_midnight, file_directory, black, border, gray, gray1, gray2, gray3, gray4, gray5, white, min_work_time_funct_round, left_adjust_cutoff, up_adjust_cutoff, point_text_width, point_text_height, y_fremainder, y_mremainder, original_min_work_time, tomorrow
    next_day = False
    while 1:
 
       # Update the today's time in the date_now variable
       date_now = date.now()
+      
       date_now = date(date_now.year,date_now.month,date_now.day)
       try:
          
@@ -182,8 +186,7 @@ def home(last_sel=0):
          assign, ordli, daysleft = [], [], []
          max_assignment_name_len = len(max(files,key=len))+1
          file_index = 1
-         delete_assignment = False
-         tot = 0
+         tot = tomorrow_tot = 0
          nodis = False
          set_skew_ratio = False
          for file in dat[1:]:
@@ -191,14 +194,6 @@ def home(last_sel=0):
             # First, loop through each assignment and load each assignment's variables
             file_sel,ad,x,y,works,dif_assign,skew_ratio,ctime,funct_round,nwd,fixed_mode,dynamic_start,unit,total_mode,fixed_start,remainder_mode,min_work_time = file
 
-            # Caps funct_round at y
-            if funct_round > y:
-               funct_round = y
-
-            # Caps min_work_time at y
-            if min_work_time > y:
-               min_work_time = y
-               
             # Calculates the start of the red line (used in other functions) and the value of the work input the start is at
             if fixed_mode:
                start_lw = works[fixed_start - dif_assign]
@@ -206,6 +201,14 @@ def home(last_sel=0):
             else:
                start_lw = works[dynamic_start - dif_assign]
                red_line_start = dynamic_start
+               
+            # Caps funct_round at y
+            if funct_round > y - start_lw:
+               funct_round = y - start_lw
+
+            # Caps min_work_time at y
+            if min_work_time > y - start_lw:
+               min_work_time = y - start_lw
 
             # If the minimum work time is less than the grouping value, that means
             # The minimum work time is always fulfilled by the grouping value, making
@@ -262,7 +265,10 @@ def home(last_sel=0):
                
                # Checks if Assignment is completed
                if lw >= y or dayleft + x < 1:
-                  status_message = '*　Amazing Effort! You have Finished this Assignment!'
+                  if tomorrow:
+                     ordli.append((6,))
+                     continue
+                  status_message = '*　You have Finished this Assignment! This will be Deleted Tommorrow.'
                   status_value = 6
                else:
                   
@@ -348,6 +354,7 @@ def home(last_sel=0):
                         tot += ceil(todo*ctime)
                   if dayleft == 1:
                      strdayleft = ' (Due TOMORROW!!)'
+                     tomorrow_tot += ceil(todo*ctime)
                      status_value = 1
                   elif dayleft < 7:
                      strdayleft = (ad + time(x)).strftime(' (Due on %A)')
@@ -357,20 +364,21 @@ def home(last_sel=0):
             # Assigns each assignment a value based on an algorithm
             # Then, all the assignments are sorted by their value to determine each assignment's priority.
             # The most important assignments are closer to spot #1
-            todo = funct((date_now-ad).days+1) - lw
             if status_value in (5,6):
                status_priority = dayleft
             else:
-               skew_ratio = 1
+               if skew_ratio < 0.8 or skew_ratio > 1.2:
+                  skew_ratio = 1
                red_line_start = dif_assign
                pset()
+               todo = funct((date_now-ad).days+1) - lw
 
                # todo*ctime is the total amount of minutes it will take to complete the work for that day
                # x-dif_assign-wlen is the amount of days until the assignment is due
                if not x-dif_assign-wlen:
                   
                   # Variation of the Algorithm
-                  how_well_follow = 1-sum(works[i]-funct(i) for i in range(wlen+1))/(wlen+1)/y
+                  how_well_follow = 1-sum(works[i]-funct(i) for i in range(wlen+1))/x/y*10
                   if how_well_follow == 1:
                      how_well_follow = 0
                   status_priority = how_well_follow/(x-dif_assign-wlen)
@@ -383,10 +391,9 @@ def home(last_sel=0):
                   # The algorithm is simple, as it only consists of two parts
                   # First, the program finds the ratio of the time it will take to finish work to the amount of days left until the assignment is due
                   # Then, the program loops through each work input and calculates the distance between each work input and where your progress was actually supposed to be on that day
-                  # In English, it calculates the average of how well you followed the red line
-                  # Then, more calculations are done to find a constant, which is between 0 and 2, to multiply by the first value in the algorithm
-                  status_priority = (1-sum(works[i]-funct(i) for i in range(wlen+1))/(wlen+1)/y) * todo*ctime/(x-dif_assign-wlen)
-
+                  # Then, more calculations are done to find a constant to multiply by the first value in the algorithm
+                  status_priority = (1-sum(works[i]-funct(i) for i in range(wlen+1))/x/y*10) * todo*ctime/(x-dif_assign-wlen)
+                  
             # Appends the status value (calculated above), the status priority, and the file index to a list called ordli
             # After each assignment appends to ordli, ordli is then sorted
             
@@ -415,50 +422,64 @@ def home(last_sel=0):
 
             # Add one to the file_index because the loop starts from the first assignment
             file_index += 1
-         autofill_override = False
+         autofill_override = False  
 
          # Sorts ordli with the logic stated above
          ordli = sorted(ordli)
-
+         statuses = tuple(i[0] for i in ordli)
+         
+         if tomorrow and 6 in statuses:
+            tomorrow = False
+            dat = dat[:statuses.index(6)+1]
+            save_data()
+            ordli = ordli[:statuses.index(6)]
+            statuses = statuses[:statuses.index(6)]
          # If display status priority is enabled, this gets the assignment with the highest priority and finds the ratio of all the other assignments' status priority by the one with the highest priority
 
-         # First, it finds the assignment with the highest status priority with status value 3
-         # The status priority will only display on assignments with a status value 3
-         # This is because status value 3 is the status value for an incomplete assignment, and the status priority is only supposed to work on incompleted assignments
-         # It does this by using the index() method to find the first occurance of status value 3 in ordli
-         # Since ordli is sorted, the first occurance will have the highest status priority
-         # That value is stored into the variable maxsp, which is the highest status priority
-         statuses = [i[0] for i in ordli]
-         if 3 in statuses:
-            maxsp = ordli[statuses.index(3)][1]
-            if 1 in statuses:
-               maxsp *= 2
-            if 4 in statuses:
-               try:
-                  minsp = ceil(ordli[-statuses[::-1].index(3)-1][1] / maxsp * 100)/ceil(ordli[statuses.index(4)][1] / maxsp * 100) * 50
-               except:
-                  minsp = 0
-         elif 4 in statuses:
-            maxsp = ordli[statuses.index(4)][1]
-            if not maxsp:
-               maxsp = 1
-            minsp = 100
-            
-   
-         # Once maxsp has been defined, ignore the first loop and run this next loop
-         # This loop loops again through all the assignments
-         # If it finds an assignment with status value 3, it adds the status priority percentage at the end of the assignment by dividing its status priority by maxsp
+         # First, the maximum status priority is defined as the status value of the first element on ordli
+         # This is the comparison that the other assignments will use to determine their status percentage
+         maxsp = ordli[0][1]
+
+         # This block of code loops through every assignment finds the ratio of its status priority and the highest status priority
+         
+         # It also makes sure to have a transition between status values
+         # An assignment that is due tomorrow could actually have a low status priority compared to the other assignments and is only put as the most important assignment because it is due tomorrow
+         # This messes up calculating the ratio
+         # The solution to this is to always make sure: (lowest status priority with a higher status value)/(highest status priority with lower status value) = 2
+         # This basically ensures that the percentages will always be decreasing order
+         percentage3, percentage4 = None, None
          for j in ordli:
+            if j[0] == 1:
+               percentage1 = j[1] / maxsp * 100
+               daysleft[j[2]-1] += f' SP: {ceil(percentage1)}%'
+               
             if j[0] == 3:
-               daysleft[j[2]-1] += f' SP: {ceil(j[1] / maxsp * 100)}%'
+
+               # Only run this on the first time
+               if percentage3 == None:
+
+                  # Defines constant to multiply the calculated by in order to make sure percentages will always be decreasing order
+                  if 1 in statuses:
+                     percentage3_half_constant = percentage1 / (j[1] / maxsp * 100) / 2
+                  else:
+                     percentage3_half_constant = 1
+               percentage3 = j[1] / maxsp * 100 * percentage3_half_constant
+               daysleft[j[2]-1] += f' SP: {ceil(percentage3)}%'
 
             elif j[0] == 4:
-               daysleft[j[2]-1] += f' SP: {ceil(j[1] / maxsp * minsp)}%'
-               
-            # If the status priority is 1 instead of 3, that means the assignment is due tomorrow
-            # Obviously, the assignments due tomorrow are the most important, so set its status priority to 100%
-            elif j[0] == 1:
-               daysleft[j[2]-1] += ' SP: 100%'
+
+               # Only run this on the first time
+               if percentage4 == None:
+
+                  # Defines constant to multiply the calculated by in order to make sure percentages will always be decreasing order
+                  if 3 in statuses:
+                     percentage4_half_constant = percentage3 / (j[1] / maxsp * 100) / 2
+                  elif 1 in statuses:
+                     percentage4_half_constant = percentage1 / (j[1] / maxsp * 100) / 2
+                  else:
+                     percentage4_half_constant = 1
+               percentage4 = j[1] / maxsp * 100 * percentage4_half_constant
+               daysleft[j[2]-1] += f' SP: {ceil(percentage4)}%'
 
          # Formatting
          massign = len(max(assign,key=len))
@@ -488,7 +509,7 @@ def home(last_sel=0):
             else:
                project_time = '\nThe Work time is Incomplete! Please enter in your work done from Previous Days to proceed.\nEnter "none" to automatically Enter in no work done for every Incomplete Assignment'
          elif tot:
-            project_time = f'\nEstimated Total Completion Time: {format_minutes(tot)}\nCurrent Time: {date.now().strftime("%-I:%M%p")}\nEstimated Time of Completion: {(date.now() + time(minutes=tot)).strftime("%-I:%M%p")}'
+            project_time = f'\nEstimated Total Completion Time: {format_minutes(tot)} ({format_minutes(tomorrow_tot)} of it is Due Tomorrow)\nCurrent Time: {date.now().strftime("%-I:%M%p")}\nEstimated Time of Completion: {(date.now() + time(minutes=tot)).strftime("%-I:%M%p")}'
          else:
             if last_sel or next_day:
                project_time = '\nAmazing Effort! You have finished everything for Today!'
@@ -640,7 +661,7 @@ def home(last_sel=0):
 23) Restore all Default Values
 
 A Star next to a Setting means its Default Setting Value is Recommended
-Press Return to Escape
+Press Return at Any Time to Escape
 Select a Setting you would like to Change by Entering its Corresponding Number:
 '''
                            
@@ -890,7 +911,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  try:
 
                                     # Asks which backup will be loaded and asks for confirmation
-                                    selected_backup = qinput(f'\nAll Available Backups (Sorted from Newest to Oldest):\nCurrent Version Size: {len(dumps(dat[1:],protocol=4))-14} Bytes\n'+'\n'.join(f'{i + 1}){backups[i][2]} (Last Backed Up on {backups[i][1]}' for i in range(len(backups)))+ '\n\nPress Return to Escape\nChanging anything after you have loaded a backup does not affect the backup itself\nSelect which Backup you would Like to Load by Entering its Corresponding Number:')
+                                    selected_backup = qinput(f'\nAll Available Backups (Sorted from Newest to Oldest):\nCurrent Version Size: {len(dumps(dat[1:],protocol=4))-14} Bytes\n'+'\n'.join(f'{i + 1}){backups[i][2]} (Last Backed Up on {backups[i][1]}' for i in range(len(backups)))+ '\n\nPress Return at Any Time to Escape\nChanging anything after you have loaded a backup does not affect the backup itself\nSelect which Backup you would Like to Load by Entering its Corresponding Number:')
                                     if not selected_backup or 'YES' not in qinput('\nAre you Sure you Want to load this Backup? This will transfer All Backup Data from this Backup to the Current Version\nThis Will Override the current version and Replace it with the Backup Version\nEnter "YES" in capital letters to Confirm (Enter anything other than "YES" to cancel):'):
                                        break
                                     selected_backup = int(selected_backup,10) - 1
@@ -899,6 +920,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                        # Transfers backup data to the file directory
                                        with open(file_directory + backups[selected_backup][2].rstrip(),'rb') as datfile:
                                           dat = load(datfile)
+                                       tomorrow = False
                                        settings = dat[0]
                                        date_now = date.now()
                                        settings[0] = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
@@ -965,14 +987,15 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             total_mode = False
          
          # Name of the assignment
+         print()
          while 1:
             if reenter_mode:
-               reenter_input = qinput(f'\nPress Return at any Time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" at Any Time to stop Re-Entering Data and keep the Original Version\n\nWhat would you Like to Rename your Assignment (Old Value: {old_values[0]})\n').strip()
+               reenter_input = qinput(f'Press Return at any Time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" at Any Time to stop Re-Entering Data and keep the Original Version\n\nWhat would you Like to Rename your Assignment (Old Value: {old_values[0]})\n').strip()
                if not reenter_input:
                   break
                file_sel = reenter_input
             else:
-               file_sel = qinput('\nEnter in "cancel" at Any Time to stop Entering in Data\nTry not to enter Inputs faster than 0.2 seconds, as Python glitches out (Nothing I can do about that)\n\nWhat would you Like to Name your Assignment\n').strip()
+               file_sel = qinput('Enter in "cancel" at Any Time to stop Entering in Data\nTry not to enter Inputs faster than 0.2 seconds, as Python glitches out (Nothing I can do about that)\n\nWhat would you Like to Name your Assignment\n').strip()
                if not file_sel:
                   outercon = True
                   break
@@ -1265,7 +1288,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                nwd = ()
             else:
                if nwd:
-                  nwd = nwd.split(',')
+                  nwd = nwd.split(' ')
 
                   # Uses a dictionary to convert weekdays into numbers
                   valid_days = {'mon':0,'mond':0,'tue':1,'tues':1,'wed':2,'wedn':2,'thu':3,'thur':3,'thurs':3,'fri':4,'frid':4,'sat':5,'satu':5,'sun':6,'sund':6}
@@ -1293,7 +1316,6 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             removed_works = (ad - old_values[1]).days - dif_assign
             if removed_works < 0:
                removed_works = 0
-            adone = works[0]
             works = [works[n] - works[0] + adone for n in range(removed_works,len(works))]
             adone = works[0]
             
@@ -1382,14 +1404,6 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             # Saves the file to Memory
             save_data()
 
-      # Caps funct_round at y
-      if funct_round > y - start_lw:
-         funct_round = y - start_lw
-
-      # Caps min_work_time at y
-      if min_work_time > y - start_lw:
-         min_work_time = y - start_lw
-         
       # Calculates the start of the red line (used in other functions) and the value of the work input the start is at
       if fixed_mode:
          start_lw = works[fixed_start - dif_assign]
@@ -1397,6 +1411,14 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       else:
          start_lw = works[dynamic_start - dif_assign]
          red_line_start = dynamic_start
+         
+      # Caps funct_round at y
+      if funct_round > y - start_lw:
+         funct_round = y - start_lw
+
+      # Caps min_work_time at y
+      if min_work_time > y - start_lw:
+         min_work_time = y - start_lw
 
       # If the minimum work time is less than the grouping value, that means
       # The minimum work time is always fulfilled by the grouping value, making
@@ -1547,6 +1569,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       pygame.event.pump()
 
       # This is the end of the home() function. This entire thing handles the assignment page, the settings, the commands for assignments, the inputs of an assignment, and the initialization of an assignment
+      print()
       return
    
 # Calculates variables for the parabola
@@ -1616,6 +1639,7 @@ def pset():
                   
                      # Offsets mouse y pos if remainder_mode is enabled
                      if remainder_mode:
+                        print('what the fuck')
                         y2 -= y_fremainder
 
                      # If parabola is being manually set, Connects the points (0,0) (x2,y2)[mouse coordinates] and (x,y)
@@ -1754,7 +1778,7 @@ def pset():
                      # However, since the 45 is rounded to 50, the real values are 5,15,25,35, and 50
                      # This causes you to work 15 units at the end while on all the other days you work 10, which is weird and unneccessary
                      # The reason why not connect the parabola directly to y is because it sometimes breaks minimum work time on the very last day of the assignment
-                     # Similarly, if the first working on the parabola is less than the minimum work time, it adds that value to the next working day value, which can sometimes cause excess work to be done on the first day
+                     # Similarly, if the first working day on the parabola is less than the minimum work time, it adds that value to the next working day value, which can sometimes cause excess work to be done on the first day
                      # This is what ignore_ends does; when it is enabled it notifies the user that the minimum work time will be ignored on the first and last working days
                      # On the first day, it runs a check to not combine it with the next day if the value is less than minimum work time
                      # On the last day, it connects directly to y
@@ -1784,8 +1808,7 @@ def pset():
                      # Instead of trying to fix the parabola values when it negative, I thought the best way to fix this issue was to make sure it never happened
                      # The below line of code keeps adding 1 to y1 until the cutoff_transition_value is positive again, making it so that the above situation never happens
                      # The 2nd to last statement in the line puts a limit to how much can be added to y1
-                     # The last statement is a while loop failsafe if it loops for more than 1000 times
-                     
+                     # The last statement is a while loop failsafe if it loops for more than 1000 times                     
                      if ignore_ends_mwt and cutoff_transition_value < y_mremainder - min_work_time_funct_round and y1 + cutoff_transition_value <= y - start_lw and y - start_lw - y1 - cutoff_transition_value < 1000:
                         y1 += 1
                         a = y1 * (1 - skew_ratio) / ((x1-1) * x1)
@@ -1794,6 +1817,7 @@ def pset():
                   else:
                      cutoff_transition_value = 0
                   break
+               else: cutoff_to_use_round = None
          # For the rest of the function, I will refer to the total amount of units in the assignment as y
          # The rest of the function calculates the return_y_cutoff, or when the parabola exceeds y
          # I found it the most efficient to use a cutoff, because I can run a check at the beginning of the funct to return y if the inputted value is after the cutoff, increasing efficiency
@@ -2151,23 +2175,24 @@ def funct(n):
    # Returns the final output
    return output + start_lw
 
-def rfunct(n):
-   n -= red_line_start
-   if nwd:
-      n -= n//7 * len_nwd + mods[n % 7]
-   if ignore_ends_mwt:
-      y1 = y - start_lw     
-   else:
-      y1 = y - start_lw - y_mremainder
-   if a and n > (-b + (b*b + 4*a*y1)**0.5)/a/2 or not a and b and n > y/b:
-      return y
-   if skew_ratio > 1 or not a or a * b > 0:
-      funct_zero = 0
-   else:
-      funct_zero = -b/a
-   if a and n < funct_zero:
-      return start_lw
-   return n*(a*n+b) + start_lw
+if debug_mode:
+   def rfunct(n):
+      n -= red_line_start
+      if nwd:
+         n -= n//7 * len_nwd + mods[n % 7]
+      if ignore_ends_mwt:
+         y1 = y - start_lw     
+      else:
+         y1 = y - start_lw - y_mremainder
+      if a and n > (-b + (b*b + 4*a*y1)**0.5)/a/2 or not a and b and n > y/b:
+         return y
+      if skew_ratio > 1 or not a or a * b > 0:
+         funct_zero = 0
+      else:
+         funct_zero = -b/a
+      if a and n < funct_zero:
+         return start_lw
+      return n*(a*n+b) + start_lw
 # Function to get the modulo days when using not working days (explained above)
 def set_mod_days():
    global mods
@@ -2197,13 +2222,11 @@ def calc_skew_ratio_lim():
 # Formats Seconds into time
 def format_minutes(total_minutes):
    hour = str(int(total_minutes / 60))
-   minute = total_minutes % 60
-   if not minute % 1:
-      minute = ceil(minute)
+   minute = ceil(total_minutes % 60)
    if hour == '0':
       form = f'{minute}m'
-      if total_minutes < 1:
-         return '<' + form
+      if total_minutes and total_minutes < 1:
+         return '<1m'
    elif not minute:
       form = hour + 'h'
    else:
@@ -2568,14 +2591,14 @@ def draw(doing_animation=0,do_return=1):
          pygame.draw.line(screen,gray3,(today_x+2.5,0),(today_x+2.5,height-50),5)
          screen.blit(pygame.transform.rotate(font3.render('Today Line',1,black),270),(today_x-6,(height-50-gw(font3,'Today Line'))/2))
       if debug_mode:
-         pygame.draw.line(screen,gray3,(return_0_cutoff*wCon+47.5+2.5,0),(return_0_cutoff*wCon+47.5+2.5,height-50),5)
-         screen.blit(pygame.transform.rotate(font3.render('Return 0 Cutoff',1,black),270),(return_0_cutoff*wCon+47.5-6,(height-50-gw(font3,'Today Line'))/2))
+         pygame.draw.line(screen,gray3,((return_0_cutoff+red_line_start)*wCon+47.5+2.5,0),((return_0_cutoff+red_line_start)*wCon+47.5+2.5,height-50),5)
+         screen.blit(pygame.transform.rotate(font3.render('Return 0 Cutoff',1,black),270),((return_0_cutoff+red_line_start)*wCon+47.5-6,(height-50-gw(font3,'Today Line'))/2))
          try:
-            pygame.draw.line(screen,gray3,(cutoff_to_use_round*wCon+47.5+2.5,0),(cutoff_to_use_round*wCon+47.5+2.5,height-50),5)
-            screen.blit(pygame.transform.rotate(font3.render('Cutoff to Use Round',1,black),270),(cutoff_to_use_round*wCon+47.5-6,(height-50-gw(font3,'Cutoff to Use Round'))/2))
+            pygame.draw.line(screen,gray3,((cutoff_to_use_round+red_line_start)*wCon+47.5+2.5,0),((cutoff_to_use_round+red_line_start)*wCon+47.5+2.5,height-50),5)
+            screen.blit(pygame.transform.rotate(font3.render('Cutoff to Use Round',1,black),270),((cutoff_to_use_round+red_line_start)*wCon+47.5-6,(height-50-gw(font3,'Cutoff to Use Round'))/2))
          except:pass
-         pygame.draw.line(screen,gray3,(return_y_cutoff*wCon+47.5+2.5,0),(return_y_cutoff*wCon+47.5+2.5,height-50),5)
-         screen.blit(pygame.transform.rotate(font3.render('Return Y Cutoff',1,black),270),(return_y_cutoff*wCon+47.5-6,(height-50-gw(font3,'Return Y Cutoff'))/2))
+         pygame.draw.line(screen,gray3,((return_y_cutoff+red_line_start)*wCon+47.5+2.5,0),((return_y_cutoff+red_line_start)*wCon+47.5+2.5,height-50),5)
+         screen.blit(pygame.transform.rotate(font3.render('Return Y Cutoff',1,black),270),((return_y_cutoff+red_line_start)*wCon+47.5-6,(height-50-gw(font3,'Return Y Cutoff'))/2))
 
       # Displays the start if manual set start is enabled
       if set_start:
@@ -2862,6 +2885,7 @@ Welcome to the Graph!
 You are about to read how to use this tool
 (Don\'t worry it won\'t take that long to read)
 
+Please note that the graph is not perfect, and you may have to adjust the Skew Ratio of the graph when it is linear to fit your desired schedule
 ----------------------------------
 This graph provides a visualization of how your assignment schedule will look like in days over units of work
 The Red Line is the schedule you will be guided to follow during the duration of the assignment
@@ -2878,7 +2902,7 @@ FIXED MODE (enabled by default)
 -------------------------------
 THIS MODE CAN BE TOGGLED BY CLICKING THE GRAPH AND PRESSING KEY "F" ON YOUR KEYBOARD
 In this mode, if you fail to complete the specified amount of work for one day, you will have to make it up on the next day
-This mode is recommended for self-discipline
+This mode is recommended for self-discipline and if the assignment is extremely important
 
 DYNAMIC MODE (disabled by default)
 ----------------------------------
@@ -2886,31 +2910,34 @@ THIS MODE CAN BE TOGGLED BY CLICKING THE GRAPH AND PRESSING KEY "F" ON YOUR KEYB
 If you fail to complete the specified amount of work for one day, the graph will change itself to start at your last work input, adapting to your work schedule
 The graph will only change is you complete less than the amount of work specified
 The graph does not change if you complete more than or equal to the amount of work specified
+Use this if you cannot keep up with an assignment's work schedule
+It is easy to fall behind with dynamic mode, so be careful while using this mode
 
 TOTAL MODE (disabled by default)
 --------------------------------
-This mode makes it so that you enter you will have to enter to total number of units done when entering your work input instead of how much you have done since your last input
+With this mode, you must enter the total units of work done instead of much done since the last input
 This is useful for assignments with a total number count of how much you have done, such as a book with page numbers
 
 REMAINDER FIRST/LAST
 --------------------
 This only applies if the total units of work is not divisible by the grouping value
-If you don\'t see a "Remainder: Last" on your graph, then there is no remainder and it is irrelevant for this assignment
+If you don\'t see a "Remainder: Last" on your graph, there is no remainder, and it is irrelevant for this assignment
 
-If you do see a "Remainder: Last" on your graph, then the total units of work is not divisible by the grouping value, meaning there will be a remainder of work
-This allows you to choose whether you would like to do the remainder of work on the first or the last working day of the assignment
+If you do see a "Remainder: Last" on your graph, then the total units of work is not divisible by the grouping value that you entered
+Switching between "Remainder: First" and "Remainder: Last" allows you to choose whether you would like to do the remainder of work
+on the first working day or the last working day of the assignment
 
 KEYBINDS
 --------
 IMPORTANT NOTE: You HAVE to click on before pressing the desired key in order for it to be registered
-click to enable/disable showing the value of the closest point to the mouse (not 100% accurate)
+Click on the graph a second time to enable/disable displaying the value of the closest point to the mouse (not 100% accurate)
 "f" to toggle dynamic mode/fixed mode
 "d" to get the entire schedule of an assignment
-"s" to manually set the skew ratio of the red line by using the graph
-"c" to manually set the start of the red line by using the graph
-"m" to manually set the skew ratio or the start of the red line by typing in its value
+"s" to manually set the skew ratio of the red line using the graph
+"c" to manually set the start of the red line using the graph
+"m" to manually set the skew ratio and the start of the red line by typing in its value
 "t" to toggle total mode
-"r" to toggle remainder first/last
+"r" to toggle "remainder: first/last"
 "a" to return to the assignment page
 "n" to automatically go to the next assignment
 Press Return to enter a work input
@@ -2920,14 +2947,16 @@ Up/down arrow keys to control the skew ratio
 KEYBINDS WHEN ENTERING WORK INPUTS
 ----------------------------------
 "fin" to enter the exact amount required to do
-"none" to enter no work done. Using "none" works with while total mode is both enabled and disabled, while instead typign in "0" does not work with total mode
+"none" to enter no work done. Using "none" works with while total mode is both enabled and disabled, while instead typing in "0" does not work with total mode
 
-Once you have finished reading this and using the graph, press "a" to return to the home assignment page and type in "settings"
-You can customize your settings to how you prefer
 
 IMPORTANT NOTE: The setting "Ignore Min Work Time Ends" is enabled by default in the settings
 If you entered in an assignment with a minimum work time, this will cause the first and last working days of the assignment to not follow the minimum work time
-This is explained more in the settings
+This is explained more in the settings, which can be accessed at the assignment page
+
+Once you have finished reading this and using the graph, press "a" to return to the home assignment page
+Type in "settings" to customize your settings
+
 
 That's all, and have a nice day
 
@@ -3321,7 +3350,6 @@ That's all, and have a nice day
                  del info, mapinfo, fdates, difs, totals
 
             # 274 is the down arrow key
-            # Skew ratio lim is a condition to prevent the skew ratio from not being 1 (in the code) when all days are not working days
             elif not set_skew_ratio and key == 274:
                
                  # If the assignment is in progress, then define a variable on whether to change the day or not
@@ -3333,20 +3361,30 @@ That's all, and have a nice day
                  # If the two lists are identical, meaning the graph did not change, then repeat this progress until the lists are not identical
                  # This way obviously is slow and takes up a lot of memory, so I made this only run if the amount of days in the assignment is less than 200
                  if smart_skew_ratio:
+                    outercon = True
                     while 1:
 
-                       # Old list
-                       oldfuncts = [funct(i) for i in range(red_line_start+1,x) if (assign_day_of_week + i) % 7 not in nwd]
+                        # Old List
+                        oldfuncts = tuple(funct(i) for i in range(red_line_start+1,x) if (assign_day_of_week + i) % 7 not in nwd)
 
-                       # Setting the skew ratio
-                       skew_ratio = ceil(skew_ratio*10-1.5)/10
-                       pset()
+                        # Setting Skew Ratio
+                        skew_ratio = ceil(skew_ratio*10 - 1.5)/10
+                        if skew_ratio < 2 - skew_ratio_lim:
+                           skew_ratio = skew_ratio_lim
+                        elif skew_ratio != 1:
 
-                       # Compares old list with the new list of function outputs
-                       if oldfuncts != [funct(i) for i in range(red_line_start+1,x) if (assign_day_of_week + i) % 7 not in nwd] or skew_ratio < 2 - skew_ratio_lim or skew_ratio == 1:
-                          if skew_ratio < 2 - skew_ratio_lim:
-                             skew_ratio = skew_ratio_lim
-                          break
+                           # Compares the new values with the old values and keeps adjusting the skew ratio until they are different
+                           pset()
+                           oldfuncts_iter = 0
+                           for i in range(1,x - red_line_start):
+                              if (assign_day_of_week + i + red_line_start) % 7 not in nwd:
+                                 if funct(i + red_line_start) != oldfuncts[oldfuncts_iter]:
+                                    outercon = False
+                                    break
+                                 oldfuncts_iter += 1
+                           if outercon:
+                              continue
+                        break
 
                     # Delete list Variable to save memory
                     del oldfuncts
@@ -3372,18 +3410,27 @@ That's all, and have a nice day
                  
             # Exact same concepts as the down key above
             # 273 is the up arrow key
-            # Skew ratio lim is a condition to prevent the skew ratio from not being 1 (in the code) when all days are not working days
             elif not set_skew_ratio and key == 273:
                  change_day = ndif > -1 and ndif == wlen - 1 and lw != works[-2] and lw >= funct(wlen+dif_assign)
                  if smart_skew_ratio:
+                    outercon = True
                     while 1:
-                       oldfuncts = [funct(i) for i in range(red_line_start+1,x) if (assign_day_of_week + i) % 7 not in nwd]
-                       skew_ratio = ceil(skew_ratio*10 + 0.5)/10
-                       pset()
-                       if oldfuncts != [funct(i) for i in range(red_line_start+1,x) if (assign_day_of_week + i) % 7 not in nwd] or skew_ratio > skew_ratio_lim or skew_ratio == 1:
-                          if skew_ratio > skew_ratio_lim:
-                             skew_ratio = 2 - skew_ratio_lim
-                          break
+                        oldfuncts = tuple(funct(i) for i in range(red_line_start+1,x) if (assign_day_of_week + i) % 7 not in nwd)
+                        skew_ratio = ceil(skew_ratio*10 + 0.5)/10
+                        if skew_ratio > skew_ratio_lim:
+                           skew_ratio = 2 - skew_ratio_lim
+                        elif skew_ratio != 1:
+                           pset()
+                           oldfuncts_iter = 0
+                           for i in range(1,x - red_line_start):
+                              if (assign_day_of_week + i + red_line_start) % 7 not in nwd:
+                                 if funct(i + red_line_start) != oldfuncts[oldfuncts_iter]:
+                                    outercon = False
+                                    break
+                                 oldfuncts_iter += 1
+                           if outercon:
+                              continue
+                        break
                     del oldfuncts
                  else:
                     skew_ratio = ceil(skew_ratio*10 + 0.5)/10
@@ -3493,7 +3540,7 @@ That's all, and have a nice day
                              elif ndif - day == 1:
                                 formatted_date += ' (Yesterday)'
                              if first_loop:
-                                print('Press Return to Escape')
+                                print('Press at Any Time Return to Escape')
                                 if ndif - day > 1:
                                    formatted_date += ' (Don\'t Remember? Enter "remember" to Proceed)'
 
@@ -3503,40 +3550,54 @@ That's all, and have a nice day
                                 break
                              elif ndif - day > 1 and input_done == 'remember':
 
-                                # If the user doesn't remember, enter the amount they are already at and autofill zero for all the day they can't remember
-                                if total_mode:
-                                   input_message = f'Enter the Total Amount of {unit}s you are Currently at Now:'
-                                elif not wlen:
-                                   input_message = f'Enter the Amount of {unit}s you have Completed Since you Inputted in this Assignment on this Program:'
-                                else:
-                                   input_message = f'Enter the Amount of {unit}s you have Completed Since your last Work Input:'
-                                input_done = ceil(float(qinput('\nSince you do not Remember the Work you have Completed since your last Input,\nThis program will Assume you have not done any work until today and will Autofill Zero work\n'+input_message).strip())*1000000-0.5)/1000000 - lw * total_mode
-                                if not input_done:
-                                   break
+                                 print()
+                                 outercon = False
+                                 
+                                 # If the user doesn't remember, enter the amount they are already at and autofill zero for all the day they can't remember
+                                 if total_mode:
+                                    input_message = f'Enter the Total Amount of {unit}s you are Currently at Now:'
+                                 elif not wlen:
+                                    input_message = f'Enter the Amount of {unit}s you have Completed Since you Inputted in this Assignment on this Program:'
+                                 else:
+                                    input_message = f'Enter the Amount of {unit}s you have Completed Since your last Work Input:'
+                                 while 1:
+                                    try:
+                                       input_done = qinput('Since you do not Remember the Work you have Completed since your last Input,\nThis program will Assume you have not done any work until today and will Autofill Zero work\n'+input_message).strip()
+                                       if not input_done:
+                                          outercon = True
+                                          break
+                                       input_done = ceil(float(input_done)*1000000-0.5)/1000000 - lw * total_mode
+                                       break
+                                    except:
+                                       print('!!!\nInvalid Number!\n!!!')
+                                 if outercon:
+                                    break
 
-                                # Autofills in work
-                                works.extend((lw,)*(ndif - day - 1))
-                                wlen += ndif - day - 1
+                                 # Autofills in work
+                                 works.extend((lw,)*(ndif - day - 1))
+                                 wlen += ndif - day - 1
 
                              # "fin" keyword if the user completed the exact amount of work needed
                              elif input_done == 'fin':
-                                if todo > 0:
-                                   lw += todo
-                                if rem_work:
-                                   del works[wlen]
-                                   wlen -= 1
-                                works.append(lw)
-                                wlen += 1
-                                day = wlen
-                                save_data()
-                                #draw(0,0)
-                                #pygame.event.pump()
-                                if ndif in (wlen-1,wlen) or lw >= y:
-                                   if ndif == wlen - 1:
-                                      pygame.display.set_mode((1,1))
-                                      home()
-                                   break
-                                continue
+                                 if todo > 0:
+                                    lw += todo
+                                 if rem_work:
+                                    del works[wlen]
+                                    wlen -= 1
+                                 works.append(lw)
+                                 wlen += 1
+                                 day = wlen
+                                 save_data()
+                                 if ndif == wlen - 1:
+                                    pygame.display.set_mode((1,1))
+                                    home()
+                                    break
+                                 else:
+                                    draw(0,0)
+                                    pygame.event.pump()
+                                 if ndif == wlen or lw >= y:
+                                    break
+                                 continue
 
                              # "none" keyword that also works with total_mode
                              elif input_done == 'none':
@@ -3606,11 +3667,8 @@ That's all, and have a nice day
 
                              # Check if the assignment is finished
                              if lw >= y:
-                                 if 'YES' in qinput('\nFinish! You have completed your assignment. Good job!\nWould you like to Delete this?\nEnter "YES" in capital letters to Confirm (Enter anything other than "YES" to cancel):'):
-                                    del selected_assignment
-                                    save_data()
+                                 print('\nFinish! You have completed your assignment. Good job!')
                                  break
-                        
                              if ndif in (wlen-1,wlen):
                                  break
                              first_loop = False
