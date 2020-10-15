@@ -30,14 +30,11 @@ debug_mode = True
 # command F
 
 # QOL todo list:
-# max animation frame count for small x assignments 10 mins
-# "d" too many days (no format) 15 mins
-# function to set date_now and also take into account "next_day" variable
 # replace "unit" to "minute" if u press enter 20 mins
-# change warning_flexibility so its displayed value is its actual value in the code 3 (so it works with "Old Value: ") 15 mins
+# change warning_flexibility so its displayed value is its actual value in the code 3 (so it works with "Old Value: ") (also rewrite its print code) 15 mins
 # dont know the amount of units? ONLy if due date is known ("none" with y) 15 mins
 # remove after midnight 15 mins
-# fix next_day (make it values 0,1,2,3,etc) (still displays same date) 20 mins
+# fix next_day (make it values 0,1,2,3,etc) (still displays same date), function to set date_now and also take into account "next_day" variable 20 mins
 
 # More Complicated todo list:
 # min work time work with the blue line
@@ -45,19 +42,17 @@ debug_mode = True
 # maximum work time
 # multiple points to hit (piecewise) (combining assignments into one big x axis graph)
 # replace "change skew ratio" to "change a property for all assignment" in settings (skew_ratio, nwd, fixed_mode, total mode, min_work_time)
-# spread out work time for assignments based on work on tomorrow, the next day, etc, use (this assignment is complete because [you have too much work today, it has been moved to tmrw])
 # time table, use (this assignment is complete because there is no time left in today)
    
 # Gets today's date
 date_now = date.now()
-currenthour = date_now.hour
 
 # Checks if it is midnight
-after_midnight = currenthour < 4
+after_midnight = date_now.hour < 4
 if after_midnight:
-   date_now = date(date_now.year,date_now.month,date_now.day,currenthour,date_now.minute) - time(1)
+   date_now = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute) - time(1)
 else:
-   date_now = date(date_now.year,date_now.month,date_now.day,currenthour,date_now.minute)
+   date_now = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
 
 try:
 
@@ -98,8 +93,8 @@ except:
          
 # Function that stores the main data
 def save_data():
-   with open(file_directory,'wb') as datfile:
-      dump(dat,datfile,protocol=4)
+    with open(file_directory,'wb') as datfile:
+        dump(dat,datfile,protocol=4)
       
 # Creates Backup Files if the program was Ran for the First Time
 original_file_directory = file_directory
@@ -164,12 +159,14 @@ def home(last_sel=0):
    autofill_override = False
    global date_now, min_work_time, sel, x, y, ad, ctime, dif_assign, works, day, skew_ratio, file_sel, adone, date_file_created, disyear, dat, screen, ndif, xdif, rem_zero, lw, start_lw, assign_day_of_week, wlen, funct_round, nwd, len_nwd, fixed_mode, dynamic_start, stry, slash_x_counter, red_line_start, unit, wCon, hCon, total_mode, set_start, set_skew_ratio, clicked_once, fixed_start, remainder_mode, smart_skew_ratio, due_date, selected_assignment, width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,show_past,ignore_ends,ignore_ends_mwt,dark_mode,show_progress_bar,display_status_priority,last_opened_backup,hourly_backup,daily_backup,weekly_backup,monthly_backup,manual_backup,do_after_midnight, file_directory, black, border, gray, gray1, gray2, gray3, gray4, gray5, white, min_work_time_funct_round, left_adjust_cutoff, up_adjust_cutoff, point_text_width, point_text_height, y_fremainder, y_mremainder, original_min_work_time, tomorrow
    next_day = False
+   set_tomorrow = True
    while 1:
 
       # Update the today's time in the date_now variable
-      date_now = date.now()
-      
+      date_now = date.now()  
       date_now = date(date_now.year,date_now.month,date_now.day)
+      if not tomorrow and set_tomorrow:
+          tomorrow = (date_now.year,date_now.month,date_now.day) != (date_last_closed.year,date_last_closed.month,date_last_closed.day)
       try:
          
          # List of every assignment name
@@ -316,7 +313,7 @@ def home(last_sel=0):
                   if not autofill_override and ndif > wlen and wlen + dif_assign < x:
                      nodis = True
                      status_message = '?　Whoops! You have not Entered in your Work Completed from Previous Days!'
-                     status_value = 2
+                     status_value = 1
                   else:
                      
                      # Checks if Assignment is Completed for Today
@@ -358,7 +355,7 @@ def home(last_sel=0):
                   if dayleft == 1:
                      strdayleft = ' (Due TOMORROW!!)'
                      tomorrow_tot += ceil(todo*ctime)
-                     status_value = 1
+                     status_value = 2
                   elif dayleft < 7:
                      strdayleft = (ad + time(x)).strftime(' (Due on %A)')
                   else:
@@ -368,7 +365,7 @@ def home(last_sel=0):
             # Then, all the assignments are sorted by their value to determine each assignment's priority.
             # The most important assignments are closer to spot #1
             if status_value in (5,6):
-               status_priority = dayleft
+               status_priority = -dayleft
             else:
                if skew_ratio < 0.8 or skew_ratio > 1.2:
                   skew_ratio = 1
@@ -453,9 +450,9 @@ def home(last_sel=0):
          # This basically ensures that the percentages will always be decreasing order
          percentage3, percentage4 = None, None
          for j in ordli:
-            if j[0] == 1:
-               percentage1 = j[1] / maxsp * 100
-               daysleft[j[2]-1] += f' SP: {ceil(percentage1)}%'
+            if j[0] == 2:
+               percentage2 = j[1] / maxsp * 100
+               daysleft[j[2]-1] += f' SP: {ceil(percentage2)}%'
                
             if j[0] == 3:
 
@@ -463,14 +460,14 @@ def home(last_sel=0):
                if percentage3 == None:
 
                   # Defines constant to multiply the calculated by in order to make sure percentages will always be decreasing order
-                  if 1 in statuses:
-                     percentage3_half_constant = percentage1 / (j[1] / maxsp * 100) / 2
+                  if 2 in statuses:
+                     percentage3_half_constant = percentage2 / (j[1] / maxsp * 100) / 2
                   else:
                      percentage3_half_constant = 1
                percentage3 = j[1] / maxsp * 100 * percentage3_half_constant
                daysleft[j[2]-1] += f' SP: {ceil(percentage3)}%'
 
-            elif j[0] == 4 and 0:
+            elif j[0] == 4:
 
                # Only run this on the first time
                if percentage4 == None:
@@ -478,8 +475,8 @@ def home(last_sel=0):
                   # Defines constant to multiply the calculated by in order to make sure percentages will always be decreasing order
                   if 3 in statuses:
                      percentage4_half_constant = percentage3 / (j[1] / maxsp * 100) / 2
-                  elif 1 in statuses:
-                     percentage4_half_constant = percentage1 / (j[1] / maxsp * 100) / 2
+                  elif 2 in statuses:
+                     percentage4_half_constant = percentage2 / (j[1] / maxsp * 100) / 2
                   else:
                      percentage4_half_constant = 1
                percentage4 = j[1] / maxsp * 100 * percentage4_half_constant
@@ -546,7 +543,7 @@ def home(last_sel=0):
             sel = qinput(input_message).strip()
 
             # You might see the variable "outercon" be used a lot.
-            # Outercon is a flag used to either break or continue out of outer loops, which are loops of loops
+            # Outercon is a flag used to either break or continue out of outer loops, which are loops that contain a loop that needs to break out of the outer one
             outercon = False
 
             # If nothing is entered, select the first assignment
@@ -729,7 +726,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         # Settings with Numeric Values
                         if change_setting in range(1,6):
                            if change_setting == 4:
-                              print('\nWarning flexibility is how much percent of the amount of work for a day does not have to be done in order to trigger a warning\nFor example, suppose you have to read 10 pages of a book one day\nIf your warning flexibility is 0%, then that means you have to read all 10 pages to not trigger a warning\nIf your warning flexibility is 40%, then you can read 6 pages of the 10 pages and still not trigger a warning\nEnter the percent of warning flexibility, from 1 - 100\nNOTE: A warning is ONLY there to provide urgency to an Assignment\n')
+                              print('\nWarning flexibility is how much percent of the amount of work for a day does not have to be done in order to trigger a warning\nFor example, suppose you have to read 10 pages of a book one day\nIf your warning flexibility is 0%, then that means you have to read all 10 pages to not trigger a warning\nIf your warning flexibility is 40%, then you can read 6 pages of the 10 pages and still not trigger a warning\nWarning flexibilty does not affect any of the code determining an assignment\'s priority\nEnter the percent of warning flexibility, from 1 - 100\n')
                            while 1:
                               new_value = qinput(f'What would you Like the New value of this Setting to be (Old Value: {settings[change_setting]}):').rstrip('%')
                               try:
@@ -852,7 +849,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  file_directory = original_file_directory
 
                               # If the backup is toggled to False, then ask for confirmation and then delete the backup
-                              elif 'YES' in qinput(f'The{backups[change_setting]} will be Deleted Forever because you have Disabled it.\nEnter "YES" in capital letters to confirm (Enter anything other than "YES" to cancel):'):
+                              elif 'YES' in qinput(f'The{backups[change_setting]} will be Deleted Forever because you have Disabled it.\nEnter "YES" in capital letters to confirm (Enter anything other than "YES" to cancel)\n'):
                                  remove(file_directory + backups[change_setting])
                               else:
                                  continue
@@ -900,7 +897,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         # Updates the Manual Backup
                         elif change_setting == 21:
                            if manual_backup:
-                              selected_backup = qinput('Updating the Manual Backup will Override and Permanently delete the Last manual backup.\nEnter "YES" in capital letters to Confirm\nEnter "DELETE" in capital letters to Permanently Delete the Last Manual Backup\n(Enter anything other than "YES" or "DELETE" to cancel):')
+                              selected_backup = qinput('Updating the Manual Backup will Override and Permanently delete the Last manual backup.\nEnter "YES" in capital letters to Confirm\nEnter "DELETE" in capital letters to Permanently Delete the Last Manual Backup\n(Enter anything other than "YES" or "DELETE" to cancel)\n')
                            else:
                               print('Successfully Backed up')
                            if not manual_backup or 'YES' in selected_backup:
@@ -948,22 +945,20 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
 
                                     # Asks which backup will be loaded and asks for confirmation
                                     selected_backup = qinput(f'\nAll Available Backups (Sorted from Newest to Oldest):\nCurrent Version Size: {len(dumps(dat[1:],protocol=4))-14} Bytes\n'+'\n'.join(f'{i + 1}){backups[i][2]} (Last Backed Up on {backups[i][1]}' for i in range(len(backups)))+ '\n\nPress Return at Any Time to Escape\nChanging anything after you have loaded a backup does not affect the backup itself\nSelect which Backup you would Like to Load by Entering its Corresponding Number:')
-                                    if not selected_backup or 'YES' not in qinput('\nAre you Sure you Want to load this Backup? This will transfer All Backup Data from this Backup to the Current Version\nThis Will Override the current version and Replace it with the Backup Version\nEnter "YES" in capital letters to Confirm (Enter anything other than "YES" to cancel):'):
+                                    if not selected_backup or 'YES' not in qinput('\nAre you Sure you Want to load this Backup? This will transfer All Backup Data from this Backup to the Current Version\nThis Will Override the current version and Replace it with the Backup Version\nEnter "YES" in capital letters to Confirm (Enter anything other than "YES" to cancel)\n'):
                                        break
                                     selected_backup = int(selected_backup,10) - 1
                                     if -1 < selected_backup and selected_backup < len(backups):
 
-                                       # Transfers backup data to the file directory
-                                       with open(file_directory + backups[selected_backup][2].rstrip(),'rb') as datfile:
-                                          dat = load(datfile)
-                                       tomorrow = False
-                                       settings = dat[0]
-                                       date_now = date.now()
-                                       settings[0] = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
-                                       date_last_closed = settings[0]
-                                       save_data()
-                                       outercon = True
-                                       break
+                                        # Transfers backup data to the file directory
+                                        with open(file_directory + backups[selected_backup][2].rstrip(),'rb') as datfile:
+                                            dat = load(datfile)
+                                        set_tomorrow = False
+                                        settings = dat[0]
+                                        settings[0] = date_last_closed
+                                        save_data()
+                                        outercon = True
+                                        break
                                     print('!!!\nInput Number is not Valid!\n!!!')
                                  except:
                                     print('!!!\nInput is Not an Integer!\n!!!')
@@ -972,7 +967,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                               continue
                            print('!!!\nThere are no Available Backups to Load!\n!!!')
                         elif change_setting == 23:
-                           if 'YES' in qinput('Are you Sure you Want to Restore all Default Setting Values? (This will NOT affect the backup settings)\nEnter "YES" in capital letters to Confirm (Enter anything other than "YES" to cancel):'):
+                           if 'YES' in qinput('Are you Sure you Want to Restore all Default Setting Values? (This will NOT affect the backup settings)\nEnter "YES" in capital letters to Confirm (Enter anything other than "YES" to cancel)\n'):
                               
                               # Resets Setting Data
                               settings[1:15] = [750,750,35,1,30,(),True,False,True,True,True,True,True,True]
@@ -1275,7 +1270,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         min_work_time = ceil(min_work_time)
                      if not min_work_time:
                         min_work_time = None
-                     min_work_time = qinput(f'Re-enter the Minimum Work Time for each Day you will Work in Minutes (Allows Decimal Inputs) (Enter "none" to disable) (Old Value: {min_work_time}):\n').strip().lower()
+                     min_work_time = qinput(f'Re-enter the Minimum Work Time for each Day you will Work in Minutes (Allows Decimal Inputs) (Enter "none" to disable) (Old Value: {min_work_time})\n').strip().lower()
                      if not min_work_time:
                         min_work_time = str(old_values[8]*old_values[7])
                   else:
@@ -1525,7 +1520,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       ndif = (date_now-date_file_created).days # Amount of days between today and the date when the assignment was created
       xdif = (date_now-ad).days # Amount days between today and assign date
       rem_zero = x - dif_assign > 15 # Determines if to overlook zero values in the schedule        
-      wlen = len(works) - 1 # Length of inputs
+      wlen = len(works) - 1 # Length of inputs minus one because most calculations involving it don't use the intial work value
       day = wlen # Day of the assignment you will be at
       smart_skew_ratio = x < 50 # Cutoff for using smart skew ratio (explained later)
       lw = works[wlen] # Last work input
@@ -1552,10 +1547,17 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       # However, if the assignment is in progress, then it do not increase the day by 1 because the work has not been done
       if ndif > -1 and ndif == day - 1 and lw != works[-2] and lw < funct(day + dif_assign):
          day -= 1
+
+      # Limits animation_frame_count if x or y is too small
+      min_xy = min(x,y)
+      if (min_xy - 1)/animation_frame_count < 0.5:
+         animation_frame_count = ceil((min_xy - 1)/0.5)
+         if not animation_frame_count:
+            animation_frame_count = 1
          
       # Precalculated increase x and y amount in order to make sure there are an animation_frame_count amount of frames
       increase_x = (x - 1)/animation_frame_count
-      increase_y = (y - 1)/animation_frame_count
+      increase_y = (y - 1)/animation_frame_count 
 
       # x and y are set to 1 at the beginning of the animation
       x = 1
@@ -1569,7 +1571,11 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          
       # Used for positioning the slashes in the progress bar during the animation
       slash_x_counter = width-145
+      (event.type for event in pygame.event.get())
       for i in range(animation_frame_count - 1):
+         
+         if any(event.type not in (1,4) for event in pygame.event.get()):
+            break
 
          # increase_x and increase_y are added a precalculated amount such that x and y will reach their original value after the animation
          x += increase_x
@@ -1608,8 +1614,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          else:
             slash_x_counter -= 4/y
 
-      # Even though the x and y values are precalculated to reach their original value, there still may be a floating point error of a few quadrillionth decimal places
-      # This is because decimals are sometimes infinite sequences when written binary, so they are rounded off at a certain decimal point, messing up the original value
+      # Even though the x and y values are precalculated to reach their original value, there still may be a floating point error of a few quadrillionth decimal places, messing up flooring and ceiling calculations
       # To make sure this does not happen, I set x and y back to their inputted value
       x = selected_assignment[2]
       y = selected_assignment[3]
@@ -1629,14 +1634,11 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       return
    
 # Calculates variables for the parabola
-# The parabola connects the points (0,0) (x,y) and (x2,y2)
-# If the skew ratio is not being manually set, x2 is 1 and y2 is y/x (first value of line y = x) muliplied by the skew ratio
-# Notice how the parabola passes through the origin meaning it does not use a c variable
-# If the start of the line is moved, requiring the red line to start not at the origin, then instead of using a c variable to make the parabola, the parabola is translated onto the start, increasing efficiency and optimizations because it doesn't use a c variable
-# Important note: I am ignoring all the function outputs before the start and after the end of the assignment
 def pset():
          global a, b, skew_ratio, cutoff_transition_value, cutoff_to_use_round, return_y_cutoff, return_0_cutoff, add
          add = 0
+
+         # This entire thing ignores the function outputs before the start and after the end of the assignment
          try:
 
             # x coordinate of third first point
@@ -1718,7 +1720,11 @@ def pset():
             else:
 
                # If parabola is not being manually set, connect the points (0,0) (1,y/x * skew ratio) (x,y)
+               # Notice how the parabola passes through the origin, meaning it does not use a c variable
+               # If the start of the line is moved, requiring the red line to start not at the origin, translate the parabola onto the start instead of using a variable
+               # This increases efficiency and optimizations
                # CREDIT OF THIS ALGORITHM GOES TO https://stackoverflow.com/questions/717762/how-to-calculate-the-vertex-of-a-parabola-given-three-points
+
                a = y1 * (1 - skew_ratio) / ((x1-1) * x1)
                b = (y1 - x1 * x1 * a) / x1
                
@@ -1726,7 +1732,7 @@ def pset():
             
             # A function by definition cannot have two separate y values for the same
             # If any two x's of the points the function must connect to are accidentally the same, then run this
-            # For example, this cannot pass through (0,1) and (0,0) at the same time as it is impossible for input 0 to output 0 and 1 at the same time
+            # For example, this cannot pass through (1,1) and (1,2) at the same time as it is impossible for input 1 to output 1 and 2 at the same time
 
             # This makes a line instead of a parabola
             a = 0
@@ -1740,7 +1746,8 @@ def pset():
          # In other words, I am looking for its zero
          
          # a * b > 0 makes sure both a and b are positive (they cannot both be negative)
-         # This is because some values of a and b have a skew ratio less than 1 but -b/a is a negative number, which is not wanted
+         # This is because some values of a and b have a skew ratio less than 1, resulting in -b/a being negative number
+         # Since this is only paying attention to the values in the assignment and not outside of the assignment, set it back to zero if this happens
          if skew_ratio > 1 or not a or a * b > 0:
 
             # If the parabola opens downward, its zero is at 0, because f(0) = a*0+b*0 which simplifies f(0) = 0
@@ -1802,9 +1809,9 @@ def pset():
                      first_loop=True
                      for n in range(cutoff_to_use_round,cutoff_to_use_round + 2):
                         if (skew_ratio < 1) == (n == cutoff_to_use_round):
-                           output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5)
+                           output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
                         else:
-                           output = funct_round * ceil(n*(a*n+b)/funct_round-0.5)
+                           output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
                         if debug_mode and output < 0:
                            print('output less than 0')
                         if remainder_mode and output:
@@ -2004,13 +2011,13 @@ def pset():
             first_loop = True
             for n in range(ceil(return_y_cutoff - 2),ceil(return_y_cutoff)):
                if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (skew_ratio < 1) == (n <= cutoff_to_use_round)):
-                  original_output = output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5)
+                  original_output = output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
                   if skew_ratio > 1:
                      output += cutoff_transition_value
                   else:
                      output -= cutoff_transition_value
                else:
-                  original_output = output = funct_round * ceil(n*(a*n+b)/funct_round-0.5)
+                  original_output = output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
                if remainder_mode:
                   output += y_fremainder
                   original_output += y_fremainder
@@ -2073,13 +2080,13 @@ def pset():
                   # Currently, I'm not satisfied with how this code is implimented, and I plan to figure out a better way to do this in the future
                   for n in range(ceil(return_0_cutoff),ceil(x)+1):
                      if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (skew_ratio < 1) == (n <= cutoff_to_use_round)):
-                        output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5)
+                        output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
                         if skew_ratio > 1:
                            output += cutoff_transition_value
                         else:
                            output -= cutoff_transition_value
                      else:
-                        output = funct_round * ceil(n*(a*n+b)/funct_round-0.5)
+                        output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
                      if remainder_mode and output:
                         output += y_fremainder
                      if output >= min_work_time_funct_round:
@@ -2196,7 +2203,7 @@ def funct(n):
       # n*(a*n+b) simplifies to an^2 + bn, which is a quadratic function for returning the output
       # Then, it is rounded to the nearest multiple of funct_round that is greater than the minimum work time
 
-      output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5)
+      output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
       if skew_ratio > 1:
          output += cutoff_transition_value
       else:
@@ -2206,7 +2213,7 @@ def funct(n):
       
       # If input number is after the cutoff, the slope is high enough to satisfy the minimum work time
       # So, round it to the grouping value
-      output = funct_round * ceil(n*(a*n+b)/funct_round-0.5)
+      output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
             
    if add and n == ceil(return_y_cutoff - 1):
       output += add
@@ -2376,7 +2383,7 @@ def draw(doing_animation=0,do_return=1):
 
             # If the new just calculate mouse_x_set_start is the same as it was last calculation, return out of the function
             # This is because there is no point using excess CPU if the graph is exactly the same as last calculation
-            if 0 and do_return and mouse_x_set_start == red_line_start:# and mouse_x2 < dif_assign + 1 and mouse_x2 > wlen + dif_assign - 1:
+            if do_return and mouse_x_set_start == red_line_start:## and mouse_x2 < dif_assign + 1 and mouse_x2 > wlen + dif_assign - 1:
                return
 
             # Sets the start
@@ -2394,86 +2401,9 @@ def draw(doing_animation=0,do_return=1):
             # Unconverts the y mouse position from graph terms into coordinate terms
             mouse_y = (height-mouse_y-50.5)/hCon - start_lw
             mouse_x -= red_line_start
-
-            # Offsets mouse_y if remainder mode is enabled
-            if remainder_mode:
-               mouse_y -= y_fremainder
-            if a and not nwd:
-               
-               try:
-                  # This entire mess of equations looks a bit complicated. Let's break it down
-                  
-                  # My goal here is to find the nearest point from the mouse to the curve
-                  # I first considered the traditional way to do this
-                  # First, consider any point on the parabola to be at (n, an^2 + bn)
-                  # I can then make a function of the distance from the mouse to the point using the distance formula. This formula is as follows:
-                  # d(n) = √((mouse_x_position - n)^2 + (mouse_y_position - (an^2 + bn))^2)
-                  # This function graphs the distance from the mouse to every point on the parabola as its own function
-                  # The goal is the find the global minimum of d(n) where the distance to the mouse is the shortest
-                  # This would be done by finding when the derivative of d(n) is zero
-                  # The problem is the derivative of d(n) is an extremely long and complicated function, and solving for when it would equal zero results in an even more complicated and long equation
-                  
-                  # This equation is too inconvenient and slow to be used, so I had to make my own way of finding the nearest point to the parabola
-                  # My solution involves utilising lines, which are much easier to work with than parabolas
-                  # Consider the closest point to the parabola to be point X
-                  # Now, make a line tangent to point X, meaning it only intersects point X on the parabola. The slope of this line is m.
-                  # Since point X is the closest point from the mouse to the parabola and point X passes through the line, this means the closest point from the line to the mouse is at point X.
-                  # Make a line segment from point X to the mouse. This line segment will have a slope of -1/m, the negative reciprocal of m.
-                  # This is the slope connecting a point to the closest point on any line will be the negative reciprocal of that line, forming a right angle at the intersection point
-                  # I now know how to calculate the slope of the line connecting the point X to the mouse.
-                  # Using the point slope formula, I can make an equation of a line with the slope of -1/m that passes through the mouse.
-                  # I can find where this line intersects the parabola using the quadratic formula, and it will intersect the parabola at point X.
-                  # So far, I have found point X only given the mouse coordinates and the slope of point X's tangent.
-                  # I already know the mouse's coordinates thanks to pygame, so now I just need to find the slope of point X's tangent, or m.
-                  # The problem is point X's tangent and point X are dependent on themselves, meaning I will have to make a guess of the value of m
-                  # I can make this guess by first making a line with the slope of -y/x that passes through the mouse coordinates, with y being the total units of work and x being the amount of days.
-                  # Then, I would find where this intersects the parabola at point Z
-                  # point Z is just a guess of point X
-                  # Then, I make a tangent at point Z to guess what the value of m is.
-                  # Finally, I can go through my logic as stated above to predict where point X is
-                  # I will commentate what is happening in every equation below
-                  
-                  # Slope of the guess line
-                  mouse_x2 = -(y - start_lw - y_mremainder)/(x - red_line_start)
-
-                  # Locating point Z and making a line tangent to it to predict the value of m
-                  # Then, it finds the negative reciprocal to get -1/m, or the prediction of the slope of the line connecting point X and the mouse
-                  # Note: wCon*wCon/hCon/hCon at the beginning of the equation handles scaling. If there was no scaling handled, that part would just be -1
-                  mouse_x2 = -wCon*wCon/hCon/hCon/(mouse_x2 + ((b - mouse_x2)*(b - mouse_x2) - 4*a*(mouse_x2*mouse_x-mouse_y))**0.5)
-
-                  # If -1/m is positive, the intersections get messed up since all lines in this case have two intersections with a parabola
-                  # This equation makes sure it always picks the correct intersection
-                  if mouse_x2 > 0:
-                     mouse_x2 = ceil((mouse_x2 - b - ((b - mouse_x2)*(b - mouse_x2) - 4*a*(mouse_x2*mouse_x-mouse_y))**0.5)/a/2-0.5)
-                  else:
                      
-                     # Uses the point slope formula to find the equation of the line with the slope -1/m that passes through the mouse coordinates
-                     # Then, it finds the intersection point of this line with the parabola to find point X
-                     # Since this program works with the right sides of parabolas, this equation uses the positive root, or the intersection on the rightmost side
-                     mouse_x2 = ceil((mouse_x2 - b + ((b - mouse_x2)*(b - mouse_x2) - 4*a*(mouse_x2*mouse_x-mouse_y))**0.5)/a/2-0.5)
-                  mouse_y2 = funct(mouse_x2+red_line_start)
-
-                  # Uses the distance formula to determine whether the top and bottom points are closer to the mouse than point X
-                  distance_to_chosen_point = ((mouse_x-mouse_x2)*(mouse_x-mouse_x2)+(hCon/wCon*(mouse_y-mouse_y2))**2)**0.5/hCon*wCon
-                  if mouse_x < -b/a and -b/a < x - red_line_start and distance_to_chosen_point > mouse_y or mouse_x > return_y_cutoff and distance_to_chosen_point > y - start_lw - mouse_y:
-                     mouse_x2 = ceil(mouse_x-0.5)
-               except:
-
-                  # If the guess line doesn't intersect the parabola, then abort mission and set point X to either 0 or the total amount of days
-                  if skew_ratio > 1:
-                     mouse_x2 = x - red_line_start
-                  else:
-                     mouse_x2 = 0
-                     
-            elif b and not nwd:
-
-               # If the graph is linear (a straight line) then use the point-slope formula to find point X
-               mouse_x2 = wCon*wCon/hCon/hCon/b
-               mouse_x2 = ceil((mouse_y+mouse_x2*mouse_x)/(b+mouse_x2)-0.5)
-            else:
-
-               # Rounds point X
-               mouse_x2 = ceil(mouse_x-0.5)
+            # Sets the displayed point to the rounded value of the x position
+            mouse_x2 = ceil(mouse_x-0.5)
 
             # Caps point X at its lower and upper limits
             if mouse_x2 < 0:
@@ -2481,8 +2411,8 @@ def draw(doing_animation=0,do_return=1):
             elif mouse_x2 > x - red_line_start:
                mouse_x2 = x - red_line_start
 
-            # If the new just calculated point X is the same as it was last calculation, return out of the function
-            # This is because there is no point using excess CPU if the graph is exactly the same
+            # If the new displayed point is the same as it was last calculation, return out of the function
+            # This is because there is no point using excess CPU if the graph doesn't change
             if do_return and not (set_skew_ratio or set_start) and last_mouse_x2 == mouse_x2:
                if nwd:
                   pset()
@@ -2921,7 +2851,7 @@ def quit_program(internal_error=False):
                file_directory = original_file_directory
       print('Quitting... Thanks for using!')
    if debug_mode:
-      raise
+      raise Exception
    else:
       from os import _exit
       _exit(0)
@@ -2948,6 +2878,10 @@ The Blue Line will be the work you actually finish that you will have to input e
 This line is not visible yet because you have not entered any work inputs so far
 To do so, press return and enter in how much work you have finished for the day
 Entering nothing will always break out of an input anywhere in the program
+
+IMPORTANT NOTE:
+You will be unable to interact with the graph if you are entering in an input due to how Pygame works
+Make sure you enter in the inputs before trying to use the graph
 
 If you complete less work than the amount you are supposed to complete for a day,
 The assignment will be marked as in progress and you will have to make up the remainder of the work later in that day
@@ -3015,7 +2949,8 @@ Type in "settings" to customize your settings
 
 That's all, and have a nice day
 
-(Go to the top ^)''')
+(Go to the top ^)
+Make sure you read the instructions, as some things are important''')
    
     while 1:
 
@@ -3232,12 +3167,16 @@ That's all, and have a nice day
                  total = 0
                  dskp = 1
                  end_of_works = False
+                 first_loop = True
 
                  # Zero except are the days that are displayed in the schedule even if the user doesn't have to work for that day
                  if add_last_work_input:
                     zero_except = (0, xdif, dif_assign, day + dif_assign - 1)
                  else:
                     zero_except = (0, xdif, dif_assign)
+                 do_format = return_y_cutoff - return_0_cutoff < 10000
+                 if not do_format and 'YES' not in qinput('!!!\nWarning!\n!!!\nThere are a lot of Days in this Assignment, and printing the Schedule may take a Long time\nWould you Like to Print it Anways? Enter "YES" in capital letters to Confirm (Enter anything other than "YES" to cancel)\n'):
+                         continue
                  for i in range(dstart,x):
 
                     # If the total has been reached, break
@@ -3319,10 +3258,13 @@ That's all, and have a nice day
                     total += dif
                     dif = '%g' % dif
                     strtotal = '%g' % total
-                    if str(i) == '0.0':
-                       this_day = formatted_date
+                    if first_loop and str(i) == '0.0':
+                        this_day = formatted_date
+                        first_loop = False
+                    elif do_format:
+                        this_day = f'{formatted_date}ZL {dif}XL {unit}{s} (QL{strtotal} / {stry})'
                     else:
-                       this_day = f'{formatted_date}ZL {dif}XL {unit}{s} (QL{strtotal} / {stry})'
+                        this_day = f'{formatted_date}\t{dif} {unit}{s} ({strtotal} / {stry})'.expandtabs(32)
                     if dskp > 1:
                        this_day += f' ({dskp} Days Later)'
                        dskp = 1
@@ -3337,16 +3279,18 @@ That's all, and have a nice day
 
                     # Appends to the lists containing all the formatted information
                     info.append(this_day)
-                    fdates.append(formatted_date)
-                    difs.append(dif)
-                    totals.append(strtotal)
+                    if do_format:
+                        fdates.append(formatted_date)
+                        difs.append(dif)
+                        totals.append(strtotal)
                     
                  if info:
 
-                    # Formatting variables
-                    mfdate = len(max(fdates,key=len))
-                    mdif = len(max(difs,key=len))
-                    mtotal = len(max(totals,key=len))
+                    if do_format:
+                        # Formatting variables
+                        mfdate = len(max(fdates,key=len))
+                        mdif = len(max(difs,key=len))
+                        mtotal = len(max(totals,key=len))
 
                     # Adds to the info using the stored variables in the loop
                     if dif_assign:
@@ -3366,7 +3310,10 @@ That's all, and have a nice day
 
                     # Formats the info
                     # The phrases "XL", "QL", and "ZL" are all placeholders for whitespace
-                    mapinfo = map(lambda i: info[i].replace('ZL',' '*(mfdate-len(fdates[i]))).replace('XL',' '*(mdif-len(difs[i]))).replace('QL', ' '*(mtotal-len(totals[i]))),range(len(info)))
+                    if do_format:
+                        info2 = map(lambda i: info[i].replace('ZL',' '*(mfdate-len(fdates[i]))).replace('XL',' '*(mdif-len(difs[i]))).replace('QL', ' '*(mtotal-len(totals[i]))),range(len(info)))
+                    else:
+                        info2 = info
                     dskp = (due_date-date_file_created).days-i+dif_assign
 
                     # Prints the info
@@ -3386,7 +3333,7 @@ That's all, and have a nice day
                           assignment_info += f'Minimum Work Time: {rounded_original_min_work_time} Minutes ({ceil(original_min_work_time*str(float(funct_round))[::-1].find("."))/str(float(funct_round))[::-1].find(".")} {unit}s)'
                        else:
                           assignment_info += f'Minimum Work Time: {rounded_original_min_work_time} Minutes ({ceil(original_min_work_time)} {unit}s)'
-                    print('\n'+'\n'.join(mapinfo)+due_date.strftime(f'\n%B %-d{disyear} (%A):') + assignment_info)
+                    print('\n'+'\n'.join(info2)+due_date.strftime(f'\n%B %-d{disyear} (%A):') + assignment_info)
 
                     # Prints warnings and errors
                     if not show_past and ndif > day: 
@@ -3404,7 +3351,7 @@ That's all, and have a nice day
                     lw = remlw
 
                  # Deletes the lists to save memory
-                 del info, mapinfo, fdates, difs, totals
+                 del info, info2, fdates, difs, totals
 
             # 274 is the down arrow key
             elif not set_skew_ratio and key == 274:
@@ -3649,8 +3596,10 @@ That's all, and have a nice day
                                  save_data()
                                  if ndif == wlen - 1:
                                     pygame.display.set_mode((1,1))
-                                    home()
-                                    break
+                                    try:
+                                       home()
+                                    except:
+                                       quit_program(True)
                                  else:
                                     draw(0,0)
                                     pygame.event.pump()
@@ -3746,9 +3695,13 @@ That's all, and have a nice day
 
             # Cap the width and height at their lower limits
             if height < 375:
-               height = 375
+                height = 375
             if width < 350:
-               width = 350
+                width = 350
+            if width > max_w:
+                width = max_w
+            if height > max_h:
+                height = max_h
             dat[0][1],dat[0][2] = width,height
             save_data()
             wCon = (width-55)/x
