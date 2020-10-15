@@ -30,8 +30,6 @@ debug_mode = True
 # command F
 
 # QOL todo list:
-# nwd in priority alg
-# "fin" in the home page 5 mins
 # max animation frame count for small x assignments 10 mins
 # "d" too many days (no format) 15 mins
 # function to set date_now and also take into account "next_day" variable
@@ -234,9 +232,12 @@ def home(last_sel=0):
             len_nwd = len(nwd) # Length of not working days
             if nwd:
                set_mod_days()
-               ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2
+               x1 = (x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] - 1
             else:
-               ignore_ends_mwt = ignore_ends and min_work_time and x != 2
+               x1 = x - red_line_start - 1
+            ignore_ends_mwt = ignore_ends and min_work_time and x1 != 1
+            if not x1:
+               x1 = 1
                
             wlen = len(works) - 1 # Length of work inputs subtracted by 1 to not count the 0th work input
             lw = works[wlen] # Last work input
@@ -283,7 +284,7 @@ def home(last_sel=0):
                         # Don't set todo value if it is on its first loop
                         # This is because it checks on the next line of code if it needs to autofill zero
                         # If all the conditions are met for auto filling, then allow todo to be reset on the next loops
-                        if i != ndif - wlen:
+                        if has_autofilled:
                            todo = funct(wlen+dif_assign+1) - lw
 
                         # Stops auto filling if the work to be done from the last work input is greater than 0 or when the end of the assignment is reached
@@ -304,6 +305,8 @@ def home(last_sel=0):
                      if has_autofilled:
 
                         # Save data if it passed the first loop test
+                        y_fremainder = (y - start_lw) % funct_round
+                        y_mremainder = (y - start_lw) % min_work_time_funct_round
                         todo = funct(wlen+dif_assign+1) - lw
                         file[11] = dynamic_start
                         save_data()
@@ -376,15 +379,16 @@ def home(last_sel=0):
                # todo*ctime is the total amount of minutes it will take to complete the work for that day
                # x-dif_assign-wlen is the amount of days until the assignment is due
                if not x-dif_assign-wlen:
+                  status_priority = 0
+                  
+               elif not todo*ctime:
                   
                   # Variation of the Algorithm
-                  how_well_follow = 1-sum(works[i]-funct(i) for i in range(wlen+1))/x/y*10
+                  how_well_follow = 1-sum(works[i]-funct(i) for i in range(1,wlen+1) if (assign_day_of_week + i - 1) % 7 not in nwd)/x1/y*10
                   if how_well_follow == 1:
                      how_well_follow = 0
                   status_priority = how_well_follow/(x-dif_assign-wlen)
                   
-               elif not todo*ctime:
-                  status_priority = 0
                else:
                   
                   # This is the Priority Algorithm
@@ -392,7 +396,7 @@ def home(last_sel=0):
                   # First, the program finds the ratio of the time it will take to finish work to the amount of days left until the assignment is due
                   # Then, the program loops through each work input and calculates the distance between each work input and where your progress was actually supposed to be on that day
                   # Then, more calculations are done to find a constant to multiply by the first value in the algorithm
-                  status_priority = (1-sum(works[i]-funct(i) for i in range(wlen+1))/x/y*10) * todo*ctime/(x-dif_assign-wlen)
+                  status_priority = (1-sum(works[i]-funct(i) for i in range(1,wlen+1) if (assign_day_of_week + i - 1) % 7 not in nwd)/x1/y*10) * todo*ctime/(x-dif_assign-wlen)
                   
             # Appends the status value (calculated above), the status priority, and the file index to a list called ordli
             # After each assignment appends to ordli, ordli is then sorted
@@ -466,7 +470,7 @@ def home(last_sel=0):
                percentage3 = j[1] / maxsp * 100 * percentage3_half_constant
                daysleft[j[2]-1] += f' SP: {ceil(percentage3)}%'
 
-            elif j[0] == 4:
+            elif j[0] == 4 and 0:
 
                # Only run this on the first time
                if percentage4 == None:
@@ -520,7 +524,7 @@ def home(last_sel=0):
          if last_sel:
             print(projects + project_time)
          else:
-            print(projects + project_time + '\n\nEnter "new" to Create an Assignment\nEnter "delete" to Remove an Assignment\nEnter "re" to Re-Enter Data values of an Assignment\nEnter "settings" to Customize the Settings\nEnter "quit" at any time to Exit and Backup\nPress Return to Select the First Assignment')
+            print(projects + project_time + '\n\nEnter "new" to Create an Assignment\nEnter "delete" to Remove an Assignment\nEnter "re" to Re-Enter Data values of an Assignment\nEnter "settings" to Customize the Settings\nEnter "quit" at any time to Exit and Backup\nEnter "fin" if you have Finished the work for the First Assignment\nPress Return to Select the First Assignment')
             input_message = 'Select an Assignment by Entering in its Corresponding Number:'
       except:
          if debug_mode:
@@ -623,12 +627,51 @@ def home(last_sel=0):
                      date_now = date.now()
                      date_now = date(date_now.year,date_now.month,date_now.day)
 
+                  elif sel == 'fin':
+                     file_sel,ad,x,y,works,dif_assign,skew_ratio,ctime,funct_round,nwd,fixed_mode,dynamic_start,unit,total_mode,fixed_start,remainder_mode,min_work_time = dat[1]
+                     ndif = (date_now-ad-time(dif_assign)).days
+                     wlen = len(works) - 1
+                     lw = works[wlen]
+                     day = wlen
+                     if fixed_mode:
+                        start_lw = works[fixed_start - dif_assign]
+                        red_line_start = fixed_start
+                     else:
+                        start_lw = works[dynamic_start - dif_assign]
+                        red_line_start = dynamic_start
+                     if ndif > -1 and ndif == day - 1 and lw != works[-2] and lw < funct(day + dif_assign):
+                        day -= 1
+                     if min_work_time:
+                        min_work_time_funct_round = ceil(min_work_time/funct_round)*funct_round
+                     else:
+                        min_work_time_funct_round = funct_round
+                     assign_day_of_week = ad.weekday()
+                     len_nwd = len(nwd)
+                     if nwd:
+                        set_mod_days()
+                     y_fremainder = (y - start_lw) % funct_round
+                     y_mremainder = (y - start_lw) % min_work_time_funct_round
+                     pset()
+                     if (assign_day_of_week + dif_assign + day) % 7 in nwd:
+                       todo = 0          
+                     else:
+                       todo = funct(day+dif_assign+1) - lw
+                     rem_work = ndif == wlen - 1 and lw != works[-2] and lw < funct(wlen+dif_assign)
+                     if todo > 0:
+                        lw += todo
+                     if rem_work:
+                        del works[wlen]
+                        wlen -= 1
+                     works.append(lw)
+                     wlen += 1
+                     day = wlen
+                     save_data()
+
                   # If the input is "settings", then print the settings
                   elif sel == "settings":
 
-                     # Settings is not actually a new list
                      # Settings is a pointer to dat[0], which means it refers to dat[0] in memory
-                     # That means changing anything in settings will also directly change the same this in dat[0]
+                     # That means changing anything in settings will also directly change the same thing in dat[0]
                      settings = dat[0]
                      
                      while 1:
@@ -767,9 +810,9 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            # Prints settings that have instructions on how to use
                            if 7 < change_setting and change_setting < 12:
                               print(('\nDisplays the Percentage of an Assignment\'s Priority on the home Assignment Page\nAbbreviated as "SP"',
-                                     "\nIf you do not have to work for a day in the assignment and you forget to input work for that day, it is assumed you did nothing and the program auto fills in no work done on that day because you anyways did not have to do anything\nWorks over periods of a time longer than a day",
+                                     "\nIf you do not have to Work for a day in an Assignment, and you Forget to input work for that Day, it is assumed you did Nothing\nThe program will auto fill in No work Done on that day because you anyways did Not have to Work\nApplies to periods of a time Longer than a Day",
                                      '\nThe after Midnight assignment Pass is a pass that sets all your current Assignments to Completed, regardless even if they are not.\nThis is to Encourage you to Sleep, as sleep is Extremely important.\nThis can be set to False if you do not want this to Happen, but is not Recommended',
-                                     "\nIgnore Ends is only relevant when Minimum Work Time is also Enabled for an Assignment\nIgnores the Minimum Work Time on the first and last Working Day to make the Work Distribution smoother\nThis also fixes an Issue that causes you to Work a Lot More on the First and Last days of the Assignment"
+                                     "\nIgnore Ends is only relevant when Minimum Work Time is also Enabled for an Assignment\nIgnores the Minimum Work Time on the first and last Working Day to make the Work Distribution smoother\nThis also fixes an Issue that causes you to Work a Lot More on the First and Last days of an Assignment"
                                      )[change_setting-8]+f"\nThis Setting\'s new value is {new_value} (Old Value: {not new_value})\n")
                               qinput('Enter Anything to Continue:')
                               
@@ -805,11 +848,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  # If the backup is toggled to True, use the backups dictionary to figure out the name of the backup file to create so it can be referred to later
                                  # This part creates a new file 
                                  file_directory += backups[change_setting]
-                                 local_date_last_closed = settings[0]
-                                 date_now = date.now()
-                                 settings[0] = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
                                  save_data()
-                                 settings[0] = local_date_last_closed
                                  file_directory = original_file_directory
 
                               # If the backup is toggled to False, then ask for confirmation and then delete the backup
@@ -869,13 +908,10 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                               # If the manual backup is updated, update (or create) the new file storing the data from the manual backup
                               manual_backup = True
                               file_directory += ' Manual Backup'
-                              local_date_last_closed = settings[0]
-                              date_now = date.now()
-                              settings[0] = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
                               save_data()
-                              settings[0] = local_date_last_closed
                               file_directory = original_file_directory
-                           elif selected_backup == 'DELETE':
+                              
+                           elif 'DELETE' in selected_backup:
 
                               # Delete the manual backup using os.remove
                               manual_backup = False
@@ -924,6 +960,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                        settings = dat[0]
                                        date_now = date.now()
                                        settings[0] = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
+                                       date_last_closed = settings[0]
                                        save_data()
                                        outercon = True
                                        break
@@ -990,12 +1027,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          print()
          while 1:
             if reenter_mode:
-               reenter_input = qinput(f'Press Return at any Time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" at Any Time to stop Re-Entering Data and keep the Original Version\n\nWhat would you Like to Rename your Assignment (Old Value: {old_values[0]})\n').strip()
+               reenter_input = qinput(f'Press Return at any Time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" at Any Time to stop Re-Entering Data and keep the Original Version\nTry not to enter Inputs faster than 0.2 seconds\n\nWhat would you Like to Rename this Assignment (Old Value: {old_values[0]})\n').strip()
                if not reenter_input:
                   break
                file_sel = reenter_input
             else:
-               file_sel = qinput('Enter in "cancel" at Any Time to stop Entering in Data\nTry not to enter Inputs faster than 0.2 seconds, as Python glitches out (Nothing I can do about that)\n\nWhat would you Like to Name your Assignment\n').strip()
+               file_sel = qinput('Enter in "cancel" at Any Time to stop Entering in Data\nTry not to enter Inputs faster than 0.2 seconds\n\nWhat would you Like to Name this Assignment\n').strip()
                if not file_sel:
                   outercon = True
                   break
@@ -1047,13 +1084,15 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          while 1:
               try:
                   if reenter_mode:
-                     reenter_input = qinput(f'Re-enter the Due Date of this assignment OR the amount of days in which this is due from the reentered assign date (As a Whole Number) (Old Value: {old_values[2].strftime("%-m/%-d/%Y")})\nFormat: Month/Day/Year\nExample: 3/2, mar/2/{str(date_now.year)[-2:]}, mar/2, or 10\n(Don\'t Have a Due Date? Enter in "none" to proceed)\n').replace(' ','').lower()
+                     reenter_input = qinput(f'Re-enter the Due Date of this assignment (Old Value: {old_values[2].strftime("%-m/%-d/%Y")})\nFormat: Month/Day/Year\nExample: 3/2, mar/2/{str(date_now.year)[-2:]}, mar/2, or 10\nOr, enter the Amount of Days in which this Assignment is Due from the Re-entered Assign Date (As a Whole Number)\n(Don\'t Have a Due Date? Enter in "none" to proceed)\n').replace(' ','').lower()
                      if not reenter_input:
                         x -= (ad - old_values[1]).days
+                        if x < 1 or x > (date(9999,12,30)-ad).days:
+                           raise Exception
                         break
                      x = reenter_input
                   else:
-                     x = qinput(f'Enter the Due Date of this assignment OR the Amount of Days in which this Assignment is Due from the Assign Date (As a Whole Number)\nFormat: Month/Day/Year\nExample: 3/2, mar/2/{str(date_now.year)[-2:]}, mar/2, or 10\n(Don\'t Have a Due Date? Enter in "none" to proceed)\n').replace(' ','').lower()
+                     x = qinput(f'Enter the Due Date of this assignment\nFormat: Month/Day/Year\nExample: 3/2, mar/2/{str(date_now.year)[-2:]}, mar/2, or 10\nOr, enter the Amount of Days in which this Assignment is Due from the Assign Date (As a Whole Number)\n(Don\'t Have a Due Date? Enter in "none" to proceed)\n').replace(' ','').lower()
                      if not x:
                         outercon = True
                         break
@@ -1063,7 +1102,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                   if x == 'none':
                      while 1:
                         try:
-                           mx = qinput(f'Enter the Latest date the Assignment can be due OR the amount of Days until the Latest date the Assignment can be due (Don\'t Care when the Assignment will be Due? Enter "none" to skip)\n')
+                           mx = qinput(f'Enter the Latest date this Assignment can be Due\nOr, enter the Amount of Days until the Latest date this Assignment can be Due\n(Don\'t Care when this Assignment will be Due? Enter "none" to skip)\n')
                            if 'none' in mx.lower():
                               mx = float('inf')
                               break
@@ -1095,11 +1134,11 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
 
          # Name of each unit of the assignment
          if reenter_mode:
-            reenter_input = qinput(f'What would you Like to Rename each Unit of Work in your Assignment (Old Value: {unit})\nExample: If the assignment is reading a book, enter "page"\nIf you are not sure what to name each Unit of work, Press Return to set it as "Unit"\n').strip().lower()
+            reenter_input = qinput(f'Re-enter what you would Like to Rename each Unit of Work in this Assignment (Old Value: {unit})\nExample: If this assignment is a book, enter "page"\nIf you are not sure what to name each Unit of Work, Press Return to set it as "Unit"\n').strip().lower()
             if reenter_input:
                unit = reenter_input.rstrip('s').capitalize()
          else:
-            unit = qinput('What would you Like to Name each Unit of Work in your Assignment\nExample: If the assignment is reading a book, enter "page"\nIf you are not sure what to name each Unit of work, Press Return to set it as "Unit"\n').strip().lower()
+            unit = qinput('Enter what you would Like to Name each Unit of Work in this Assignment\nExample: If this assignment is a book, enter "page"\nIf you are not sure what to name each Unit of Work, Press Return to set it as "Unit"\n').strip().lower()
             if unit:
                unit = unit.rstrip('s').capitalize()
             else:
@@ -1112,12 +1151,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          while 1:
               try:
                   if reenter_mode:
-                     reenter_input = qinput(f'Re-enter the Total amount of {unit}s in the entire Assignment (Allows Decimal Inputs) (Old Value: {old_values[3]})\n')
+                     reenter_input = qinput(f'Re-enter the Total amount of {unit}s in this Assignment (Allows Decimal Inputs) (Old Value: {old_values[3]})\n')
                      if not reenter_input:
                         break
                      y = reenter_input
                   else:
-                     y = qinput(f'Enter the Total amount of {unit}s in the entire Assignment (Allows Decimal Inputs)\n')
+                     y = qinput(f'Enter the Total amount of {unit}s in this Assignment (Allows Decimal Inputs)\n')
                      if not y:
                         outercon = True
                         break
@@ -1140,10 +1179,10 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             continue
 
          # Total amount of units already completed in the assignment
-         #if reenter_mode and len(works) != 1 and (ad - old_values[1]).days - dif_assign < len(works):
-          #  adone = None
-            #print(f'Re-enter the Total amount of {unit}s Already completed at the Beginning of this Assignment (Allows Decimal Inputs) (Old Value: {old_values[4]}) (SKIPPED)\nThis input has been Skipped because you have changed the Assign Date')
-         #else:
+         ##if reenter_mode and len(works) != 1 and (ad - old_values[1]).days - dif_assign < len(works):
+          ##  adone = None
+            ##print(f'Re-enter the Total amount of {unit}s Already completed at the Beginning of this Assignment (Allows Decimal Inputs) (Old Value: {old_values[4]}) (SKIPPED)\nThis input has been Skipped because you have changed the Assign Date')
+         ##else:
          while 1:
             try:
                if reenter_mode:
@@ -1152,7 +1191,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                      break
                   adone = reenter_input
                else:
-                  adone = qinput(f'Enter the Total amount of {unit}s Already completed (Allows Decimal Inputs)\n')
+                  adone = qinput(f'Enter the Total amount of {unit}s Already completed in this Assignment (Allows Decimal Inputs)\n')
                   if not adone:
                      outercon = True
                      break
@@ -1203,12 +1242,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          while 1:
              try:
                   if reenter_mode:
-                     reenter_input = qinput(f'Re-enter what you would Like the Grouping Value of each {unit} to be (Allows Decimal Input) (Enter "1" to group to the nearest whole number) (Old Value: {old_values[5]})\nFor example, if you Enter in 3 as your Grouping Value, you will always work in multiples of 3 (such as 3, 6, 12, etc)\n')
+                     reenter_input = qinput(f'Re-enter what you would Like the Grouping Value of each {unit} to be (Allows Decimal Input) (Enter "1" to group to the nearest whole number) (Old Value: {old_values[5]})\nFor example, if you Enter in 3 as the Grouping Value, you will always work in multiples of 3 (such as 3, 6, 12, etc)\n')
                      if not reenter_input:
                         break
                      funct_round = reenter_input
                   else:
-                     funct_round = qinput(f'Enter what would you Like the Grouping Value of each {unit} to be (Allows Decimal Input) (Press Return to group to the nearest whole number)\nFor example, if you Enter in 3 as your Grouping Value, you will always work in multiples of 3 (such as 3, 6, 12...)\n')
+                     funct_round = qinput(f'Enter what would you Like the Grouping Value of each {unit} to be (Allows Decimal Input) (Press Return to group to the nearest whole number)\nFor example, if you Enter in 3 as the Grouping Value, you will always work in multiples of 3 (such as 3, 6, 12...)\n')
                      if not funct_round:
                         funct_round = 1
                         break
@@ -1313,11 +1352,24 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          if reenter_mode:
 
             # If the reentered assign date cuts off some of the work inputs, adjust the work inputs accordingly
-            removed_works = (ad - old_values[1]).days - dif_assign
-            if removed_works < 0:
-               removed_works = 0
-            works = [works[n] - works[0] + adone for n in range(removed_works,len(works))]
+            removed_works_start = (ad - old_values[1]).days - dif_assign
+            if removed_works_start < 0:
+               removed_works_start = 0
+            removed_works_end = len(works) - 1
+            if removed_works_end + dif_assign >= x:
+               removed_works_end = x - dif_assign
+               if works[removed_works_end] != y:
+                  removed_works_end -= 1
+            works = [works[n] - works[0] + adone for n in range(removed_works_start,removed_works_end+1)]
+            if not works:
+               works = [adone]
+               if dif_assign:
+                  dif_assign -= 1
             adone = works[0]
+            if dynamic_start > x - 1:
+               dynamic_start = x - 1
+            if fixed_start > x - 1:
+               fixed_start = x - 1
             
          else:
 
@@ -1380,6 +1432,10 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          if reenter_mode:
             dynamic_start -= (ad - old_values[1]).days
             fixed_start -= (ad - old_values[1]).days
+            if dynamic_start < 0:
+               dynamic_start = 0
+            if fixed_start < 0:
+               fixed_start = 0
          else:
             dynamic_start = fixed_start = dif_assign # X value of the start of the red line in dynamic and fixed mode
 
@@ -1639,7 +1695,6 @@ def pset():
                   
                      # Offsets mouse y pos if remainder_mode is enabled
                      if remainder_mode:
-                        print('what the fuck')
                         y2 -= y_fremainder
 
                      # If parabola is being manually set, Connects the points (0,0) (x2,y2)[mouse coordinates] and (x,y)
@@ -2298,7 +2353,7 @@ def draw(doing_animation=0,do_return=1):
    
       # Used to manually set the start of the red line and the skew ratio of the graph
       if set_start or draw_point:
-         global red_line_start, start_lw, last_mouse_x2
+         global red_line_start, start_lw, last_mouse_x2, y_fremainder, y_mremainder
 
          # Gets the position of the mouse
          mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -2327,6 +2382,8 @@ def draw(doing_animation=0,do_return=1):
             # Sets the start
             red_line_start = mouse_x_set_start
             start_lw = works[mouse_x_set_start - dif_assign]
+            y_fremainder = (y - start_lw) % funct_round
+            y_mremainder = (y - start_lw) % min_work_time_funct_round
             if nwd:
                set_mod_days()
             calc_skew_ratio_lim()
@@ -2840,36 +2897,34 @@ def quit_program(internal_error=False):
          save_data()
          if last_opened_backup or hourly_backup or daily_backup or weekly_backup or monthly_backup:
             print('\nUpdating Backups... Go to the Settings to Enable/Disable Different types of Backups\n')
-         if last_opened_backup:
-            file_directory += ' Every Run Backup'
-            save_data()
-            print('EVERY RUN BACKUP UPDATED')
-         if hourly_backup and (date_last_closed.year,date_last_closed.month,date_last_closed.day,date_last_closed.hour) != (date_now.year,date_now.month,date_now.day,date_now.hour):
-            file_directory = original_file_directory + ' Hourly Backup'
-            save_data()
-            print('HOURLY BACKUP UPDATED')
-         date_now = date(date_now.year,date_now.month,date_now.day)
-         date_last_closed = date(date_last_closed.year,date_last_closed.month,date_last_closed.day)
-         if daily_backup and date_last_closed != date_now:
-            file_directory = original_file_directory + ' Daily Backup'
-            save_data()
-            print('DAILY BACKUP UPDATED')
-         if weekly_backup and date_last_closed - time(date_last_closed.weekday()) != date_now - time(date_now.weekday()):
-            file_directory = original_file_directory + ' Weekly Backup'
-            save_data()
-            print('WEEKLY BACKUP UPDATED')
-         if monthly_backup and (date_last_closed.month,date_last_closed.year) != (date_now.month,date_now.year):
-            file_directory = original_file_directory + ' Monthly Backup'
-            save_data()
-            print('MONTHLY BACKUP UPDATED')
-         if debug_mode:
-            file_directory = original_file_directory
+            if last_opened_backup:
+               file_directory += ' Every Run Backup'
+               save_data()
+               print('EVERY RUN BACKUP UPDATED')
+            if hourly_backup and (date_last_closed.year,date_last_closed.month,date_last_closed.day,date_last_closed.hour) != (date_now.year,date_now.month,date_now.day,date_now.hour):
+               file_directory = original_file_directory + ' Hourly Backup'
+               save_data()
+               print('HOURLY BACKUP UPDATED')
+            if daily_backup and (date_last_closed.year,date_last_closed.month,date_last_closed.day) != (date_now.year,date_now.month,date_now.day):
+               file_directory = original_file_directory + ' Daily Backup'
+               save_data()
+               print('DAILY BACKUP UPDATED')
+            if weekly_backup and date(date_last_closed.year,date_last_closed.month,date_last_closed.day) - time(date_last_closed.weekday()) != date(date_now.year,date_now.month,date_now.day) - time(date_now.weekday()):
+               file_directory = original_file_directory + ' Weekly Backup'
+               save_data()
+               print('WEEKLY BACKUP UPDATED')
+            if monthly_backup and (date_last_closed.month,date_last_closed.year) != (date_now.month,date_now.year):
+               file_directory = original_file_directory + ' Monthly Backup'
+               save_data()
+               print('MONTHLY BACKUP UPDATED')
+            if debug_mode:
+               file_directory = original_file_directory
       print('Quitting... Thanks for using!')
-   from os import _exit
-   if not debug_mode:
-      _exit(0)
-   else:
+   if debug_mode:
       raise
+   else:
+      from os import _exit
+      _exit(0)
       
 try:
     
@@ -3090,7 +3145,7 @@ That's all, and have a nice day
                else:
                   while 1:
                      try:
-                        choice = qinput(f'Enter the Date at which the Red Line will Start OR the Amount of Days since the Assignment Date the Red Line will Start at (As a Whole Number)\nFormat: Month/Day/Year\nExample: 2/16/{date_now.year}, nov/5, or 10\n').replace(' ','')
+                        choice = qinput(f'Enter the Date at which the Red Line will Start\nFormat: Month/Day/Year\nExample: 2/16/{date_now.year}, nov/5, or 10\nOr, enter the Amount of Days since the Assignment Date the Red Line will Start at (As a Whole Number)\n').replace(' ','')
                         if choice:
                            try:
                               choice = int(choice,10)
@@ -3137,6 +3192,8 @@ That's all, and have a nice day
                      if red_line_start >= wlen + dif_assign:
                         red_line_start -= 1
                         start_lw = works[red_line_start - dif_assign]
+                        y_fremainder = (y - start_lw) % funct_round
+                        y_mremainder = (y - start_lw) % min_work_time_funct_round
                         if nwd:
                            set_mod_days()
                         calc_skew_ratio_lim()
@@ -3503,6 +3560,8 @@ That's all, and have a nice day
                   day = wlen
                   if day + dif_assign == x:
                      day -= 1
+               y_fremainder = (y - start_lw) % funct_round
+               y_mremainder = (y - start_lw) % min_work_time_funct_round
                   
                if nwd:
                   set_mod_days()
@@ -3653,6 +3712,8 @@ That's all, and have a nice day
                                  if not fixed_mode:
                                     red_line_start = dynamic_start
                                     start_lw = works[dynamic_start - dif_assign]
+                                    y_fremainder = (y - start_lw) % funct_round
+                                    y_mremainder = (y - start_lw) % min_work_time_funct_round
                                     if nwd:
                                        set_mod_days()
                                     calc_skew_ratio_lim()
