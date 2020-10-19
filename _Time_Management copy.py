@@ -38,7 +38,7 @@ debug_mode = False
 # daily assignments (x and y will change with the assignment, x will always be (DUE TOMORROW!!!), todo will always be the min_work_time) 
 # maximum work time
 # multiple points to hit (piecewise) (combining assignments into one big x axis graph)
-# replace "change skew ratio" to "change a property for all assignments" in settings (skew_ratio, nwd, fixed_mode, total mode, min_work_time)
+# replace "change skew ratio" to "change a property for all assignments" in settings (skew_ratio, nwd, fixed_mode, total mode, min_work_time, extend due date if deu tmrw)
 # time table, use (this assignment is complete because there is no time left in today)
    
 # Gets today's date
@@ -184,6 +184,7 @@ def home(last_sel=0):
             q3 = (sorted_skew_ratios[ceil(q3)] + sorted_skew_ratios[int(q3)])/2
             q1 = 2.5*q1 - 1.5*q3
             q3 = 2.5*q3 - 1.5*q1
+            median = (sorted_skew_ratios[ceil(median)] + sorted_skew_ratios[int(median)])/2
          
          for file in dat[1:]:
 
@@ -375,7 +376,7 @@ def home(last_sel=0):
                      strdayleft = (ad + time(x)).strftime(' (Due on %A)')
                   else:
                      strdayleft = f' (Due in {dayleft} Days)'
-                  if amount_of_assignments > 3 and (skew_ratio < q1 or skew_ratio > q3):
+                  if amount_of_assignments > 3 and (skew_ratio < q1 or skew_ratio > q3) and abs(skew_ratio - median) >= 0.2 :
                      strdayleft += ' (This Assignment\'s skew ratio is an Outlier)'
                      
             # Assigns each assignment a value based on an algorithm
@@ -1236,7 +1237,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                   else:
                      adone = qinput(f'Enter the Total amount of {unit}s Already completed in this Assignment (Allows Decimal Inputs) (Press Return if you have not started this Assignment)\n')
                   if not adone:
-                     adone = 1
+                     adone = 0
                      break
                if 'cancel' in adone.lower():
                   outercon = True
@@ -1394,39 +1395,6 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             print('Successfully Escaped from Inputs')
             continue
 
-         if reenter_mode:
-
-            # If the reentered assign date cuts off some of the work inputs, adjust the work inputs accordingly
-            removed_works_start = (ad - old_values[1]).days - dif_assign
-            if removed_works_start < 0:
-               removed_works_start = 0
-            removed_works_end = len(works) - 1
-            if removed_works_end + dif_assign >= x:
-               removed_works_end = x - dif_assign
-               if works[removed_works_end] != y:
-                  removed_works_end -= 1
-            works = [works[n] - works[0] + adone for n in range(removed_works_start,removed_works_end+1)]
-            if not works:
-               works = [adone]
-               if dif_assign:
-                  dif_assign -= 1
-            adone = works[0]
-            if dynamic_start > x - 1:
-               dynamic_start = x - 1
-            if fixed_start > x - 1:
-               fixed_start = x - 1
-            
-         else:
-
-            # Defines the work inputs
-            # Since the assignment was just created there are not any work inputs
-            # The reason why the variable "works" has adone as the first value is to
-            # serve as the 0th or the starting day of the assignment
-            # This is the reason why wlen, which represents the length of works,
-            # Is subtracted by 1 as it doesn't count the 0th day, which is not needed
-            # For all the calculations involving it
-            works = [adone]
-
          # If the user doesn't have a due date, set the due date to the x value of when the line with the slope of min_work_time intersects y
          if x == None:
             if min_work_time:
@@ -1473,6 +1441,39 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                x = 1
             if x > mx:
                x = mx
+
+         if reenter_mode:
+
+            # If the reentered assign date cuts off some of the work inputs, adjust the work inputs accordingly
+            removed_works_start = (ad - old_values[1]).days - dif_assign
+            if removed_works_start < 0:
+               removed_works_start = 0
+            removed_works_end = len(works) - 1
+            if removed_works_end + dif_assign >= x:
+               removed_works_end = x - dif_assign
+               if works[removed_works_end] != y:
+                  removed_works_end -= 1
+            works = [works[n] - works[0] + adone for n in range(removed_works_start,removed_works_end+1)]
+            if not works:
+               works = [adone]
+               if dif_assign:
+                  dif_assign -= 1
+            adone = works[0]
+            if dynamic_start > x - 1:
+               dynamic_start = x - 1
+            if fixed_start > x - 1:
+               fixed_start = x - 1
+            
+         else:
+
+            # Defines the work inputs
+            # Since the assignment was just created there are not any work inputs
+            # The reason why the variable "works" has adone as the first value is to
+            # serve as the 0th or the starting day of the assignment
+            # This is the reason why wlen, which represents the length of works,
+            # Is subtracted by 1 as it doesn't count the 0th day, which is not needed
+            # For all the calculations involving it
+            works = [adone]
                
          if reenter_mode:
             dynamic_start -= (ad - old_values[1]).days
@@ -2882,7 +2883,7 @@ def quit_program(internal_error=False):
    error_info = format_exc().replace('\n\n','\n')
    if internal_error and error_info.split('\n')[-2] != 'KeyboardInterrupt':
       #print(f'\n\n\n\nCOPY ALL INFORMATION STARTING FROM HERE\n\n\n{dat}\n\n{error_info}\n\nAND ENDING AT HERE\n\n\nIt seems like there was an Internal Error somewhere in the code... :/\nPlease copy all of the Data Above and send it to me on G-mail at arhan.ch@gmail.com so I can fix the Error\nThank you')
-      print(f'\n\n\n\nCOPY ALL INFORMATION STARTING FROM HERE\n\n\n{dat}\n\n{error_info}\n\nAND ENDING AT HERE\n\n\nSo uhhmmmmmmm... :/\nThere was a bug somewhere in code sorry lol\nshow this message and the info above to me on insta and i promise to buy you mcdonalds')
+      print(f'\n\n\n\nCOPY ALL INFORMATION STARTING FROM HERE\n\n\n{dat}\n\n{error_info}\n\nAND ENDING AT HERE\n\n\nSo uhhmmmmmmm... :/\nThere was a bug somewhere in code sorry lol\nshow this message and the info above to me and i promise to buy you mcdonalds')
    else:
       # If the files have already been created, then update the backups by comparing the last opened date to today
       if update_backups:
