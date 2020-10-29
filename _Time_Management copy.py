@@ -20,7 +20,7 @@ from os import remove # Removes Backups if they are Disabled
 # File Directory where the data will be stored
 file_directory = 'Time Management'
 update_backups = True
-debug_mode = True
+debug_mode = 1
 
 # Settings Procedure:
 # Add/remove it on the boolean settings and Adjust values for other settings
@@ -36,7 +36,6 @@ debug_mode = True
 # remove monthly_backup
 # Replace "(Old Value: 1 Minutes)" in grouping value to none; also do with other reinput
 # Replace "fin" only work with first assignment to "fin" then "Enter the corresponding number of the assignment you have finished (Press Return if you have finished the first assignment)
-# tomorrow didnt work when the next day happens and program didnt close the progam
 # command f all the unit == 'minute' and change 68 min to 1h 6m
 # Replace (This assignments skew ratio is an outleir) with "assignments {x} have an outlier skew ratio"
 # (If you want, do one {unit} of work and see how long that takes) on inputs
@@ -194,12 +193,14 @@ def home(last_sel=0):
                # So, it is change back into an integer after the bus leaves, and it will be deleted at the next bus
                
 
-               # The expression (file[1]-date_now).days == (date_now-date(*day_date_last_closed)).days - 1) checks for the second condition for an assignment to be deleted
+               # The expression (file[1]-date_now).days != (date_now-date(*day_date_last_closed)).days - 1 checks for the second condition for an assignment to be deleted
+               # It is then multipled by -1 because dayleft + x < 1 goes into the negatives
                # If the due date passes, then the assignment is finished, even if the work inputs have not reached the total number of units
                # However, the same problem can happen above, where it can be deleted without notice
                # This makes sure to give a warning for deletion instead of deleting it
                # On the next time the user runs the program on a new day, it finally deletes the assignment
-               if file[4][-1] >= file[3] and type(file[2]) != float or 1 > (file[1]-date_now).days + file[2] == (date_now-date(*day_date_last_closed)).days - 1:
+               print(1, (file[1]-date_now).days + file[2], (date_now-date(*day_date_last_closed)).days - 1, file[0])
+               if file[4][-1] >= file[3] and type(file[2]) != float or 1 > (file[1]-date_now).days + file[2] != 1 - (date_now-date(*day_date_last_closed)).days:
                   dat.remove(file)
                   
          tomorrow = False
@@ -982,7 +983,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                         # Transfers backup data to the file directory
                                         with open(file_directory + backups[selected_backup][2].rstrip(),'rb') as datfile:
                                             dat = load(datfile)
-                                        set_tomorrow = False
+                                        #set_tomorrow = False
                                         settings = dat[0]
 
                                         # Set dat[0][0] to the date_last_closed value in the original data because date_last_closed is not supposed to change until the program exits
@@ -1398,10 +1399,6 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                if dif_assign:
                   dif_assign -= 1
             adone = works[0]
-            if dynamic_start > x - 1:
-               dynamic_start = x - 1
-            if fixed_start > x - 1:
-               fixed_start = x - 1
             
          else:
 
@@ -1421,6 +1418,10 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                dynamic_start = 0
             if fixed_start < 0:
                fixed_start = 0
+            if dynamic_start > x - 1:
+               dynamic_start = x - 1
+            if fixed_start > x - 1:
+               fixed_start = x - 1
          else:
             dynamic_start = fixed_start = dif_assign # X value of the start of the red line in dynamic and fixed mode
 
@@ -1665,6 +1666,10 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       # To make sure this does not happen, I set x and y back to their inputted value
       x = selected_assignment[2]
       y = selected_assignment[3]
+      if nwd:
+         ignore_ends_mwt = ignore_ends and min_work_time and int(x - red_line_start) - int(x - red_line_start)//7 * len_nwd - mods[int(x - red_line_start) % 7] != 2 and y >= min_work_time_funct_round * 2
+      else:
+         ignore_ends_mwt = ignore_ends and min_work_time and int(x - red_line_start) != 2 and y >= min_work_time_funct_round * 2
       funct_round = selected_assignment[8]
       min_work_time = original_min_work_time
       if min_work_time:
@@ -3601,6 +3606,7 @@ Some things are important to know
                                 todo = funct(day+dif_assign+1) - lw
 
                              # Checks if the assignment is in progress
+
                              rem_work = ndif == wlen - 1 and lw != works[-2] and lw < funct(wlen+dif_assign)
                              if rem_work:
                                 input_message = f'Amount of {unit}s completed since your Last Input on '
@@ -3735,7 +3741,7 @@ Some things are important to know
                                        set_mod_days()
                                     calc_skew_ratio_lim()
                              if lw >= y:
-                                selected_assignmnt[2] = float(x)
+                                selected_assignment[2] = float(x)
                              save_data()
                              day = wlen
 
@@ -3789,10 +3795,6 @@ Some things are important to know
             left_adjust_cutoff = (width - 50 - point_text_width)/wCon
             up_adjust_cutoff = point_text_height/hCon
             draw(0,0)
-
-        # 12 is the quit event
-        elif etype == 12:
-           quit_program()
          
 except:
    quit_program(True)
