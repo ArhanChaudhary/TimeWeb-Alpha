@@ -20,7 +20,7 @@ from os import remove # Removes Backups if they are Disabled
 # File Directory where the data will be stored
 file_directory = 'Time Management'
 update_backups = True
-debug_mode = False
+debug_mode = True
 
 # Settings Procedure:
 # Add/remove it on the boolean settings and Adjust values for other settings
@@ -29,12 +29,12 @@ debug_mode = False
 # Change dat[0]
 # command F
 
-# QOL todo list:
-# "undo" in inputs
-# enter the day of the week in "due date" (fri,sat,etc); change in slashed_date_convert to allow days of week on the same week
+#ASSIGNMENTS NOT GETTING DELETED BECAUSE x == float
+
+# QOL todo list: 
 # remove monthly_backup
 # Replace "(Old Value: 1 Minutes)" in grouping value to none; also do with other reinput
-# Replace "fin" only work with first assignment to "fin" then "Enter the corresponding number of the assignment you have finished (Press Return if you have finished the first assignment)
+# Replace "fin" only work with first assignment to "fin" then "Enter the corresponding number of the assignment you have finished (Press Return to select the first assignment)
 # command f all the unit == 'minute' and change 68 min to 1h 6m
 # Replace (This assignments skew ratio is an outleir) with "assignments {x} have an outlier skew ratio"
 # (If you want, do one {unit} of work and see how long that takes) on inputs
@@ -380,7 +380,7 @@ def home(last_sel=0):
                         else:
                            
                            # Determines whether to display a warning
-                           if wlen > 0 and not (ndif == wlen - 1 and fixed_mode) and (lw - works[-2]) / warning_acceptance * 100 < funct(wlen+dif_assign) - works[-2]:
+                           if wlen > 0 and (lw - works[-2]) / warning_acceptance * 100 < funct(wlen+dif_assign) - works[-2]:
                               status_message = '!\u3000Warning! You are behind your Work schedule! '
                            else:
                               status_message = "\u2718\u3000This Assignment's Daily Work is Unfinished! "
@@ -591,7 +591,7 @@ def home(last_sel=0):
                   if amount_of_assignments:
                      while 1:
                         try:
-                           sel = qinput('Select which Assignment you would Like to Re-enter Data by Entering in its Corresponding Number:')
+                           sel = qinput('Select which Assignment you would Like to Re-enter by Entering in its Corresponding Number:')
                            if not sel:
                               outercon = True
                               break
@@ -1054,12 +1054,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             # Name of the assignment
             while 1:
                if reenter_mode:
-                  file_sel = qinput(f'\nPress Return at any time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" at Any Time to stop Re-Entering Data and keep the Original Version\nEnter in "undo" to undo an input\nTry not to enter Inputs faster than 0.2 seconds\n\nWhat would you Like to Rename this Assignment (Old Value: {selected_assignment[0]})\n').strip()
+                  file_sel = qinput(f'\nPress Return at any time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" at any time to stop re-entering the Inputs and keep the original Version\nEnter in "undo" to undo an input\nTry not to enter Inputs faster than 0.2 seconds\n\nWhat would you Like to Rename this Assignment (Old Value: {selected_assignment[0]})\n').strip()
                   if not file_sel:
                      file_sel = selected_assignment[0]
                      return
                else:
-                  file_sel = qinput('\nEnter in "cancel" at any time to stop Entering in Data\nTry not to enter Inputs faster than 0.2 seconds\n\nWhat would you Like to Name this Assignment\n').strip()
+                  file_sel = qinput('\nEnter in "cancel" at any time to stop entering in the Inputs\nEnter in "undo" to undo an input\nTry not to enter Inputs faster than 0.2 seconds\n\nWhat would you Like to Name this Assignment\n').strip()
                if file_sel.lower() == 'cancel':
                   outercon = True
                if file_sel in files and (not reenter_mode or file_sel != files[sel-1]):
@@ -1074,12 +1074,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             while 1:
                try:
                   if reenter_mode:
-                     ad = qinput(f'Re-enter the Assignment Date of this assignment or Enter "today" (Old Value: {selected_assignment[1].strftime("%-m/%-d/%Y")})\nFormat: Month/Day/Year\nExample: 1/1 or 1/1/{str(date_now.year)[-2:]} or jan/1 or jan/1/{str(date_now.year)[-2:]}\nYou can Assign in the Future\n').replace(' ','')
+                     ad = qinput(f'Re-enter the Assignment Date of this assignment or Enter "today" (Old Value: {selected_assignment[1].strftime("%-m/%-d/%Y")})\nFormat: Month/Day/Year\nThe year is optional and defaults to the currrent year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nYou can Assign in the Future\n').replace(' ','')
                      if not ad:
                         ad = selected_assignment[1]
                         return
                   else:
-                     ad = qinput(f'Enter the Assignment Date of this assignment or Enter "today"\nFormat: Month/Day/Year\nExample: 1/1 or 1/1/{str(date_now.year)[-2:]} or jan/1 or jan/1/{str(date_now.year)[-2:]}\nYou can Assign in the Future\n').replace(' ','')
+                     ad = qinput(f'Enter the Assignment Date of this assignment or Enter "today"\nFormat: Month/Day/Year\nThe year is optional and defaults to the currrent year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nYou can Assign in the Future\n').replace(' ','')
                   if ad.lower() == 'cancel':
                      outercon = True
                   elif ad.lower() == 'undo':
@@ -1106,14 +1106,14 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             while 1:
                  try:
                      if reenter_mode:
-                        x = qinput(f'Re-enter the Due Date of this assignment (Old Value: {(selected_assignment[1] + time(selected_assignment[2])).strftime("%-m/%-d/%Y")})\nFormat: Month/Day/Year\nExample: 1/1 or 1/1/{str(date_now.year)[-2:]} or jan/1 or jan/1/{str(date_now.year)[-2:]}\nOr, enter the Amount of Days in which this Assignment is Due from the Re-entered Assign Date (As a Whole Number Input)\n(Don\'t Have a Due Date? Enter in "none" to proceed)\n').replace(' ','').lower()
+                        x = qinput(f'Re-enter the Due Date of this assignment (Old Value: {(selected_assignment[1] + time(selected_assignment[2])).strftime("%-m/%-d/%Y")})\nUse the same Above format\nOr, enter the Amount of Days in which this Assignment is Due from the Re-entered Assign Date (As a Whole Number Input)\n(Don\'t Have a Due Date? Enter in "none" to proceed)\n').replace(' ','').lower()
                         if not x:
                            x = selected_assignment[2] - (ad - selected_assignment[1]).days
                            if x < 1 or x > (date(9999,12,30)-ad).days:
                               raise Exception
                            return
                      else:
-                        x = qinput(f'Enter the Due Date of this assignment\nFormat: Month/Day/Year\nExample: 1/1 or 1/1/{str(date_now.year)[-2:]} or jan/1 or jan/1/{str(date_now.year)[-2:]}\nOr, enter the Amount of Days in which this Assignment is Due from the Assign Date (As a Whole Number Input)\n(Don\'t Have a Due Date? Enter in "none" to proceed)\n').replace(' ','').lower()
+                        x = qinput(f'Enter the Due Date of this assignment\nUse the same Above format\nOr, enter the Amount of Days in which this Assignment is Due from the Assign Date (As a Whole Number Input)\n(Don\'t Have a Due Date? Enter in "none" to proceed)\n').replace(' ','').lower()
                      if x == 'cancel':
                         outercon = True
                      elif x == 'undo':
@@ -1121,7 +1121,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                      elif x == 'none':
                         while 1:
                            try:
-                              mx = qinput(f'Enter the Latest date this Assignment can be Due\nOr, enter the Amount of Days until the Latest date this Assignment can be Due\n(Don\'t Care when this Assignment will be Due? Enter "none" to skip)\n')
+                              mx = qinput(f'Enter the Latest date this Assignment can be Due\nUse the same Above format\nOr, enter the Amount of Days until the Latest date this Assignment can be Due\n(Don\'t Care when this Assignment will be Due? Enter "none" to skip)\n')
                               if 'none' in mx.lower():
                                  mx = float('inf')
                                  return
@@ -1153,13 +1153,15 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             
             # Name of each unit of the assignment
             if reenter_mode:
-               unit = qinput(f'Re-enter what you would Like to Rename each Unit of Work in this Assignment (Old Value: {selected_assignment[12]})\nExample: If this assignment is a book, enter "page"\nIf you are not sure what to name each unit of work, enter "none"\n').strip().lower()
+               unit = qinput(f'Re-enter the name of each Unit of Work in this Assignment (Old Value: {selected_assignment[12]})\nExample: If this assignment is a book, enter "page"\nIf you are not sure what to name each unit of work, enter "none"\n').strip().lower()
                if unit == 'none':
                   unit = 'Minute'
                elif unit:
-                  unit = reenter_input.rstrip('s').capitalize()
+                  unit = unit.rstrip('s').capitalize()
+               else:
+                  unit = selected_assignment[12]
             else:
-               unit = qinput('Enter what you would Like to Name each Unit of Work in this Assignment\nExample: If this assignment is a book, enter "page"\nIf you are not sure what to name each unit of work, Press Return\n').strip().lower()
+               unit = qinput('Enter the name of each Unit of Work in this Assignment\nExample: If this assignment is a book, enter "page"\nIf you are not sure what to name each unit of work, Press Return\n').strip().lower()
                if unit:
                   unit = unit.rstrip('s').capitalize()
                else:
@@ -1177,12 +1179,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                  try:
                      if reenter_mode:
                         if unit == 'Minute':
-                           reenter_input = qinput(f'Re-enter how Long this Assignment will take to Complete in Minutes (Allows Decimal Inputs) (Old Value: {selected_assignment[3]} {selected_assignment[12]}s)\n')
+                           y = qinput(f'Re-enter how Long this Assignment will take to Complete in Minutes (Allows Decimal Inputs) (Old Value: {selected_assignment[3]} {selected_assignment[12]}s)\n')
                         else:                        
-                           reenter_input = qinput(f'Re-enter the Total amount of {unit}s in this Assignment (Allows Decimal Inputs) (Old Value: {selected_assignment[3]} {selected_assignment[12]}s)\n')
-                        if not reenter_input:
+                           y = qinput(f'Re-enter the Total amount of {unit}s in this Assignment (Allows Decimal Inputs) (Old Value: {selected_assignment[3]} {selected_assignment[12]}s)\n')
+                        if not y:
+                           y = selected_assignment[3]
                            return
-                        y = reenter_input
                      else:
                         if unit == 'Minute':
                            y = qinput(f'Enter how Long this Assignment will take to Complete in Minutes (Allows Decimal Inputs)\n')
@@ -1212,12 +1214,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                try:
                   if reenter_mode:
                      if unit == 'Minute':
-                        reenter_input = qinput(f'Re-enter how many Minutes of this Assignment you have already Completed (Allows Decimal Inputs) (Old Value: {selected_assignment[4][-1]} {selected_assignment[12]}s)\nThe y position of the very First Point on the Blue Line will be set to this Value\n')
+                        adone = qinput(f'Re-enter how many Minutes of this Assignment you have already Completed (Allows Decimal Inputs) (Old Value: {selected_assignment[4][-1]} {selected_assignment[12]}s)\nThe y position of the very First Point on the Blue Line will be set to this Value\n')
                      else:
-                        reenter_input = qinput(f'Re-enter the Total amount of {unit}s Already completed at the Beginning of this Assignment (Allows Decimal Inputs) (Old Value: {selected_assignment[4][-1]} {selected_assignment[12]}s)\nThe y position of the first point on the Blue Line will be set to this Value\n')
-                     if not reenter_input:
+                        adone = qinput(f'Re-enter the Total amount of {unit}s Already completed at the Beginning of this Assignment (Allows Decimal Inputs) (Old Value: {selected_assignment[4][-1]} {selected_assignment[12]}s)\nThe y position of the first point on the Blue Line will be set to this Value\n')
+                     if not adone:
+                        adone = selected_assignment[4][-1]
                         return
-                     adone = reenter_input
                   else:
                      if unit == 'Minute':
                         adone = qinput(f'Enter how many Minutes of this Assignment you have already Completed (Allows Decimal Inputs) (Press Return if you have not started this Assignment)\n')
@@ -1242,7 +1244,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
 
          def input7():
             global outercon, ctime
-            
+
             if unit == 'Minute':
                ctime = 1
             else:
@@ -1251,10 +1253,10 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                while 1:
                    try:
                         if reenter_mode:
-                           reenter_input = qinput(f'Re-enter the Estimated amount of time to Complete each {unit} in Minutes (Allows Decimal Inputs) (Old Value: {selected_assignment[7]})\n')
-                           if not reenter_input:
+                           ctime = qinput(f'Re-enter the Estimated amount of time to Complete each {unit} in Minutes (Allows Decimal Inputs) (Old Value: {selected_assignment[7]})\n')
+                           if not ctime:
+                              ctime = selected_assignment[7]
                               return
-                           ctime = reenter_input
                         else:
                            ctime = qinput(f'Enter the Estimated amount of Minutes to Complete each {unit} (Allows Decimal Inputs)\n')
                         if 'cancel' in ctime.lower():
@@ -1279,12 +1281,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                 try:
                      if reenter_mode:
                         if unit == 'Minute':
-                           reenter_input = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: {selected_assignment[8]} {selected_assignment[12]}s)\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\nThe recommended value is 5 Minutes\n').lower()
+                           funct_round = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: {selected_assignment[8]} {selected_assignment[12]}s)\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\nThe recommended value is 5 Minutes\n').lower()
                         else:
-                           reenter_input = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: {selected_assignment[8]} {selected_assignment[12]}s)\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\n').lower()
-                        if not reenter_input:
+                           funct_round = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: {selected_assignment[8]} {selected_assignment[12]}s)\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\n').lower()
+                        if not funct_round:
+                           funct_round = selected_assignment[8]
                            return
-                        funct_round = reenter_input
                      else:
                         if unit == 'Minute':
                            funct_round = qinput(f'Enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Press Return to skip)\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\nThe recommended value is 5 Minutes\n').lower()
@@ -1971,12 +1973,12 @@ def pset():
                      # Sets the y_value_to_cutoff if ignore_ends is enabled
                      y_value_to_cutoff = y1 - min_work_time_funct_round / 2
                      if a:
-                        return_y_cutoff2 = ((b*b+4*a*y_value_to_cutoff)**0.5-b)/a/2-1e-10
+                        return_y_cutoff2 = ((b*b+4*a*y_value_to_cutoff)**0.5-b)/a/2
                      elif b:
-                        return_y_cutoff2 = y_value_to_cutoff/b-1e-10
+                        return_y_cutoff2 = y_value_to_cutoff/b
                      else:
-                        return_y_cutoff2 = 1-1e-10
-                     if cutoff_transition_value < y_mremainder and (return_y_cutoff2-1) * ((return_y_cutoff2-1) * a + b) > y_value_to_cutoff:
+                        return_y_cutoff2 = 1
+                     if cutoff_transition_value < y_mremainder and (return_y_cutoff2-1) * ((return_y_cutoff2-1) * a + b) >= y_value_to_cutoff:
 
                         # suppose min_work_time_funct_round is 10 and y is 148
                         # Suppose f(x-2) = 130, f(x-1) = 140, and f(x) = 148
@@ -2202,8 +2204,7 @@ def funct(n):
    # 30 days --> 7 days + 7 days + 7 days + 7 days + 2 days
    # I know in each of those 7 days there will be one tuesday
    # And since there are four 7 days, I know there are at least 4 tuesdays between Janruary 1 and Janruary 31
-   # Finally, what about the remaining 2 days? What if those days contain a 5th tuesday? That problem is solved
-   # with the tuple mods
+   # Finally, what about the remaining 2 days? What if those days contain a 5th tuesday? That problem is solved with the tuple mods
    # Mods simply goes through the remanding days and determines if there is a tuesday and adds to the counter if there is
    
    # What if I have multiple chosen weekdays, for example tuesday and wednesday?
@@ -2234,16 +2235,17 @@ def funct(n):
    # f(9) will also be the 7th value on the parabola
    # Then f(10) is the 8th value on the parabola and f(11) is the 9th value on the parabola and so on
    # For any f(n), it first subtracts the amount of not working days between
-   #the starting date and the starting date plus n days
+   # the starting date and the starting date plus n days
    # This in a way "adds back in" in the not working days
 
-   # This equation subtracts the amount of not working days between the starting date and the starting date plus n days
+   # This equation subtracts the amount of not working days between the starting date and the starting date plus x days
    if nwd:
       n -= n//7 * len_nwd + mods[n % 7]
 
    # If the input is greater than the return_y_cutoff, defined in the pset() function, then return y
    if n > return_y_cutoff:
       return y
+   # If the input is less than the return_0_cutoff, defined in the pset() function, then return 0
    elif n < return_0_cutoff:
       return start_lw
 
@@ -2251,14 +2253,13 @@ def funct(n):
    # The goal of minimum work time is to make sure you never work less than the minimum work time
    # However, if that day is not a working day, then you can work 0 and do nothing
    # The main challenge with this is that you need to know the previous function output in order to make sure you work
-   # at least minimum work time units each working day
+   # at least minimum work time units every working day
    # Originally, I tried to make a list of every single function output from the start to the end of the assignment
    # Then, I would loop through the list and modify each function output such that they are either at least minimum
    # work time distance away or at zero (which means that day isn't a working day)
-   # This obviously made some problems because not only was it extremely inefficient but it took so much memory that
-   # longer assignments could overflow and corrupt the memory
-   # As a note, I cannot do something like this: f(x)[defined earlier in the function] - f(x - 1) < minimum work time
-   # This is because f(x - 1) would create an infinitely recurring loop calling the same line back again
+   # This obviously was extremely inefficient because it took so much memory that longer assignments could overflow and corrupt the memory
+   # As a note, I cannot do something like this: f(x) - f(x - 1) < minimum work time
+   # This is because f(x - 1) would create an infinitely recurring loop calling the same function back again
    
    # On my second attempt, I thought of utilizing rounding
    # Rounding doesn't require knowing the previous function output, which solves the recursion problem
@@ -2281,7 +2282,6 @@ def funct(n):
                                                    
       # n*(a*n+b) simplifies to an^2 + bn, which is a quadratic function for returning the output
       # Then, it is rounded to the nearest multiple of funct_round that is greater than the minimum work time
-
       output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
       if skew_ratio > 1:
          output += cutoff_transition_value
@@ -2313,7 +2313,7 @@ def funct(n):
    if remainder_mode and output:
       output += y_fremainder
             
-   # Returns the final output
+   # Returns the final output plus start_lw, which untranslates the graph back to where it orignally was
    return output + start_lw
 
 if debug_mode:
@@ -2391,32 +2391,46 @@ def format_not_working_days(format_default=True):
       return ', '.join((date(1,1,1) + time(nwd_day)).strftime('%A') for nwd_day in nwd2[:len_nwd - 1]) + ', and ' + (date(1,1,1) + time(nwd2[len_nwd - 1])).strftime('%A')
 
 # Converts dates like "4/30/20" to datetime objects
-def slashed_date_convert(slashed_date,next_year=True,spos=-1):
-   slashes = []
-   while 1:
-      try:
-         spos = slashed_date.index('/',spos + 1)
-         slashes.append(spos)
-      except:
+def slashed_date_convert(slashed_date,next_year=True):
+   try:
+      day = {'mon':0,'mond':0,'tue':1,'tues':1,'wed':2,'wedn':2,'thu':3,'thur':3,'thurs':3,'fri':4,'frid':4,'sat':5,'satu':5,'sun':6,'sund':6}[slashed_date]
+      date_now_wd = date_now.weekday()
+      first_loop = True
+      while date_now_wd % 7 != day:
+         date_now_wd += 1
+         first_loop = False
+      if first_loop:
+         date_now_wd += 7
+      if not next_year:
+         date_now_wd -= 7
+      return date(date_now.year,date_now.month,(date_now + time(date_now_wd - date_now.weekday())).day)
+   except:
+      slashes = []
+      spos = -1
+      while 1:
          try:
-            month = slashed_date[:slashes[0]]
-            month = int(month,10)
+            spos = slashed_date.index('/',spos + 1)
+            slashes.append(spos)
          except:
-            month = {'jan':1,'feb':2,'mar':3,'apr':4,'may':5,'jun':6,'june':6,'jul':7,'july':7,'aug':8,'sep':9,'sept':9,'oct':10,'nov':11,'dec':12}[month.lower()]
-         try:
-            day = int(slashed_date[slashes[0]+1:slashes[1]],10)
-            if len(slashed_date[slashes[1]+1:]) in (1, 2):
-               year = int(str(date_now.year)[:4-len(slashed_date[slashes[1]+1:])]+str(slashed_date[slashes[1]+1:]),10)
-            else:
-               year = int(slashed_date[slashes[1]+1:],10)
-         except:
-            day = int(slashed_date[slashes[0]+1:],10)
-            year = date_now.year
-            if next_year and date(date_now.year,month,day) <= date_now:
-               year += 1
-         if next_year and date(year,month,day) <= date_now:
-            raise Exception
-         return date(year,month,day)
+            try:
+               month = slashed_date[:slashes[0]]
+               month = int(month,10)
+            except:
+               month = {'jan':1,'feb':2,'mar':3,'apr':4,'may':5,'jun':6,'june':6,'jul':7,'july':7,'aug':8,'sep':9,'sept':9,'oct':10,'nov':11,'dec':12}[month.lower()]
+            try:
+               day = int(slashed_date[slashes[0]+1:slashes[1]],10)
+               if len(slashed_date[slashes[1]+1:]) in (1, 2):
+                  year = int(str(date_now.year)[:4-len(slashed_date[slashes[1]+1:])]+str(slashed_date[slashes[1]+1:]),10)
+               else:
+                  year = int(slashed_date[slashes[1]+1:],10)
+            except:
+               day = int(slashed_date[slashes[0]+1:],10)
+               year = date_now.year
+               if next_year and date(date_now.year,month,day) <= date_now:
+                  year += 1
+            if next_year and date(year,month,day) <= date_now:
+               raise Exception
+            return date(year,month,day)
 
 # Gets width of text for formating
 def gw(font,text):
@@ -2887,8 +2901,7 @@ def draw(doing_animation=0,do_return=1):
                center('You have Completed your Work for Today!',row_height*9)
             else:
                try:
-                  llw = works[-2]
-                  if not (ndif == wlen - 1 and fixed_mode) and (lw - llw) / warning_acceptance * 100 < funct(wlen+dif_assign) - llw:
+                  if (lw - works[-2]) / warning_acceptance * 100 < funct(wlen+dif_assign) - works[-2]:
                      center('!!! ALERT !!!',row_height*11)
                      center('You Are BEHIND Schedule!',row_height*12)
                except:
@@ -2903,12 +2916,13 @@ def quit_program(internal_error=False):
    if not debug_mode:
       pygame.quit()
    global file_directory, date_last_closed
+   
    # Prints error info
    from traceback import format_exc # Prints the Exception if an Error Occurs
    error_info = format_exc().replace('\n\n','\n')
    if internal_error and error_info.split('\n')[-2] != 'KeyboardInterrupt':
       #print(f'\n\n\n\nCOPY ALL INFORMATION STARTING FROM HERE\n\n\n{dat}\n\n{error_info}\n\nAND ENDING AT HERE\n\n\nIt seems like there was an Internal Error somewhere in the code... :/\nPlease copy all of the Data Above and send it to me on G-mail at arhan.ch@gmail.com so I can fix the Error\nThank you')
-      print(f'\n\n\n\nCOPY ALL INFORMATION STARTING FROM HERE\n\n\n{dat}\n\n{error_info}\n\nAND ENDING AT HERE\n\n\nSo uhhmmmmmmm... :/\nThere was a bug somewhere in code sorry lol\nshow this message and the info above to me and i promise to buy you mcdonalds')
+      print(f'\n\n\n\nCOPY ALL INFORMATION STARTING FROM HERE\n\n\n{dat}\n\n{error_info}\n\nAND ENDING AT HERE\n\n\nSo uhhmmmmmmm... :/\nThere was a bug somewhere in code sorry lol\nshow this message and the info above to me, and i promise to buy you mcdonalds')
    else:
       # If the files have already been created, then update the backups by comparing the last opened date to today
       if update_backups:
@@ -3176,7 +3190,7 @@ Some things are important to know
                else:
                   while 1:
                      try:
-                        choice = qinput(f'Enter the Date at which the Red Line will Start\nFormat: Month/Day/Year\nExample: 2/16/{date_now.year}, nov/5, or 10\nOr, enter the Amount of Days since the Assignment Date the Red Line will Start at (As a Whole Number Input)\n').replace(' ','')
+                        choice = qinput(f'Enter the Date at which the Red Line will Start\nFormat: Month/Day/Year\nThe year is optional and defaults to the currrent year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nOr, enter the Amount of Days since the Assignment Date the Red Line will Start at (As a Whole Number Input)\n').replace(' ','')
                         if choice:
                            try:
                               choice = int(choice,10)
@@ -3713,25 +3727,22 @@ Some things are important to know
                                 input_done = ceil(float(input_done)*1000000-0.5)/1000000 - lw * total_mode
 
                              # If the user is at the end of the assignment, check to make sure their input is valid
-                             # The below equation will be broken down
+                             # The below expression will be broken down
 
 
                              # "wlen+dif_assign == x-1"
-                             # Simply checks if the user is entering in the last input
+                             # Checks if the user is entering in the last input
                              
-                             # "not input_done and fixed_mode"
+                             # "not input_done"
                              # The user can't enter 0 for the last input in the assignment
-                             # This is because 0 changes the day to the next day no matter what
-                             # This will mean the user will reach the end of the assignment
-                             # But since the input was 0, the user still hasn't completed the assignment
-                             # And since the user must complete the assignment by the due date, entering 0 is not valid
+                             # This is because 0 changes the day to the next day no matter what, causing the user to reach the end of the assignment
+                             # Since the input was 0 and the user still hasn't completed the assignment, entering 0 is not valid
 
-                             # "(not fixed_mode or x-1 != xdif and not rem_work) and input_done + lw < y"
-                             # If dynamic mode is enabled and the last input does not complete the assignment, the input is not valid
+                             # "x-1 != xdif and input_done + lw < y and not rem_work"
                              # If fixed mode is enabled and if the user is entering the last input ahead of their current date and the last input does not complete the assignment, the input is not valid
                              # One last condition to the above comment is the 2nd to last input cannot be in progress
                              # This is because without this condition, the code will think the user is entering the last input and make the input invalid, even though the user isn't actually entering the last input
-                             if wlen+dif_assign == x-1 and (not input_done and fixed_mode or (not fixed_mode or x-1 != xdif and not rem_work) and input_done + lw < y):
+                             if wlen+dif_assign == x-1 and (not input_done or x-1 != xdif and input_done + lw < y and not rem_work):
                                 raise Exception
                               
                              total_done = input_done + lw
