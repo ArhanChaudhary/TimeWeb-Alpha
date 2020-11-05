@@ -28,12 +28,8 @@ debug_mode = True
 # Change dat[0]
 # command F
 
-
-# think about making dynamic_start change using fixed mode todo as refarance rather than dynamic mode todo
-
-
 # QOL todo list:
-# command f all the unit == 'minute' and change 68 min to 1h 6m
+# dynamic_start change using fixed mode todo as refarance rather than dynamic mode todo
 # y1 to y - start_lw
 # fix next_day (make it values 0,1,2,3,etc), function to set date_now and also take into account "next_day" variable; make it so that before "next" it says "would you like to work ahead even though everything is completed? (Automatically set to fixed mode with input to undo that) (DO NOT do this on SP, do it something like: lw == funct(wlen) with fixed_mode on), THEN display "next"; also put second estimated completion time (showing if every assignment was fixed_mode)
 # dont know the amount of units? ONLy if due date is known ("none" with y)
@@ -44,7 +40,7 @@ debug_mode = True
 # daily assignments (x and y will change with the assignment, x will always be (DUE TOMORROW!!!), todo will always be the min_work_time) 
 # maximum work time (with "would you like y to change?" option)
 # multiple points to hit (piecewise) (combining assignments into one big x axis graph)
-# replace "change skew ratio" to "change a property for all assignments" in settings (skew_ratio, nwd, fixed_mode, total mode, min_work_time, extend due date if deu tmrw)
+# replace "change skew ratio" to "change a property for all assignments" in settings (skew_ratio, nwd, fixed_mode, total mode, min_work_time, extend due date if due tmrw)
 # time table, use (this assignment is complete because there is no time left in today)
    
 # Gets today's date
@@ -61,7 +57,7 @@ try:
    first_run = False
       
    # Loads setting data
-   date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,display_status_priority,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup = dat[0]
+   date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,status_priority,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup = dat[0]
    print('Please enter "quit" or crtl+c into any input to properly exit the program\nTry not to force quit or rerun the program without entering "quit"\n\nPress Return at any Time to Cancel an Input (Unless Specifically told Otherwise)\n')
        
 except:
@@ -70,12 +66,12 @@ except:
    # Initialize Default settings in a new file
    
    # Each Item in the List of the Settings corresponds to the Variable Name above it
-   #       date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,display_status_priority,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup
-   dat = [[date_now        ,750  ,750   ,35                   ,100               ,25               ,()     ,True                ,False                  ,True    ,True       ,True     ,True             ,True     ,True              ,True         ,True        ,False        ]]
+   #       date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,status_priority,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup
+   dat = [[date_now        ,750  ,750   ,35                   ,100               ,25               ,()     ,True                ,True           ,True    ,True       ,True     ,True             ,True     ,True              ,True         ,True        ,False        ]]
    first_run = True
    
    # Loads setting data
-   date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,display_status_priority,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup = dat[0]
+   date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,status_priority,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup = dat[0]
    #print('Welcome to Time Management Beta!\nThis program will split up an assignment\'s work over days of time for all of your assignments\nAssignments with higher priority will be sorted closer to the top of the list\nIf you have any questions on how to use this program or any suggestions, contact me at arhan.ch@gmail.con')
    print('Welcome to Time Management Beta!\nThis program will split up an assignment\'s work over days of time for all of your assignments\nAssignments with higher priority will be sorted closer to the top of the list\nIf you have any questions on how to use this program or any suggestions, you probably know me in real life')
 
@@ -149,7 +145,7 @@ def qinput(input_message):
 # Main assignment home function
 def home(last_sel=0):
    autofill_override = False
-   global outercon, date_now, min_work_time, sel, x, y, ad, ctime, dif_assign, works, day, skew_ratio, file_sel, adone, date_file_created, disyear, dat, screen, ndif, xdif, rem_zero, lw, start_lw, assign_day_of_week, wlen, funct_round, nwd, len_nwd, fixed_mode, dynamic_start, stry, slash_x_counter, red_line_start, unit, wCon, hCon, total_mode, set_start, set_skew_ratio, clicked_once, fixed_start, remainder_mode, smart_skew_ratio, due_date, selected_assignment, width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,show_past,ignore_ends,ignore_ends_mwt,dark_mode,show_progress_bar,display_status_priority,last_opened_backup,hourly_backup,daily_backup,weekly_backup,manual_backup, file_directory, black, border, gray, gray1, gray2, gray3, gray4, gray5, white, min_work_time_funct_round, left_adjust_cutoff, up_adjust_cutoff, point_text_width, point_text_height, y_fremainder, y_mremainder, tomorrow
+   global outercon, date_now, min_work_time, sel, x, y, ad, ctime, dif_assign, works, day, skew_ratio, file_sel, adone, date_file_created, disyear, dat, screen, ndif, xdif, rem_zero, lw, start_lw, assign_day_of_week, wlen, funct_round, nwd, len_nwd, fixed_mode, dynamic_start, stry, slash_x_counter, red_line_start, unit, wCon, hCon, total_mode, set_start, set_skew_ratio, clicked_once, fixed_start, remainder_mode, smart_skew_ratio, due_date, selected_assignment, width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,show_past,ignore_ends,ignore_ends_mwt,dark_mode,show_progress_bar,status_priority,last_opened_backup,hourly_backup,daily_backup,weekly_backup,manual_backup, file_directory, black, border, gray, gray1, gray2, gray3, gray4, gray5, white, min_work_time_funct_round, left_adjust_cutoff, up_adjust_cutoff, point_text_width, point_text_height, y_fremainder, y_mremainder, tomorrow
    next_day = False
    set_tomorrow = True
    while 1:
@@ -326,6 +322,9 @@ def home(last_sel=0):
                               red_line_start = dynamic_start
                               if nwd:
                                  set_mod_days()
+                                 ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 and y >= min_work_time_funct_round * 2
+                              else:
+                                 ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start != 2 and y >= min_work_time_funct_round * 2
                               pset()
                      if has_autofilled:
 
@@ -379,14 +378,21 @@ def home(last_sel=0):
                            strtodo = '%g' % todo
                            complete_or_reach = 'Complete'
                         if unit == 'Minute':
-                           status_message += f' {complete_or_reach} {strtodo} {strtotal}Minute{s} of Work Today.'
+                           if todo*ctime >= 60:
+                              status_message += f' {complete_or_reach} {strtodo} {strtotal}Minute{s} of Work Today. ({format_minutes(todo*ctime)})'
+                           else:
+                              status_message += f' {complete_or_reach} {strtodo} {strtotal}Minute{s} of Work Today.'
                         else:
                            status_message += f' {complete_or_reach} {strtodo} {strtotal}{unit}{s} Today. ({format_minutes(todo*ctime)})'
                         tot += ceil(todo*ctime)
                   if dayleft == 1:
                      strdayleft = ' (Due TOMORROW!!)'
                      tomorrow_tot += ceil(todo*ctime)
-                     status_value = 2
+                     try:
+                        status_value
+                        status_value = 2
+                     except:
+                        pass
                   elif dayleft < 7:
                      strdayleft = (ad + time(x)).strftime(' (Due on %A)')
                   else:
@@ -400,17 +406,15 @@ def home(last_sel=0):
             else:
 
                # Sets the graph to linear with the start of the red line being at the beginning
-               # This represents an ideal work distribution, so therefore it is used as a comparison in the priority algorithm
-               pre_todo = funct((date_now-ad).days+1) - lw
+               # This represents the ideal work distribution, so therefore it is used as a comparison in the priority algorithm
                skew_ratio = 1
                red_line_start = dif_assign
                pset()
-               todo = funct((date_now-ad).days+1) - lw
+               todo = funct((date_now-ad).days+1) - works[ndif]
 
                # todo*ctime is the total amount of minutes it will take to complete the work for that day
                # x-dif_assign-wlen is the amount of days until the assignment is due
-               # pre_todo is the amount to be done before the graph is sets to linear with the start of the red line being at the beginning
-               if not x-dif_assign-wlen or todo < 0 or pre_todo <= 0:
+               if not x-dif_assign-wlen or todo < 0:
                   status_priority = 0
                   
                else:
@@ -469,10 +473,10 @@ def home(last_sel=0):
          # Loops through every assignment finds the ratio of its status priority and the highest status priority
          for j in ordli:
             if j[0] in (2,3,4):
-               try:
-                  daysleft[j[2]-1] += f' SP: {ceil(j[1] / maxsp * 100)}%'
-               except:
-                  daysleft[j[2]-1] += ' SP: 0%'
+               if maxsp and (j[0] != 4 or not tot):
+                  daysleft[j[2]-1] += f' Priority: {ceil(j[1] / maxsp * 100)}%'
+               else:
+                  daysleft[j[2]-1] += ' Priority: 0%'
 
          # Formatting
          massign = len(max(assign,key=len))
@@ -659,6 +663,9 @@ def home(last_sel=0):
                                  len_nwd = len(nwd)
                                  if nwd:
                                     set_mod_days()
+                                    ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 and y >= min_work_time_funct_round * 2
+                                 else:
+                                    ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start != 2 and y >= min_work_time_funct_round * 2
                                  y_fremainder = (y - start_lw) % funct_round
                                  y_mremainder = (y - start_lw) % min_work_time_funct_round
                                  pset()
@@ -705,7 +712,7 @@ def home(last_sel=0):
 5)  Default Minimum Work Time          : {def_min_work_time} Minutes
 6)  Default Not Working Days           : {format_not_working_days()}
 7)  Display Instructions               : {display_instructions}
-8)  Display Status Priority            : {display_status_priority} (Select for More Info)
+8)  Display Assignment Priority        : {status_priority}
 9)  Autofill Work*                     : {autofill} (Select for More Info)
 10) Ignore Min Work Time Ends*         : {ignore_ends} (Select for More Info)
 11) Dark Mode in Graph                 : {dark_mode}
@@ -820,15 +827,14 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            settings[change_setting] = new_value
 
                            # Redefines changed variables
-                           display_instructions,display_status_priority,autofill,ignore_ends,dark_mode,show_progress_bar,show_past = settings[7:14]
+                           display_instructions,status_priority,autofill,ignore_ends,dark_mode,show_progress_bar,show_past = settings[7:14]
 
                            # Saves data
                            save_data()
                            
-                           # Prints settings that have instructions on how to use
-                           if 7 < change_setting and change_setting < 11:
-                              print(('\nDisplays the Percentage of an Assignment\'s Priority on the home Assignment Page\nAbbreviated as "SP"',
-                                     "\nIf you do not have to Work for a day in an Assignment, and you Forget to input work for that Day, it is assumed you did Nothing\nThe program will auto fill in No work Done on that day because you anyways did Not have to Work\nApplies to periods of a time Longer than a Day",
+                           # Prints settings instructions
+                           if 8 < change_setting and change_setting < 11:
+                              print(("\nIf you do not have to Work for a day in an Assignment, and you Forget to input work for that Day, it is assumed you did Nothing\nThe program will auto fill in No work Done on that day because you anyways did Not have to Work\nApplies to periods of a time Longer than a Day",
                                      "\nIgnore Ends is only relevant when Minimum Work Time is also Enabled for an Assignment\nIgnores the Minimum Work Time on the first and last Working Day to make the Work Distribution smoother\nThis also fixes an Issue that causes you to Work a Lot More on the First and Last days of an Assignment\nIt only ignores the minimum work time when Absolutely Necessary and tries to Preserve the original distribution as Much as Possible"
                                      )[change_setting-8]+f"\nThis Setting\'s new value is {new_value} (Old Value: {not new_value})\n")
                               qinput('Enter Anything to Continue:')
@@ -1021,7 +1027,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                               
                               # Resets Setting Data
                               settings[1:14] = [750,750,35,100,30,(),True,False,True,True,True,True,True]
-                              width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,display_status_priority,autofill,ignore_ends,dark_mode,show_progress_bar,show_past = settings[1:14]
+                              width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,status_priority,autofill,ignore_ends,dark_mode,show_progress_bar,show_past = settings[1:14]
                               black = (255,255,255)
                               border = (200,200,200)
                               gray = (55,55,55)
@@ -2482,7 +2488,7 @@ def draw(doing_animation=0,do_return=1):
    
       # Used to manually set the start of the red line and the skew ratio of the graph
       if set_start or draw_point:
-         global red_line_start, start_lw, last_mouse_x, last_mouse_y, y_fremainder, y_mremainder
+         global red_line_start, start_lw, last_mouse_x, last_mouse_y, y_fremainder, y_mremainder, ignore_ends_mwt
 
          # Gets the position of the mouse
          mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -2515,6 +2521,9 @@ def draw(doing_animation=0,do_return=1):
             y_mremainder = (y - start_lw) % min_work_time_funct_round
             if nwd:
                set_mod_days()
+               ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 and y >= min_work_time_funct_round * 2
+            else:
+               ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start != 2 and y >= min_work_time_funct_round * 2
             calc_skew_ratio_lim()
          elif draw_point:
 
@@ -2981,8 +2990,10 @@ def quit_program(internal_error=False):
    from traceback import format_exc # Prints the Exception if an Error Occurs
    error_info = format_exc().replace('\n\n','\n')
    if internal_error and error_info.split('\n')[-2] != 'KeyboardInterrupt':
-      #print(f'\n\n\n\nCOPY ALL INFORMATION STARTING FROM HERE\n\n\n{dat}\n\n{error_info}\n\nAND ENDING AT HERE\n\n\nIt seems like there was an Internal Error somewhere in the code... :/\nPlease copy all of the Data Above and send it to me on G-mail at arhan.ch@gmail.com so I can fix the Error\nThank you')
-      print(f'\n\n\n\nCOPY ALL INFORMATION STARTING FROM HERE\n\n\n{dat}\n\n{error_info}\n\nAND ENDING AT HERE\n\n\nSo uhhmmmmmmm... :/\nThere was a bug somewhere in code sorry lol\nshow this message and the info above to me, and i promise to buy you mcdonalds')
+      if 'file_sel' not in globals():
+         file_sel = None
+      #print(f'\n\n\n\nCOPY ALL INFORMATION STARTING FROM HERE\n\n\n{dat} {file_sel}\n\n{error_info}\n\nAND ENDING AT HERE\n\n\nIt seems like there was an Internal Error somewhere in the code... :/\nPlease copy all of the Data Above and send it to me on G-mail at arhan.ch@gmail.com so I can fix the Error\nThank you')
+      print(f'\n\n\n\nCOPY ALL INFORMATION STARTING FROM HERE\n\n\n{dat} {globals()["file_sel"]}\n\n{error_info}\n\nAND ENDING AT HERE\n\n\nSo uhhmmmmmmm... :/\nThere was a bug somewhere in code sorry lol\nshow this message and the info above to me, and i promise to buy you mcdonalds')
    else:
       # If the files have already been created, then update the backups by comparing the last opened date to today
       if update_backups:
@@ -3021,6 +3032,7 @@ try:
     
     # Runs the Assignment Page
     draw_point = False
+    first_loop = True
     home()
     last_mouse_x = -1
     last_mouse_y = -1
@@ -3262,6 +3274,11 @@ Make sure you read all of the instructions, as some things are important to know
                            else:
                               dynamic_start = red_line_start
                               selected_assignment[11] = dynamic_start
+                           if nwd:
+                              set_mod_days()
+                              ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 and y >= min_work_time_funct_round * 2
+                           else:
+                              ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start != 2 and y >= min_work_time_funct_round * 2
                         else:
                            print('Successfully Escaped from Input\n')
                         break
@@ -3428,15 +3445,17 @@ Make sure you read all of the instructions, as some things are important to know
 
                     # Formats the day information for the schedule
                     total += dif
-                    dif = '%g' % dif
                     strtotal = '%g' % total
                     if first_loop and str(i) == '0.0':
-                        this_day = formatted_date
-                        first_loop = False
+                       this_day = formatted_date
+                       first_loop = False
                     elif do_format:
-                        this_day = f'{formatted_date}ZL {dif}XL {unit}{s} (QL{strtotal} / {stry})'
+                       this_day = f'{formatted_date}ZL {dif}XL {unit}{s} (QL{strtotal} / {stry})'
                     else:
-                        this_day = f'{formatted_date}\t{dif} {unit}{s} ({strtotal} / {stry})'.expandtabs(32)
+                       this_day = f'{formatted_date}\t{dif} {unit}{s} ({strtotal} / {stry})'.expandtabs(32)
+                    if unit != 'Minute' or dif*ctime >= 60:
+                       this_day += f' ({format_minutes(dif*ctime)})'
+                    dif = '%g' % dif
                     if dskp > 1:
                        this_day += f' ({dskp} Days Later)'
                        dskp = 1
@@ -3495,7 +3514,10 @@ Make sure you read all of the instructions, as some things are important to know
                         assignment_info = f' ({dskp} Days Later) (Due Date)\nSkew Ratio: {round(skew_ratio-1,3)}\n'
                     if funct_round != 1:
                         if unit == 'Minute':
-                           assignment_info += f'Grouping Value: {selected_assignment[8]} Minutes of Work\n'
+                           if selected_assignment[8] >= 60:
+                              assignment_info += f'Grouping Value: {selected_assignment[8]} Minutes of Work ({format_minutes(selected_assignment[8])})\n'
+                           else:
+                              assignment_info += f'Grouping Value: {selected_assignment[8]} Minutes of Work\n'
                         else:
                            assignment_info += f'Grouping Value: {selected_assignment[8]} {unit}s\n'
                     if len_nwd:
@@ -3687,6 +3709,9 @@ Make sure you read all of the instructions, as some things are important to know
                   
                if nwd:
                   set_mod_days()
+                  ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 and y >= min_work_time_funct_round * 2
+               else:
+                  ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start != 2 and y >= min_work_time_funct_round * 2
                draw(0,0)
 
             # Interprets user inputs
@@ -3695,7 +3720,6 @@ Make sure you read all of the instructions, as some things are important to know
                  if lw >= y:
                     print('\n!!!\nYou have Reached the End of this Assignment!\n!!!')
                  elif xdif > -1:
-                    first_loop = True
                     while 1:
                          try:
                              if (assign_day_of_week + dif_assign + day) % 7 in nwd:
@@ -3843,6 +3867,9 @@ Make sure you read all of the instructions, as some things are important to know
                                     y_mremainder = (y - start_lw) % min_work_time_funct_round
                                     if nwd:
                                        set_mod_days()
+                                       ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 and y >= min_work_time_funct_round * 2
+                                    else:
+                                       ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start != 2 and y >= min_work_time_funct_round * 2
                                     calc_skew_ratio_lim()
                              if lw >= y:
                                 selected_assignment[2] = float(x)
