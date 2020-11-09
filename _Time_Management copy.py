@@ -29,12 +29,16 @@ debug_mode = True
 # command F
 
 # QOL todo list:
+# use jiphy
+# remove display_status_priority
+# draw box around text if it collides with other text
 # dynamic_start change using fixed mode todo as refarance rather than dynamic mode todo
 # y1 to y - start_lw
 # fix next_day (make it values 0,1,2,3,etc), function to set date_now and also take into account "next_day" variable; make it so that before "next" it says "would you like to work ahead even though everything is completed? (Automatically set to fixed mode with input to undo that) (DO NOT do this on SP, do it something like: lw == funct(wlen) with fixed_mode on), THEN display "next"; also put second estimated completion time (showing if every assignment was fixed_mode)
 # dont know the amount of units? ONLy if due date is known ("none" with y)
 
 # real todo list:
+# +/- to zoom in and out
 # go over ##
 # min work time with the blue line
 # daily assignments (x and y will change with the assignment, x will always be (DUE TOMORROW!!!), todo will always be the min_work_time) 
@@ -320,6 +324,7 @@ def home(last_sel=0):
                            dynamic_start = wlen + dif_assign
                            if not fixed_mode:
                               red_line_start = dynamic_start
+                              start_lw = works[red_line_start - dif_assign]
                               if nwd:
                                  set_mod_days()
                                  ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 and y >= min_work_time_funct_round * 2
@@ -389,10 +394,10 @@ def home(last_sel=0):
                      strdayleft = ' (Due TOMORROW!!)'
                      tomorrow_tot += ceil(todo*ctime)
                      try:
-                        status_value
-                        status_value = 2
+                        if status_value != 1:
+                           status_value = 2
                      except:
-                        pass
+                        status_value = 2
                   elif dayleft < 7:
                      strdayleft = (ad + time(x)).strftime(' (Due on %A)')
                   else:
@@ -401,7 +406,7 @@ def home(last_sel=0):
             # Assigns each assignment a value based on an algorithm
             # Then, all the assignments are sorted by their value to determine each assignment's priority
             # The most important assignments are closer to spot #1
-            if status_value in (5,6):
+            if status_value in (1,5,6):
                status_priority = -dayleft
             else:
 
@@ -409,12 +414,21 @@ def home(last_sel=0):
                # This represents the ideal work distribution, so therefore it is used as a comparison in the priority algorithm
                skew_ratio = 1
                red_line_start = dif_assign
+               start_lw = works[0]
+               wlen -= check_inpro
+               ndif += check_inpro
+               if nwd:
+                  set_mod_days()
+                  ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 and y >= min_work_time_funct_round * 2
+               else:
+                  ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start != 2 and y >= min_work_time_funct_round * 2
                pset()
                todo = funct((date_now-ad).days+1) - works[ndif]
 
                # todo*ctime is the total amount of minutes it will take to complete the work for that day
                # x-dif_assign-wlen is the amount of days until the assignment is due
-               if not x-dif_assign-wlen or todo < 0:
+               # If the user has entered work inputs for the assignment ahead of time, then set the priority to 0%
+               if not x-dif_assign-wlen or todo < 0 or wlen > ndif:
                   status_priority = 0
                   
                else:
@@ -423,6 +437,8 @@ def home(last_sel=0):
                   # First, the program finds the ratio of the time it will take to finish work to the amount of days left until the assignment is due
                   # Then, the program multiplies this value by how well you followed your schedule
                   if wlen:
+                     if file_sel == 'Lewis Structure Challenge':
+                        print([funct(i) for i in range(x+1)])
                      status_priority = (1-sum(works[i]-funct(i) for i in range(1,wlen+1) if (assign_day_of_week + i - 1) % 7 not in nwd)/wlen/y) * todo*ctime/(x-dif_assign-wlen)
                   else:
                      status_priority = todo*ctime/(x-dif_assign)
@@ -431,7 +447,7 @@ def home(last_sel=0):
                   
             # Appends the status value (calculated above), the status priority, and the file index to a list called ordli
             # After each assignment appends to ordli, ordli is then sorted
-            
+   
             # In the sorted() method, if the objects to be sorted are collectibles, such as:
             # [(5,7,1),(7,4,2),(5,8,0)]
             # Then, the collectibles are first sorted by their first value
@@ -464,19 +480,21 @@ def home(last_sel=0):
          statuses = tuple(i[0] for i in ordli)
                
          # If display status priority is enabled, this gets the assignment with the highest priority and finds the ratio of all the other assignments' status priority by the one with the highest priority
-
-         # Maximum status priority
-         # This is the comparison that the other assignments will use to determine their status percentage
-         if any(ordas[0] != 1 for ordas in ordli):
-            maxsp = min(ordas[1] for ordas in ordli if ordas[0] != 1)
-
-         # Loops through every assignment finds the ratio of its status priority and the highest status priority
-         for j in ordli:
-            if j[0] in (2,3,4):
-               if maxsp and (j[0] != 4 or not tot):
-                  daysleft[j[2]-1] += f' Priority: {ceil(j[1] / maxsp * 100)}%'
-               else:
-                  daysleft[j[2]-1] += ' Priority: 0%'
+         # The priority will only be displayed for all assignments with the highest to lowest status value status value
+         #day: and minute: to font3
+         try:
+            displayed_status_value = next(i for i in statuses if statuses != 1)
+            maxsp = next(ordas[1] for ordas in ordli if ordas[0] != 1 and ordas[0] == displayed_status_value)
+            
+            # Loops through every assignment finds the ratio of its status priority and the highest status priority
+            for j in ordli:
+               if j[0] < 5:
+                  if maxsp and j[0] == displayed_status_value:
+                     daysleft[j[2]-1] += f' Priority: {ceil(j[1] / maxsp * 100)}%'
+                  else:
+                     daysleft[j[2]-1] += ' Priority: 0%'
+         except:
+            pass
 
          # Formatting
          massign = len(max(assign,key=len))
@@ -521,7 +539,7 @@ def home(last_sel=0):
          else:
             print(projects + project_time + '\n\nEnter "new" to create an Assignment\nEnter "delete" to Remove an Assignment\nEnter "re" to Re-Enter an Assignment\nEnter "settings" to Customize the Settings\nEnter "fin" if you have Finished the work for an Assignment\nPress Return to Select the First Assignment')
             input_message = 'Select an Assignment by Entering in its Corresponding Number:'
-      except:
+      except SyntaxError:
          if debug_mode:
             raise Exception
          if first_run:
@@ -836,7 +854,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            if 8 < change_setting and change_setting < 11:
                               print(("\nIf you do not have to Work for a day in an Assignment, and you Forget to input work for that Day, it is assumed you did Nothing\nThe program will auto fill in No work Done on that day because you anyways did Not have to Work\nApplies to periods of a time Longer than a Day",
                                      "\nIgnore Ends is only relevant when Minimum Work Time is also Enabled for an Assignment\nIgnores the Minimum Work Time on the first and last Working Day to make the Work Distribution smoother\nThis also fixes an Issue that causes you to Work a Lot More on the First and Last days of an Assignment\nIt only ignores the minimum work time when Absolutely Necessary and tries to Preserve the original distribution as Much as Possible"
-                                     )[change_setting-8]+f"\nThis Setting\'s new value is {new_value} (Old Value: {not new_value})\n")
+                                     )[change_setting-9]+f"\nThis Setting\'s new value is {new_value} (Old Value: {not new_value})\n")
                               qinput('Enter Anything to Continue:')
                               
                            # Changes colors
@@ -1155,6 +1173,11 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                               mx = qinput(f'Enter the Latest date this Assignment can be Due\nUse the same Above format\nOr, enter the Amount of Days until the Latest date this Assignment can be Due (As a Whole Number Input)\n(Don\'t Care when this Assignment will be Due? Enter "none" to skip)\n')
                               if 'none' in mx.lower():
                                  mx = float('inf')
+                              elif 'cancel' in mx.lower():
+                                 outercon = True
+                                 break
+                              elif 'undo' in mx.lower():
+                                 break
                               else:
                                  try:
                                     mx = int(mx,10)
@@ -1166,13 +1189,17 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                               return
                            except:
                               print('!!!\nInvalid Date!\n!!!')
-                     try:
-                        x = int(x,10)
-                     except:
-                        date_now = date.now()
-                        x = (slashed_date_convert(x.strip('/'))-ad).days
-                     if x < 1 or x > (date(9999,12,30)-ad).days:
-                        raise Exception
+                        if outercon == True:
+                           return
+                        continue
+                     if outercon != 2:
+                         try:
+                            x = int(x,10)
+                         except:
+                            date_now = date.now()
+                            x = (slashed_date_convert(x.strip('/'))-ad).days
+                         if x < 1 or x > (date(9999,12,30)-ad).days:
+                            raise Exception
                      return
                  except:
                     print('!!!\nInvalid Date!\n!!!')
@@ -1311,14 +1338,14 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                      if reenter_mode:
                         if unit == 'Minute':
                            if selected_assignment[8] == 1:
-                              funct_round = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: None)\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\nThe recommended value is 5 Minutes\n').lower()
+                              funct_round = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: None)\nThis will be the increment of work you will do\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\nThe recommended value is 5 Minutes\n').lower()
                            else:
-                              funct_round = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: {selected_assignment[8]} {selected_assignment[12]}s)\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\nThe recommended value is 5 Minutes\n').lower()
+                              funct_round = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: {selected_assignment[8]} {selected_assignment[12]}s)\nThis will be the increment of work you will do\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\nThe recommended value is 5 Minutes\n').lower()
                         else:
                            if selected_assignment[8] == 1:
-                              funct_round = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: None)\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\n').lower()
+                              funct_round = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: None)\nThis will be the increment of work you will do\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\n').lower()
                            else:
-                              funct_round = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: {selected_assignment[8]} {selected_assignment[12]}s)\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\n').lower()
+                              funct_round = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: {selected_assignment[8]} {selected_assignment[12]}s)\nThis will be the increment of work you will do\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\n').lower()
                         if not funct_round:
                            funct_round = selected_assignment[8]
                            return
@@ -1429,6 +1456,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         nwd = def_nwd
                   len_nwd = len(nwd)
                return
+         outercon = False
          i = 0
          while i != 10:
             (input1,input2,input3,input4,input5,input6,input7,input8,input9,input10)[i]()
@@ -2533,13 +2561,13 @@ def draw(doing_animation=0,do_return=1):
             mouse_x = ceil(mouse_x-0.5)
             if red_line_start <= mouse_x and mouse_x <= wlen + dif_assign:
                mouse_y = (height-mouse_y-50.5)/hCon
-               mouse_y = abs(mouse_y - funct(mouse_x)) > abs(mouse_y - works[mouse_x])
+               mouse_y = abs(mouse_y - funct(mouse_x)) > abs(mouse_y - works[mouse_x - dif_assign])
             else:
                mouse_y = last_mouse_y
 
             # Caps point X at its lower and upper limits
-            if mouse_x < 0:
-               mouse_x = 0
+            if mouse_x < dif_assign:
+               mouse_x = dif_assign
             elif mouse_x > x:
                mouse_x = x
 
@@ -2808,7 +2836,7 @@ def draw(doing_animation=0,do_return=1):
          else:
             if mouse_x <= wlen + dif_assign:
                if mouse_y:
-                  funct_mouse_x = works[mouse_x]
+                  funct_mouse_x = works[mouse_x - dif_assign]
                else:
                   funct_mouse_x = funct(mouse_x)
             else:
@@ -2993,7 +3021,7 @@ def quit_program(internal_error=False):
       if 'file_sel' not in globals():
          file_sel = None
       #print(f'\n\n\n\nCOPY ALL INFORMATION STARTING FROM HERE\n\n\n{dat} {file_sel}\n\n{error_info}\n\nAND ENDING AT HERE\n\n\nIt seems like there was an Internal Error somewhere in the code... :/\nPlease copy all of the Data Above and send it to me on G-mail at arhan.ch@gmail.com so I can fix the Error\nThank you')
-      print(f'\n\n\n\nCOPY ALL INFORMATION STARTING FROM HERE\n\n\n{dat} {globals()["file_sel"]}\n\n{error_info}\n\nAND ENDING AT HERE\n\n\nSo uhhmmmmmmm... :/\nThere was a bug somewhere in code sorry lol\nshow this message and the info above to me, and i promise to buy you mcdonalds')
+      print(f'\n\n\n\nCOPY ALL INFORMATION STARTING FROM HERE\n\n\n{dat} {file_sel}\n\n{error_info}\n\nAND ENDING AT HERE\n\n\nSo uhhmmmmmmm... :/\nThere was a bug somewhere in code sorry lol\nshow this message and the info above to me, and i promise to buy you mcdonalds')
    else:
       # If the files have already been created, then update the backups by comparing the last opened date to today
       if update_backups:
@@ -3888,9 +3916,9 @@ Make sure you read all of the instructions, as some things are important to know
                                  break
                              if ndif in (wlen-1,wlen):
                                  break
-                             first_loop = False
                          except:
                             print('!!!\nInvalid Number!\n!!!')
+                    first_loop = False
                  else:
                     print('\n!!!\nPlease Wait until this is Assigned!\n!!!')
       
