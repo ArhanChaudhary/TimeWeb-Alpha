@@ -1372,9 +1372,9 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            return
                      else:
                         if unit == 'Minute':
-                           funct_round = qinput(f'Enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Press Return to skip)\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\nThe recommended value is 5 Minutes\n').lower()
+                           funct_round = qinput(f'Enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Press Return to skip)\nThis will be the increment of work you will do\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\nThe recommended value is 5 Minutes\n').lower()
                         else:
-                           funct_round = qinput(f'Enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Press Return to skip)\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\n').lower()
+                           funct_round = qinput(f'Enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Press Return to skip)\nThis will be the increment of work you will do\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\n').lower()
                         if not funct_round:
                            funct_round = 1
                            break
@@ -3014,8 +3014,6 @@ def draw(doing_animation=0,do_return=1):
          if first_run:
             center('Welcome to the Graph!',row_height*12)
             center('Please read the Instructions displayed on the Idle',row_height*13)
-            center('Once you have Finished Today\'s daily work for this Assignment,',row_height*14)
-            center('Click on the Graph and Press the Return Key to enter your first Work input for Today',row_height*15)
          if xdif < 0:
             center('This Assignment has Not Yet been Assigned!',row_height*11)
          elif dist_from_today > 0:
