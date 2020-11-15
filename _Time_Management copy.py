@@ -4,6 +4,8 @@
 # You can always ask me personally if you need me to explain anything in this code
 # Anyways, I hope you enjoy using this program
 
+# VERY IMPORTANT NOTE: replace "%-" with "%#" if you are running this on windows 10
+
 try:
 
    # Pygame module to handle display graphics and mouse inputs
@@ -766,7 +768,7 @@ def home(last_sel=0):
 17) Set Skew Ratio for each Assignment
 18) Create/Delete Manual Backup
 19) Load Backups
-20) Restore all Default Values
+20) Restore all Default Setting Values
 
 Backups only update at the end of this program once you enter "quit" or ctrl-c
 
@@ -3194,13 +3196,11 @@ Make sure you read all of the instructions, as some things are important to know
         if set_start or set_skew_ratio or draw_point:
 
            # Draws every time mouse is moved
-           # 4 is detecting mouse movements
-           if etype == 4:
+           if etype == pygame.MOUSEMOTION:
               draw()
 
            # When mouse is pressed, the interactive mouse stops
-           # 5 is detecting a mouse click
-           elif etype == 5:
+           elif etype == pygame.MOUSEBUTTONDOWN:
 
               # If the mouse point is enabled, disable it
               if draw_point and not (set_start or set_skew_ratio):
@@ -3238,24 +3238,19 @@ Make sure you read all of the instructions, as some things are important to know
               continue
 
         # If mouse draw point is disabled, enable it if the user clicks
-        # 5 is detecting a mouse click
-        if not draw_point and etype == 5:
+        if not draw_point and etype == pygame.MOUSEBUTTONDOWN:
               draw_point = True
               draw()
-
-        # 2 is detecting a key press
-        elif etype == 2:
+        elif etype == pygame.KEYDOWN:
             key = event.key
 
             # Goes back to assignment page
-            # 97 is the 'a' key
-            if key == 97:
+            if key == pygame.K_a:
                pygame.display.set_mode((1,1))
                home()
 
             # Initializes manually setting the start of the red line
-            # 115 is the 's' key
-            elif not set_start and key == 115:
+            elif not set_start and key == pygame.K_s:
                change_day_mouse = ndif > -1 and ndif == wlen - 1 and lw != works[-2]
                if change_day_mouse:
                   change_day_upper = lw >= funct(wlen+dif_assign)
@@ -3264,8 +3259,7 @@ Make sure you read all of the instructions, as some things are important to know
                print('\nManual Set Skew Ratio Enabled\nHover Over the Graph and Click to set the Skew Ratio of the Red Line')
 
             # Initializes manually setting the skew ratio
-            # 99 is the 'c' key
-            elif not set_skew_ratio and key == 99:
+            elif not set_skew_ratio and key == pygame.K_c:
                change_day_mouse = ndif > -1 and ndif == wlen - 1 and lw != works[-2]
                if change_day_mouse:
                   change_day_upper = lw >= funct(wlen+dif_assign)
@@ -3275,8 +3269,7 @@ Make sure you read all of the instructions, as some things are important to know
                print('\nManual Set Start Enabled\nHover Over the Graph and Click to set the Start of the Red Line')
 
             # Allows user to manually type in the skew ratio or the start of the red line
-            # 109 is the 'm' key
-            elif key == 109:
+            elif key == pygame.K_m:
 
                # Gets input
                while 1:
@@ -3353,9 +3346,8 @@ Make sure you read all of the instructions, as some things are important to know
                draw(0,0)
                continue
 
-            # Deletes the last work
-            # 8 is the backspace key
-            elif key == 8:
+            # Deletes the last work input
+            elif key == pygame.K_BACKSPACE:
                 if wlen > 0:
                      if type(selected_assignment[2]) == float:
                         selected_assignment[2] = x
@@ -3388,8 +3380,7 @@ Make sure you read all of the instructions, as some things are important to know
                      print(f'Deleted Work Input (Used to be at {deleted} Total {unit}s at {(date_file_created + time(day+1)).strftime("%B %-d"+disyear)})')
 
             # Displays the entire schedule of the assignment
-            # 100 is the 'd' key
-            elif key == 100:
+            elif key == pygame.K_d:
                  info, fdates, difs, totals = [], [], [], []
                  add_last_work_input = day and lw < y and ndif not in (day, day - 1) and (show_past or not show_past and ndif < day)
                  next_work = adone
@@ -3611,8 +3602,8 @@ Make sure you read all of the instructions, as some things are important to know
                  # Deletes the lists to save memory
                  del info, info2, fdates, difs, totals
 
-            # 274 is the down arrow key
-            elif not set_skew_ratio and key == 274:
+            # Down arrow subtracts 0.1 from the skew ratio
+            elif not set_skew_ratio and key == pygame.K_DOWN:
                
                  # If the assignment is in progress, then define a variable on whether to change the day or not
                  change_day = ndif > -1 and ndif == wlen - 1 and lw != works[-2] and lw < funct(wlen+dif_assign)
@@ -3670,9 +3661,8 @@ Make sure you read all of the instructions, as some things are important to know
                        
                  draw(0,0)
                  
-            # Exact same concepts as the down key above
-            # 273 is the up arrow key
-            elif not set_skew_ratio and key == 273:
+            # Down arrow adds 0.1 to the skew ratio
+            elif not set_skew_ratio and key == pygame.K_UP:
                  change_day = ndif > -1 and ndif == wlen - 1 and lw != works[-2] and lw >= funct(wlen+dif_assign)
                  if smart_skew_ratio:
                     outercon = True
@@ -3709,24 +3699,21 @@ Make sure you read all of the instructions, as some things are important to know
                  draw(0,0)
 
             # Toggles remainder_mode
-            # 114 is the 'r' key
-            elif ((y - start_lw) / funct_round) % 1 and key == 114:
+            elif ((y - start_lw) / funct_round) % 1 and key == pygame.K_r:
                  remainder_mode = not remainder_mode
                  selected_assignment[15] = remainder_mode
                  save_data()
                  draw(0,0)
 
             # Toggles total_mode
-            # 116 is the 't' key
-            elif key == 116:
+            elif key == pygame.K_t:
                  total_mode = not total_mode
                  selected_assignment[13] = total_mode
                  save_data()
                  draw(0,0)
 
             # Goes to the next assignment on the list of assignments
-            # 110 is the 'n' key
-            elif key == 110:
+            elif key == pygame.K_n:
 
                # Alerts you if the work hasn't been completed
                if not clicked_once and wlen <= xdif and date.now().weekday() not in nwd and lw < funct(xdif+1):
@@ -3745,8 +3732,7 @@ Make sure you read all of the instructions, as some things are important to know
                      home(sel + 1)
 
             # Toggles fixed mode to dynamic mode
-            #f  102 is the 'f' key
-            elif key == 102:
+            elif key == pygame.K_f:
                fixed_mode = not fixed_mode
                selected_assignment[10] = fixed_mode
                save_data()
@@ -3777,8 +3763,7 @@ Make sure you read all of the instructions, as some things are important to know
                draw(0,0)
 
             # Interprets user inputs
-            # 13 is the return key
-            elif key == 13:
+            elif key == pygame.K_RETURN:
                  if lw >= y:
                     print('\n!!!\nYou have Reached the End of this Assignment!\n!!!')
                  elif xdif > -1:
@@ -3958,8 +3943,7 @@ Make sure you read all of the instructions, as some things are important to know
                  else:
                     print('\n!!!\nPlease Wait until this is Assigned!\n!!!')
       
-        # 16 is the video resize event
-        elif etype == 16:
+        elif etype == pygame.VIDEORESIZE:
 
             # Get new width and height
             width, height = event.size
@@ -3992,7 +3976,7 @@ Make sure you read all of the instructions, as some things are important to know
             left_adjust_cutoff = (width - 50 - point_text_width)/wCon
             up_adjust_cutoff = point_text_height/hCon
             draw(0,0)
-        elif etype == 12:
+        elif etype == pygame.QUIT:
             pygame.display.set_mode((1,1))
             home()
 except:
