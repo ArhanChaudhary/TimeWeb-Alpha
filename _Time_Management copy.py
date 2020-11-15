@@ -41,7 +41,6 @@ debug_mode = False
 # Todo list:
 # if all assignments completes, todo becomes linear and then y
 # dynamic_start change using fixed mode todo as refarance rather than dynamic mode todo
-# why not y1 to y - start_lw
 # dont know the amount of units? only if due date is known ("none" with y), option to extend due date if due tmrw
 
 # +/- to zoom in and out
@@ -137,9 +136,12 @@ else:
 manual_backup = exists(file_directory + ' Manual Backup')
 
 # Initialize pygame and define fonts
-font_type = '/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/pygame/freesansbold.ttf'
+#font_type = '/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/pygame/freesansbold.ttf'
+font_type = None
 pygame.init()
-font_scale = 0.6875
+
+#font_scale = 0.6875
+font_scale = 1
 font3 = pygame.font.Font(font_type,ceil(25*font_scale))
 if width > 748:
    font_size = 25
@@ -753,7 +755,7 @@ def home(last_sel=0):
 6)  Default Not Working Days           : {format_not_working_days()}
 7)  Display Instructions               : {display_instructions}
 8)  Autofill Work*                     : {autofill} (Select for More Info)
-9) Ignore Min Work Time Ends*          : {ignore_ends} (Select for More Info)
+9)  Ignore Min Work Time Ends*         : {ignore_ends} (Select for More Info)
 10) Dark Mode in Graph                 : {dark_mode}
 11) Show Progress Bar in Graph         : {show_progress_bar}
 12) Show Past Inputs in Graph Schedule : {show_past}
