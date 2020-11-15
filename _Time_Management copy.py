@@ -489,7 +489,7 @@ def home(last_sel=0):
          statuses = tuple(i[0] for i in ordli)
                
          # If display status priority is enabled, this gets the assignment with the highest priority and finds the ratio of all the other assignments' status priority by the one with the highest priority
-         # The priority will only be displayed for all assignments with the highest to lowest status value status value
+         # The priority will only be displayed for all assignments with the most important status value
          displayed_status_value = next(i for i in statuses if statuses != 1)
          displayed_na = False
          try:
@@ -523,8 +523,8 @@ def home(last_sel=0):
          # Once ordli is sorted, this list comprehension resorts the actual list of assignments based on ordli
          # All this complicated map object does is replicate an html table, so don't worry about this
 
-         #                                                                                                 This part displays the assignment name, the status message, and the estimated time    This part displays the formatted  This part displays the days
-         #                               This part displays and adjusts the number of the assignment       until completion. It also left adjusts the formatted estimated completetion time      estimated completetion time       left and the status priority
+         #                                                                                                This part displays the assignment name, the status message, and the estimated time    This part displays the formatted  This part displays the days
+         #                               This part displays and adjusts the number of the assignment      until completion. It also left adjusts the formatted estimated completetion time      estimated completetion time       left and the status priority
          assignments = map(lambda ordas: (str(ordli.index(ordas)+1)+')').ljust(max_assignment_name_len) + assign[ordas[2]-1].ljust(max_assign_len+max_fminutes_len-len(fminutes[ordas[2]-1])) + fminutes[ordas[2]-1] +            daysleft[ordas[2]-1], ordli)
          
          # Saves sorted data to memory if it changed from the original after sorting
@@ -1628,10 +1628,11 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          
       # Fixes a rounding bug with min_work_time
 
-      # Let funct_round be 4 and min_work_time be 5
-      # In the code, f(4) = 18 and f(5) = 23
-      # However, f(4) gets rounded to 20 and f(5) gets rounded to 24, breaking min_work_time
+      # Pretent funct_round be 4 and min_work_time be 5
+      # Lets f(4) = 18 and f(5) = 23
+      # However, f(4) gets rounded to 20 and f(5) gets rounded to 24, violating min_work_time
       # This fixes the problem
+      # This equation is the same thing as funt_round < min_work_time < funct_round * 2
       elif 1 < min_work_time / funct_round < 2:
          min_work_time = funct_round * 2
          
@@ -1693,7 +1694,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       # Subtracts 1 day if the assignment is in progress
       # This is because if the an assignment is in progress, that means there is an input less than the amount needed to be done for a day
       # Normally each input increases the day by 1
-      # However, if the assignment is in progress, then it do not increase the day by 1 because the work has not been done
+      # However, if the assignment is in progress, then it do not increase the day by 1 because the work has not been done ,and the day is still same
       if ndif > -1 and ndif == day - 1 and lw != works[-2] and lw < funct(day + dif_assign):
          day -= 1
 
@@ -1761,10 +1762,13 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             else:
                min_work_time_funct_round = funct_round
          try:
-            # Draws each frame
+            
+            # Draws the graph every loop
             draw(1,0)
             pygame.event.pump()
          except:
+
+            # If an internal error happens then skip that as a safety net
             pass
 
          # Moves the slash in the progress bar because it looks cool
@@ -1773,7 +1777,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          else:
             slash_x_counter -= 4/y
 
-      # Even though the x and y values are precalculated to reach their original value, there still may be a floating point error of a few quadrillionth decimal places, messing up flooring and ceiling calculations
+      # Even though the x and y values are precalculated to reach their original value, there still may be a floating point error of a few quadrillionth decimal places, messing up flooring and ceiling functions
       # To make sure this does not happen, I set x and y back to their inputted value
       x = selected_assignment[2]
       y = selected_assignment[3]
@@ -1966,7 +1970,7 @@ def pset():
                   # If it is, then calculate the cutoff transition value
                   if funct_zero < cutoff_to_use_round and cutoff_to_use_round < x1:
 
-                     # Uses a modified version of the function to find the difference between the output before the after the cutoff
+                     # Uses a modified version of funct to find the difference between the output before the after the cutoff
                      # Then, it calculates the cutoff transition value by finding out how much to add or subtract
                      first_loop=True
                      for n in range(cutoff_to_use_round,cutoff_to_use_round + 2):
@@ -1980,15 +1984,13 @@ def pset():
                            difference = output
                         first_loop = False
 
-                     # Around this block of code under this comment, there was an if statement that surrounded this:
-                     # If output - difference: (run the block)
-                     # else: cutoff_transition_value = 0
-                     # I do not remember why I put this code nor how it is useful
-                     # If there is ever an error, consider putting that if statement back
-
                      # Calculates cutoff transition_value to adjust the transition in min work time
+                     if output - difference:
+                        cutoff_transition_value = min_work_time_funct_round - output + difference
+                     else:
 
-                     cutoff_transition_value = min_work_time_funct_round - output + difference
+                        # If the difference before and after the cutoff is zero, then might as well leave it alone because 0 represents no work that day
+                        cutoff_transition_value = 0
 
                      # This part only runs if ignore_ends is enabled
                      
@@ -2040,11 +2042,12 @@ def pset():
                      cutoff_transition_value = 0
                   break
                
-         # For the rest of the function, I will refer to the total amount of units in the assignment as y
+         # I will refer to the total amount of units in the assignment as y
          # The rest of the function calculates the return_y_cutoff, or when the parabola exceeds y
-         # I found it the most efficient to use a cutoff, because I can run a check at the beginning of the funct to return y if the inputted value is after the cutoff, increasing efficiency
+         # I found it the most efficient to use a cutoff because I can run a check at the beginning of the funct to return y if the inputted value is after the cutoff, increasing efficiency
+         # Using cutoffs also allows me to directly control the value on the x axis when y will be returned
 
-         # If the user chooses to apply the min_work_time for the first and last days of the assignment, set the cutoff to when the red line hits y
+         # If the user disables ignore_ends, set the cutoff to when the red line hits y
          
          # First, I need to calculate the x value when the function first returns y
          # This was actually a lot more complicated than I originally thought
@@ -2055,6 +2058,9 @@ def pset():
                if ignore_ends_mwt:
 
                      # Sets the y_value_to_cutoff if ignore_ends is enabled
+                     # y_value_to_cutoff is the y value used to calculate return_y_cutoff
+                     # return_y_cutoff is x coordinate of the intersection of y = y_value_to_cutoff and y = ax^2+bx, and all inputs after this cutoff will return y
+                     # In the same words, all x inputs into funct() that return a value greater than y_value_to_cutoff will return y instead
                      y_value_to_cutoff = y1 - min_work_time_funct_round / 2
                      if a:
                         return_y_cutoff2 = ((b*b+4*a*y_value_to_cutoff)**0.5-b)/a/2
@@ -2064,20 +2070,22 @@ def pset():
                         return_y_cutoff2 = 1
                      if cutoff_transition_value < y_mremainder and (return_y_cutoff2-1) * ((return_y_cutoff2-1) * a + b) >= y_value_to_cutoff:
 
-                        # suppose min_work_time_funct_round is 10 and y is 148
-                        # Suppose f(x-2) = 130, f(x-1) = 140, and f(x) = 148
-                        # Normally, return_y_cutoff would be set at 140 and then f(x-1) would output 150 instead of 140 in order to obey the minimum work time
-                        # The new outputs would be f(x-2) = 130, f(x-1) = 148, f(x) = 148
-                        # But since ignore_ends is enabled, the minimum work time is ignored
-                        # This means f(x-1) no longer has to obey the minimum work time
-                        # So, one would be added to return_y_cutoff in order to make the outputs stop at 148
+                        # Suppose min_work_time_funct_round is 10 and y is 148
+                        # Suppose return_y_cutoff has not been implemented yet, and f(5) = 130, f(6) = 140, and f(7) = 150
+                        # If ignore_ends is disabled, y_value_to_cutoff would be set at 140 and then f(6) would output 148 instead of 140 in order to obey the minimum work time
+                        # The new outputs would be f(5) = 130, f(6) = 148, f(7) = 148
+                        # But since ignore_ends is enabled, the minimum work time is ignored and f(6) no longer has to obey the minimum work time
+                        # However, since y_value_to_cutoff is 140, you can't really make f(6) = 140 and f(7) = 148 because they both are greater than or equal to y_value_to_cutoff
+                        # To solve this, add one to return_y_cutoff in order to make f(6) 140 and everything beyond that, including f(7), 148
+                        # This demonstrates an advantage of using a cutoff
                      
-                        # (return_y_cutoff2-1) * ((return_y_cutoff2-1) * a + b) > y_value_to_cutoff makes sure the line doesn't accidentally go over y because of return_y_cutoff if the first condition is true              
+                        # (return_y_cutoff2-1) * ((return_y_cutoff2-1) * a + b) > y_value_to_cutoff makes sure the line doesn't accidentally go over y because return_y_cutoff was added one              
                         return_y_cutoff += 1
                   
                else:
                
                   # If ignore_ends is disabled, run this code
+                  # The graph will now have to apply the minimum work time to the first and last working days
                
                   # To understand this part, first know that the parabola doesn't always reach y
                   # For example, let's say an assignment groups to multiples of 5 and the y is 93
@@ -2085,12 +2093,9 @@ def pset():
                   # So, the parabola instead reaches 90, which I will now refer to as y1
                   # The 3 remainder units is referred to as y_mremainder in the code
                   # In the function, there will be a check with the return_y_cutoff where if the output is y1 or higher, then return y
-                  # That might have sounded confusing, know the parabola hits y1 but the function actually returns y
                   
-                  # If the function rounds to the minimum work time, set the y_value_to_cutoff to y1 - min_work_time / 2
-                  # The reason why I subtracted min_work_time / 2 from the end of y1 is because I know y1 is divisible by min_work_time, which is the grouping value, by the logic above
-                  # I also know the function is rounded to the nearest min_work_time
-                  # So, that means y1 - min_work_time / 2 is the first value that rounds to y1
+                  # If the function rounds to the minimum work time, set the y_value_to_cutoff to y1 - min_work_time_funct_round / 2
+                  # This is the first value that rounds to y1 
                   y_value_to_cutoff = y1 - min_work_time_funct_round / 2
                   
                   # Pretend y is 144 and the minimum work time is 6
@@ -2100,8 +2105,8 @@ def pset():
                   # Now, let's say the cutoff_transition_value from above is 2, which means add 2 to these values
                   # So, f(8) = 134 and f(9) = 140 and f(10) = 144
                   # f(10) doesn't increase to 146 because 144 is the y or maximum value
-                  # Now, when you compare the difference, f(9) - f(8) = 6 and f(10) - f(9) = 4
-                  # This breaks the minimum work time, since even though I inputted 6 there is a difference of 4 units at the end
+                  # When you compare the differences, f(9) - f(8) = 6 and f(10) - f(9) = 4
+                  # This violates the minimum work time, since even though I inputted 6, there is a difference of 4 units at the end
                   # This line of code below checks for that error and adjusts the y_value_to_cutoff appropriately
                   if y_mremainder < cutoff_transition_value:
 
@@ -2109,15 +2114,15 @@ def pset():
                      y_value_to_cutoff -= min_work_time_funct_round
 
                   # Pretend y is 148 and the minimum work time is 6
-                  # This will mean y1 is 144 because it is the biggest number divisible by six that is less than or equal to y
+                  # This will mean y1 is 144 because it is the biggest number divisible by 6 that is less than or equal to y
                   # Pretend in this case f(8) = 132 and f(9) = 138 and f(10) = 144
                   # f(10) goes through a check and since it realizes that it reached 144, f(10) actually returns 148
                   # So, f(8) = 132 and f(9) = 138 and f(10) = 148
-                  # Know that f(9) - f(8) = 6 and f(10) - f(9) = 10
+                  # The differences or the amount of user will work each day are: f(9) - f(8) = 6 and f(10) - f(9) = 10
                   # Now, let's say the cutoff_transition_value from above is -2, which means subtract 2 from these values
                   # So, f(8) = 130 and f(9) = 136 and f(10) is still 148 because of the check
-                  # Now, when you compare the difference, f(9) - f(8) = 6 and f(10) - f(9) = 12
-                  # It doesn't make sense from a user perspective to have a difference of 12 when it can just be split up into 2 sixes
+                  # Now, when you compare the differences, f(9) - f(8) = 6 and f(10) - f(9) = 12
+                  # It doesn't make sense from the user's perspective to have a difference of 12 when it can just be split up into 2 sixes
                   # This code checks for that error and adjusts the y_value_to_cutoff appropriately
                   elif y_mremainder - cutoff_transition_value >= min_work_time_funct_round:
 
@@ -2141,22 +2146,30 @@ def pset():
                   if remainder_mode:
                      y_value_to_cutoff -= y_fremainder
          else:
-            
+               # This section is defines the y_value_to_cutoff happens after the cutoff
+               # On the values before the cutoff_to_use_round, the outputs are not rounded
+               # On the values after the cutoff_to_use_round, the outputs are rounded
+               # Since this is focusing on the after part, the minimum work time is no longer necessary
                if ignore_ends_mwt:
 
-                  # Sets the y_value_to_cutoff if ignore_ends is enabled
+                  # If ignore_ends is enabled, set y_value_to_cutoff to this
+
+                  # This is the first value to round to y1
                   y_value_to_cutoff = y - start_lw - y_fremainder - funct_round / 2
 
                else:
 
-                  # If the function does not round to the minimum work time, set the y_value_to_cutoff to this
+                  # If ignore_ends is disabled, set y_value_to_cutoff to this
+                  # The minimum work time will need to be a factor here because the last working day has to follow the minimum work time
+
+                  # I dont exactly remember the full logic behind this but it works anyways
                   y_value_to_cutoff = y - start_lw - y_fremainder - min_work_time_funct_round + funct_round / 2
 
                   # Subtracts the cutoff_transition_value if the function uses it at the return_y_cutoff
                   if funct_round < min_work_time and skew_ratio < 1:
                      y_value_to_cutoff -= cutoff_transition_value
 
-                     # Makes sure the cutoff doesn't accidentally exceed the maximum of the parabola
+                     # Makes sure the cutoff doesn't accidentally exceed the maximum of the parabola after subtracting the cutoff_transition_value
                      if y_value_to_cutoff >= y1:
                         return_y_cutoff = x1 - 1
                      
@@ -2170,7 +2183,7 @@ def pset():
             else:
                return_y_cutoff = 0
 
-            # Fixes a glitch when the cutoff_transition_value causes the output value right before the return_y_cutoff to exceed y
+            # Fixes a glitch when the cutoff_transition_value is a high value that causes the output value right before the return_y_cutoff to exceed y
             # It does this by running a modified version of funct() and checking whether it exceeds y
             # If it does, subtract 1 from the return_y_cutoff
             first_loop = True
@@ -2197,12 +2210,13 @@ def pset():
          if ignore_ends_mwt and y - output - start_lw > min_work_time_funct_round and not output - difference and not ((y - start_lw) / funct_round) % 1:
             add = min_work_time_funct_round
 
-         # Sets the return_0_cutoff
+         # Sets return_0_cutoff, which is return_y_cutoff but for the start rather than the end
          if a:
             if ignore_ends_mwt and skew_ratio < 1 and funct_round < min_work_time and cutoff_to_use_round < funct_zero:
 
-               # This is supposed to solve the issue where it still obeyed the min_work_time when ignore_ends was enabled and when cutoff_to_use_round < funct_zero and skew_ratio < 1
-               # This basically sets the y_value_to_cutoff to be at 0 instead of min_work_time_funct_round - funct_round / 2
+               # If skew_ratio is less than 0 and ignore_ends is enabled, then there is a skew_ratio value for when cutoff_to_use_round goes off the graph
+               # However, without this statement, return_0_cutoff will still follow the minimum work time even though cutoff_to_use_round went off the graph
+               # If this happens, set the y_value_to_cutoff to be at 0 instead of min_work_time_funct_round - funct_round / 2
                return_0_cutoff = funct_zero
                return
             
@@ -2222,19 +2236,15 @@ def pset():
             if funct_round < min_work_time:
                if ignore_ends_mwt:
                   if cutoff_transition_value < 0 and return_0_cutoff > 1:
-
-                     # If ignore_ends is enabled, subtract 1 from the return_0_cutoff
-                     # Copy of the below problem from earlier but except at the beginning of the graph instead of at the end
                      
-                     # suppose min_work_time_funct_round is 10 and y is 148
-                     # Suppose f(x-2) = 130, f(x-1) = 140, and f(x) = 150
-                     # Normally, return_y_cutoff would be set at 140 and then f(x-1) would output 148 instead of 140 in order to obey the minimum work time
-                     # The new outputs would be f(x-2) = 130, f(x-1) = 148, f(x) = 148
-                     # But since ignore_ends is enabled, the minimum work time is ignored
-                     # This means f(x-1) no longer has to obey the minimum work time
-                     # So the real outputs would be f(x-2) = 130, f(x-1) = 140, f(x) = 148
-                     # So, one would be added to return_y_cutoff in order to make the outputs stop at 148
-                     
+                     # Suppose min_work_time_funct_round is 10
+                     # Suppose return_y_cutoff has not been implemented yet, and f(5) = -2, f(6) = 8, and f(7) = 18
+                     # If ignore_ends is disabled, y_value_to_cutoff would be set at 10 and then f(6) would output 18 instead of 8 in order to obey the minimum work time
+                     # The new outputs would be f(5) = 0, f(6) = 18, f(7) = 18
+                     # But since ignore_ends is enabled, the minimum work time is ignored and f(6) no longer has to obey the minimum work time
+                     # However, since y_value_to_cutoff is 10, you can't really make f(6) = 8 and f(5) = 0 because they both are less than y_value_to_cutoff
+                     # To solve this, subtract one from return_0_cutoff in order to make f(6) 8 and everything before that, including f(5), 0
+                     # This is the exact same problem with return_y_cutoff but at the beginning of the assignment instead of the end
                      return_0_cutoff -= 1
                else:
 
@@ -2260,8 +2270,8 @@ def pset():
                
          else:
 
-            # If the graph is linear, then that means it only intersects zero at the origin
-            # So, set the return_0_cutoff to 1
+            # If the graph is linear, then it only intersects zero at the origin
+            # Set the return_0_cutoff to 1
             return_0_cutoff = 1
          
 # Main function for receiving an output
@@ -2413,6 +2423,7 @@ if debug_mode:
       if a and n < funct_zero:
          return start_lw
       return n*(a*n+b) + start_lw
+   
 # Function to get the modulo days when using not working days (explained above)
 def set_mod_days():
    global mods
@@ -2637,7 +2648,7 @@ def draw(doing_animation=0,do_return=1):
 
       # 10**int(log10(x)) is the magnitude of x
       # For example, if x was 45387, 10**int(log10(x)) would be 10000
-      # I made it so that it always steps in powers of 10
+      # It always steps in powers of 10
       
       # ceil(int(str(x)[0])/ceil((width-100)/100)) makes the step obey the max number of x indexes
       # For example, if x was 99999, then the steps would be: 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, and 90000
@@ -3107,13 +3118,13 @@ The assignment will be marked as in progress and you will have to make up the re
 
 Exception: entering in 0 will change the day to the next day regardless whether or not you have completed your work for that day
 
-FIXED MODE (disabled by default)
+FIXED MODE (enabled by default)
 -------------------------------
 THIS MODE CAN BE TOGGLED BY CLICKING THE GRAPH AND PRESSING KEY "F" ON YOUR KEYBOARD
 In this mode, if you fail to complete the specified amount of work for one day, you will have to make it up on the next day
 This mode is recommended for self-discipline and if the assignment is extremely important
 
-DYNAMIC MODE (enabled by default)
+DYNAMIC MODE (disable by default)
 ----------------------------------
 THIS MODE CAN BE TOGGLED BY CLICKING THE GRAPH AND PRESSING KEY "F" ON YOUR KEYBOARD
 If you fail to complete the specified amount of work for one day, the graph will change itself to start at your last work input, adapting to your work schedule
