@@ -32,7 +32,7 @@ from os import remove # Removes backups if they are Disabled
 file_directory = 'Time Management'
 update_backups = True
 debug_mode = False
-# Settings Procedure:
+# Adding/removing ettings procedure:
 # Add/remove it on the boolean settings and Adjust values for other settings
 # Change range value x2
 # Change setting "Restore all def setting values" x2
@@ -41,9 +41,9 @@ debug_mode = False
 # command F "settings[" and modify numeric value
 
 # Todo list:
-# if all assignments completes, todo becomes linear and then y
-# dynamic_start change using fixed mode todo as refarance rather than dynamic mode todo
-# dont know the amount of units? only if due date is known ("none" with y), option to extend due date if due tmrw
+# if all assignments completed, todo becomes linear and then y
+# dynamic_start change using fixed mode todo as referance rather than dynamic mode todo
+# dont know the amount of units? only if due date is known ("none" with y)
 
 # +/- to zoom in and out
 # next_day (make it values 0,1,2,3,etc), function to set date_now that takes into account "next_day" variable; make it so that before "next" it says "would you like to work ahead even though everything is completed? (Automatically set to fixed mode with input to undo that) (DO NOT do this on SP, do it something like: lw == funct(wlen) with fixed_mode on), THEN display "next"; also put second estimated completion time (showing if every assignment was fixed_mode)
@@ -76,7 +76,7 @@ try:
 except:
 
    # If the data is not found, create a new file which will hold all the data
-   # Initialize Default settings in a new file
+   # Initialize default settings in a new file
    
    # Each Item in the List of the Settings corresponds to the Variable Name above it
    #       date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup
@@ -542,7 +542,7 @@ def home(last_sel=0):
          else:
             istod = ' (Today)'
          if displayed_na:
-            assignments = '\nYour current assignments:\n\n'+date_now.strftime(f'%B %-d, %Y (%A){istod}:\n')+'\n'.join(assignments)+"\nPriority: NA means you have to complete the more important assignments before you can see the other assignments' priority\n"
+            assignments = '\nYour current assignments:\n\n'+date_now.strftime(f'%B %-d, %Y (%A){istod}:\n')+'\n'.join(assignments)+"\nPriority: NA means you have to complete the more important assignments before you that assignment's priority\n"
          else:
             assignments = '\nYour current assignments:\n\n'+date_now.strftime(f'%B %-d, %Y (%A){istod}:\n')+'\n'.join(assignments)+'\n'
          if nodis:
@@ -1127,16 +1127,16 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             # Name of the assignment
             while 1:
                if reenter_mode:
-                  file_sel = qinput(f'\nPress Return at any time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" at any time to stop re-entering the Inputs and keep the original Version\nEnter in "undo" to undo an input\n\nWhat would you Like to Rename this Assignment (Old Value: {selected_assignment[0]})\n').strip()
+                  file_sel = qinput(f'\nPress Return at any time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" at any time to stop re-entering the Inputs and keep the original Version\nEnter in "undo" to undo an input\n\nWhat would you Like to Rename this Assignment (Old Value: {selected_assignment[0]})\n').strip().lower()
                   if not file_sel:
                      file_sel = selected_assignment[0]
                      return
                else:
-                  file_sel = qinput('\nEnter in "cancel" at any time to stop entering in the Inputs\nEnter in "undo" to undo an input\n\nWhat would you Like to Name this Assignment\n').strip()
-               if file_sel.lower() == 'cancel':
+                  file_sel = qinput('\nEnter in "cancel" at any time to stop entering in the Inputs\nEnter in "undo" to undo an input\n\nWhat would you Like to Name this Assignment\n').strip().lower()
+               if file_sel == 'cancel':
                   outercon = True
                   return
-               elif file_sel.lower() == 'undo':
+               elif file_sel == 'undo':
                   outercon = 2
                   return
                elif file_sel in files and (not reenter_mode or file_sel != files[sel-1]):
@@ -1153,15 +1153,15 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             while 1:
                try:
                   if reenter_mode:
-                     ad = qinput(f'Re-enter the Assignment Date of this assignment or Enter "today" (Old Value: {selected_assignment[1].strftime("%-m/%-d/%Y")})\nFormat: Month/Day/Year\nThe year is optional and defaults to the currrent year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nYou can Assign in the Future\n').replace(' ','')
+                     ad = qinput(f'Re-enter the Assignment Date of this assignment or Enter "today" (Old Value: {selected_assignment[1].strftime("%-m/%-d/%Y")})\nFormat: Month/Day/Year\nThe year is optional and defaults to the currrent year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nYou can Assign in the Future\n').replace(' ','').lower()
                      if not ad:
                         ad = selected_assignment[1]
                         return
                   else:
-                     ad = qinput(f'Enter the Assignment Date of this assignment or Enter "today"\nFormat: Month/Day/Year\nThe year is optional and defaults to the currrent year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nYou can Assign in the Future\n').replace(' ','')
-                  if ad.lower() == 'cancel':
+                     ad = qinput(f'Enter the Assignment Date of this assignment or Enter "today"\nFormat: Month/Day/Year\nThe year is optional and defaults to the currrent year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nYou can Assign in the Future\n').replace(' ','').lower()
+                  if ad == 'cancel':
                      outercon = True
-                  elif ad.lower() == 'undo':
+                  elif ad == 'undo':
                      outercon = 2
                   else:
                      date_now = date.now()
@@ -1201,13 +1201,13 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         x = None
                         while 1:
                            try:
-                              mx = qinput(f'Enter the Latest date this Assignment can be Due\nUse the same above Format\nOr, enter the Amount of Days until the Latest date this Assignment can be Due (As a Whole Number Input)\n(Don\'t Care when this Assignment will be Due? Enter "none" to skip)\n')
-                              if 'none' in mx.lower():
+                              mx = qinput(f'Enter the Latest date this Assignment can be Due\nUse the same above Format\nOr, enter the Amount of Days until the Latest date this Assignment can be Due (As a Whole Number Input)\n(Don\'t Care when this Assignment will be Due? Enter "none" to skip)\n').lower()
+                              if 'none' in mx:
                                  mx = float('inf')
-                              elif 'cancel' in mx.lower():
+                              elif 'cancel' in mx:
                                  outercon = True
                                  break
-                              elif 'undo' in mx.lower():
+                              elif 'undo' in mx:
                                  break
                               else:
                                  try:
@@ -1223,14 +1223,14 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         if outercon == True:
                            return
                         continue
-                     if outercon != 2:
-                         try:
-                            x = int(x,10)
-                         except:
-                            date_now = date.now()
-                            x = (slashed_date_convert(x.strip('/'))-ad).days
-                         if x < 1 or x > (date(9999,12,30)-ad).days:
-                            raise Exception
+                     else:
+                        try:
+                           x = int(x,10)
+                        except:
+                           date_now = date.now()
+                           x = (slashed_date_convert(x.strip('/'))-ad).days
+                        if x < 1 or x > (date(9999,12,30)-ad).days:
+                           raise Exception
                      return
                  except:
                     print('!!!\nInvalid Date!\n!!!')
@@ -1266,21 +1266,32 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                  try:
                      if reenter_mode:
                         if unit == 'Minute':
-                           y = qinput(f'Re-enter how Long this Assignment will take to Complete in Minutes (Allows Decimal Inputs) (Old Value: {selected_assignment[3]} {selected_assignment[12]}s)\n')
-                        else:                        
-                           y = qinput(f'Re-enter the Total amount of {unit}s in this Assignment (Allows Decimal Inputs) (Old Value: {selected_assignment[3]} {selected_assignment[12]}s)\nIf you want, complete {unit} in this assignment and input how long that takes for a good estimation\n')
+                           if x == None: pass
+                           else:
+                              y = qinput(f'Re-enter how Long this Assignment will take to Complete in Minutes (Allows Decimal Inputs) (Old Value: {selected_assignment[3]} {selected_assignment[12]}s)\n').lower()
+                        else:
+                           if x == None: pass
+                           else:
+                              y = qinput(f'Re-enter the Total amount of {unit}s in this Assignment (Allows Decimal Inputs) (Old Value: {selected_assignment[3]} {selected_assignment[12]}s)\n').lower()
                         if not y:
                            y = selected_assignment[3]
                            return
                      else:
                         if unit == 'Minute':
-                           y = qinput(f'Enter how Long this Assignment will take to Complete in Minutes (Allows Decimal Inputs)\n')
+                           if x == None: pass
+                           else:
+                              y = qinput(f'Enter how Long this Assignment will take to Complete in Minutes (Allows Decimal Inputs)\n').lower()
                         else:
-                           y = qinput(f'Enter the Total amount of {unit}s in this Assignment (Allows Decimal Inputs)\n')
-                     if 'cancel' in y.lower():
+                           if x == None:
+                              y = qinput(f'Enter the Total amount of {unit}s in this Assignment (Allows Decimal Inputs)\n').lower()
+                           else:
+                              y = qinput(f"Enter the Total amount of {unit}s in this Assignment (Allows Decimal Inputs)\n(Don't know the ").lower()
+                     if 'cancel' in y:
                         outercon = True
-                     elif 'undo' in y.lower():
+                     elif 'undo' in y:
                         outercon = 2
+                     elif x != None and 'none' in y:
+                        y = None
                      else:
                         # This equation is a faster way than round(,6) of rounding to the nearest millionth place
                         y = ceil(float(y)*1000000-0.5)/1000000
@@ -1301,23 +1312,23 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                try:
                   if reenter_mode:
                      if unit == 'Minute':
-                        adone = qinput(f'Re-enter how many Minutes of this Assignment you have already Completed (Allows Decimal Inputs) (Old Value: {selected_assignment[4][0]} {selected_assignment[12]}s)\nThe y position of the very First Point on the Blue Line will be set to this Value, and all other inputs will be Adjusted accordingly\n')
+                        adone = qinput(f'Re-enter how many Minutes of this Assignment you have already Completed (Allows Decimal Inputs) (Old Value: {selected_assignment[4][0]} {selected_assignment[12]}s)\nThe y position of the very First Point on the Blue Line will be set to this Value, and all other inputs will be Adjusted accordingly\n').lower()
                      else:
-                        adone = qinput(f'Re-enter the Total amount of {unit}s Already completed at the Beginning of this Assignment (Allows Decimal Inputs) (Old Value: {selected_assignment[4][0]} {selected_assignment[12]}s)\nThe y position of the first point on the Blue Line will be set to this Value, and all other inputs will be Adjusted accordingly\n')
+                        adone = qinput(f'Re-enter the Total amount of {unit}s Already completed at the Beginning of this Assignment (Allows Decimal Inputs) (Old Value: {selected_assignment[4][0]} {selected_assignment[12]}s)\nThe y position of the first point on the Blue Line will be set to this Value, and all other inputs will be Adjusted accordingly\n').lower()
                      if not adone:
                         adone = selected_assignment[4][0]
                         return
                   else:
                      if unit == 'Minute':
-                        adone = qinput(f'Enter how many Minutes of this Assignment you have already Completed (Allows Decimal Inputs) (Press Return if you have not started this Assignment)\n')
+                        adone = qinput(f'Enter how many Minutes of this Assignment you have already Completed (Allows Decimal Inputs) (Press Return if you have not started this Assignment)\n').lower()
                      else:
-                        adone = qinput(f'Enter the Total amount of {unit}s Already completed in this Assignment (Allows Decimal Inputs) (Press Return if you have not started this Assignment)\n')
+                        adone = qinput(f'Enter the Total amount of {unit}s Already completed in this Assignment (Allows Decimal Inputs) (Press Return if you have not started this Assignment)\n').lower()
                      if not adone:
                         adone = 0
                         return
-                  if 'cancel' in adone.lower():
+                  if 'cancel' in adone:
                      outercon = True
-                  elif 'undo' in adone.lower():
+                  elif 'undo' in adone:
                      outercon = 2
                   else:
                      adone = ceil(float(adone)*1000000-0.5)/1000000
@@ -1340,15 +1351,15 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                while 1:
                    try:
                         if reenter_mode:
-                           ctime = qinput(f'Re-enter the Estimated amount of time to Complete each {unit} in Minutes (Allows Decimal Inputs) (Old Value: {selected_assignment[7]})\n')
+                           ctime = qinput(f'Re-enter the Estimated amount of time to Complete each {unit} in Minutes (Allows Decimal Inputs) (Old Value: {selected_assignment[7]})\nIf you want, complete one {unit} in this assignment and input how long that takes for a good estimation\n').lower()
                            if not ctime:
                               ctime = selected_assignment[7]
                               return
                         else:
-                           ctime = qinput(f'Enter the Estimated amount of Minutes to Complete each {unit} (Allows Decimal Inputs)\n')
-                        if 'cancel' in ctime.lower():
+                           ctime = qinput(f'Enter the Estimated amount of Minutes to Complete each {unit} (Allows Decimal Inputs)\nIf you want, complete one {unit} in this assignment and input how long that takes for a good estimation\n').lower()
+                        if 'cancel' in ctime:
                            outercon = True
-                        elif 'undo' in ctime.lower():
+                        elif 'undo' in ctime:
                            outercon = 2
                         else:
                            ctime = ceil(float(ctime)*1000000-0.5)/1000000
@@ -1382,11 +1393,11 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         if not funct_round:
                            funct_round = 1
                            break
-                     if funct_round == 'cancel':
+                     if funct_round in 'cancel':
                         outercon = True
-                     elif funct_round == 'undo':
+                     elif funct_round in 'undo':
                         outercon = 2
-                     elif reenter_mode and funct_round == 'none':
+                     elif reenter_mode and funct_round in 'none':
                         funct_round = 1
                      else:
                         funct_round = ceil(float(funct_round)*1000000-0.5)/1000000
@@ -1802,8 +1813,13 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       
       print()
       return
-   
-# Calculates variables for the parabola
+
+# Hey there
+# If you are another person reading this code, then you should consider skipping reading the code for the pset() and funct() functions
+# This is where it gets really complicated and math involved, so it may take a while to understand if you do choose to read it
+# Here is a quick summary if you choose not to read them
+# Since all of the assignments follow a parabola, the pset() function calculates the a and b values
+# Then, the funct(n) function returns an^2 + bn with no c variable
 def pset():
          global a, b, skew_ratio, cutoff_transition_value, cutoff_to_use_round, return_y_cutoff, return_0_cutoff, add
          add = 0
@@ -2187,27 +2203,27 @@ def pset():
             else:
                return_y_cutoff = 0
 
-            # Fixes a glitch when the cutoff_transition_value is a high value that causes the output value right before the return_y_cutoff to exceed y
-            # It does this by running a modified version of funct() and checking whether it exceeds y
-            # If it does, subtract 1 from the return_y_cutoff
-            first_loop = True
-            for n in range(ceil(return_y_cutoff - 2),ceil(return_y_cutoff)):
-               if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (skew_ratio < 1) == (n <= cutoff_to_use_round)):
-                  original_output = output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
-                  if skew_ratio > 1:
-                     output += cutoff_transition_value
-                  else:
-                     output -= cutoff_transition_value
+         # Fixes a glitch when the cutoff_transition_value is a high value that causes the output value right before the return_y_cutoff to exceed y
+         # It does this by running a modified version of funct() and checking whether it exceeds y
+         # If it does, subtract 1 from the return_y_cutoff
+         first_loop = True
+         for n in range(ceil(return_y_cutoff - 2),ceil(return_y_cutoff)):
+            if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (skew_ratio < 1) == (n <= cutoff_to_use_round)):
+               original_output = output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
+               if skew_ratio > 1:
+                  output += cutoff_transition_value
                else:
-                  original_output = output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
-               if remainder_mode:
-                  output += y_fremainder
-                  original_output += y_fremainder
-               if first_loop:
-                  difference = output
-               first_loop = False
-            if output > original_output and output + start_lw > y:
-               return_y_cutoff -= 1
+                  output -= cutoff_transition_value
+            else:
+               original_output = output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
+            if remainder_mode:
+               output += y_fremainder
+               original_output += y_fremainder
+            if first_loop:
+               difference = output
+            first_loop = False
+         if output > original_output and output + start_lw > y:
+            return_y_cutoff -= 1
 
          # The same data collected from the modified version of funct() from above is also used to set the variable add
          # This variable adds the min_work_time_funct_round on the very last day of the assignment in order to make linear graphs more smooth
@@ -2278,7 +2294,7 @@ def pset():
             # Set the return_0_cutoff to 1
             return_0_cutoff = 1
          
-# Main function for receiving an output
+# Receives an output on the parabola for input value n
 def funct(n):
       
    # If the start is not at the origin, then translate the graph back to the origin
@@ -2336,10 +2352,11 @@ def funct(n):
    if nwd:
       n -= n//7 * len_nwd + mods[n % 7]
 
-   # If the input is greater than the return_y_cutoff, defined in the pset() function, then return y
+   # If the input is greater than return_y_cutoff, defined in the pset() function, then return y
    if n > return_y_cutoff:
       return y
-   # If the input is less than the return_0_cutoff, defined in the pset() function, then return 0
+   
+   # If the input is less than return_0_cutoff, defined in the pset() function, then return 0
    elif n < return_0_cutoff:
       return start_lw
 
@@ -2409,6 +2426,7 @@ def funct(n):
    # Returns the final output plus start_lw, which untranslates the graph back to where it orignally was
    return output + start_lw
 
+# Debug mode unrounded funct()
 if debug_mode:
    def rfunct(n):
       n -= red_line_start
@@ -2428,7 +2446,7 @@ if debug_mode:
          return start_lw
       return n*(a*n+b) + start_lw
    
-# Function to get the modulo days when using not working days (explained above)
+# Function to get the modulo days when using not working days (explained in funct())
 def set_mod_days():
    global mods
    xday = assign_day_of_week + red_line_start
@@ -2442,7 +2460,7 @@ def set_mod_days():
       mods.append(mod_counter)
    mods = tuple(mods)
 
-# Calculates the skew_ratio limit, which is when the first function output reaches y
+# Calculates the skew_ratio limit, which is the skew ratio when first function output reaches y
 def calc_skew_ratio_lim():
    global skew_ratio_lim
    skew_ratio_lim = x - red_line_start
@@ -2483,7 +2501,8 @@ def format_not_working_days(format_default=True):
    elif len_nwd > 2:
       return ', '.join((date(1,1,1) + time(nwd_day)).strftime('%A') for nwd_day in nwd2[:len_nwd - 1]) + ', and ' + (date(1,1,1) + time(nwd2[len_nwd - 1])).strftime('%A')
 
-# Converts dates like "4/30/20" to datetime objects
+# I didn't write any comments because its not really important what happens inside this function
+# Just know it converts inputted dates like "11/30/20" to datetime objects
 def slashed_date_convert(slashed_date,next_year=True):
    try:
       day = {'mon':0,'mond':0,'tue':1,'tues':1,'wed':2,'wedn':2,'thu':3,'thur':3,'thurs':3,'fri':4,'frid':4,'sat':5,'satu':5,'sun':6,'sund':6}[slashed_date]
@@ -2604,8 +2623,6 @@ def draw(doing_animation=0,do_return=1):
             # If the new displayed point is the same as it was last calculation, return out of the function
             # This is because there is no point using excess CPU if the graph doesn't change
             if do_return and not (set_skew_ratio or set_start) and last_mouse_x == mouse_x and last_mouse_y == mouse_y:
-               ##if nwd:
-                 ## pset()
                return
             last_mouse_x = mouse_x
             last_mouse_y = mouse_y
@@ -2646,21 +2663,20 @@ def draw(doing_animation=0,do_return=1):
       # Loops through and makes smaller indexes
 
       # This entire section finds the index steps for the x and y axes and plots them
-      # The below line is the most important one
-      # This determines the index step for the bigger x axis
+      # The below line is the most important one because it determines the index step for the bigger x axis
       # Let's break it down
 
       # 10**int(log10(x)) is the magnitude of x
-      # For example, if x was 45387, 10**int(log10(x)) would be 10000
-      # It always steps in powers of 10
+      # For example, if x is 45387, 10**int(log10(x)) would be 10000
+      # It always steps in powers of 10 for readability 
       
       # ceil(int(str(x)[0])/ceil((width-100)/100)) makes the step obey the max number of x indexes
-      # For example, if x was 99999, then the steps would be: 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, and 90000
+      # For example, if x is 99999, then the steps would be: 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, and 90000
       # This may be too many steps for a user
       # ceil((width-100)/100) is a simple formula that determines an approximate maximum number of x indexes
       # the expression basically compares the total number of steps with the maximum and adjusts the step value
       # In the above case, say that the maximum number of index steps is 7
-      # If x was 99999, the equation would realize there are too many indexes and instead multiply the step by 2, so the new step value is 20000
+      # If x is 99999, the equation would realize there are too many indexes and instead multiply the step by 2, so the new step value is 20000
       # then the steps would be: 20000, 40000, 60000, and 80000, obeying the maximum number of indexes
       x_axis_scale = 10**int(log10(x)) * ceil(int(str(x)[0],10)/ceil((width-100)/100))
 
@@ -2722,17 +2738,15 @@ def draw(doing_animation=0,do_return=1):
       # Loops through and makes bigger indexes along the x axis
       for bigger_index in range(ceil(x - x % x_axis_scale),0,-x_axis_scale):
 
-            # Uses the gw(), or get width function, that was defined earlier
+            # Width of selected index
             numberwidth = gw(font3,str(bigger_index))
-
-            # Subtracts half the width of the number from 
             number_x_pos = bigger_index*wCon+50-numberwidth/2
 
             # If the number goes off the screen, adjust it to fit on the screen
             if number_x_pos + numberwidth > width-1:
                number_x_pos = width-numberwidth-1
 
-            # Draws the line
+            # Draws the index line
             pygame.draw.line(screen,gray2,(bigger_index*wCon+50.5,0),(bigger_index*wCon+50.5,height-49.5),5)
 
             # Draws the number
@@ -2741,7 +2755,7 @@ def draw(doing_animation=0,do_return=1):
       # Loops through and makes bigger indexes along the y axis
       for bigger_index in range(ceil(y - y % y_axis_scale),0,-y_axis_scale):
 
-            # Bugchecks for rounding error
+            # Bugchecks for roundoff error
             # The *2 makes sure it doesn't accidentally break out of the loop on a valid y index
             # Dont worry about it for now
             if bigger_index * 2 < y_axis_scale:
@@ -2773,6 +2787,8 @@ def draw(doing_animation=0,do_return=1):
       if xdif > -1:
          pygame.draw.line(screen,gray3,(today_x+2.5,0),(today_x+2.5,height-50),5)
          screen.blit(pygame.transform.rotate(font3.render('Today Line',1,black),270),(today_x-6,(height-50-gw(font3,'Today Line'))/2))
+
+      # Debug mode variables 
       if debug_mode:
          pygame.draw.line(screen,gray3,((return_0_cutoff+red_line_start)*wCon+47.5+2.5,0),((return_0_cutoff+red_line_start)*wCon+47.5+2.5,height-50),5)
          screen.blit(pygame.transform.rotate(font3.render('Return 0 Cutoff',1,black),270),((return_0_cutoff+red_line_start)*wCon+47.5-6,(height-50-gw(font3,'Today Line'))/2))
@@ -2803,6 +2819,8 @@ def draw(doing_animation=0,do_return=1):
       pygame.draw.circle(screen,red,(circle_x,circle_y),circle_r)
       line_end = int(x+ceil(1/wCon))
       if debug_mode:
+
+         # If debug mode is enabled draw the funct() and rfunct() parabolas
          end = False
          for i in range(red_line_start+1,line_end,ceil(1/wCon)):
             
@@ -2819,7 +2837,7 @@ def draw(doing_animation=0,do_return=1):
             circle_y = ceil(height-funct(i)*hCon-50.5)
             rcircle_y = ceil(height-rfunct(i)*hCon-50.5)
 
-            # Doesn't draw green line if it is covered by the red line (same position)
+            # Doesn't draw green line if it is in the same position as the red line
             if circle_y < rcircle_y - 3 or circle_y > rcircle_y + 3:
                pygame.draw.line(screen,green,(prev_circle_x,prev_rcircle_y),(circle_x,rcircle_y),circle_r-2)
                pygame.draw.circle(screen,green,(circle_x,rcircle_y),circle_r)
@@ -3040,9 +3058,10 @@ def draw(doing_animation=0,do_return=1):
       pygame.display.update()
 
 def quit_program(internal_error=False):
-   if not debug_mode:
+   if debug_mode:
+      global file_directory, date_last_closed
+   else:
       pygame.quit()
-   global file_directory, date_last_closed
    
    # Prints error info
    from traceback import format_exc # Prints the Exception if an Error Occurs
