@@ -24,7 +24,7 @@ except:
 from datetime import datetime as date # Handles dates as an object
 from datetime import timedelta as time # Handles adding and subtracting dates
 from pickle import load, dump, dumps # Stores data into memory to be used later
-from math import ceil, log10 # Ceil to round up to the nearest integer and log10 to find a number's magnitude
+from math import ceil, floor, log10 # Ceil to round up to the nearest integer and log10 to find a number's magnitude
 from os.path import exists # Checks if a file exists
 from os import remove # Removes backups if they are Disabled
 
@@ -32,7 +32,7 @@ from os import remove # Removes backups if they are Disabled
 file_directory = 'Time Management'
 update_backups = True
 debug_mode = False
-# Adding/removing ettings procedure:
+# Adding/removing settings procedure:
 # Add/remove it on the boolean settings and Adjust values for other settings
 # Change range value x2
 # Change setting "Restore all def setting values" x2
@@ -41,15 +41,14 @@ debug_mode = False
 # command F "settings[" and modify numeric value
 
 # Todo list:
-# if all assignments completed, todo becomes linear and then y
-# dynamic_start change using fixed mode todo as referance rather than dynamic mode todo
+# dynamic start change using fixed mode linear todo as referance rather than dynamic mode todo
 # dont know the amount of units? only if due date is known ("none" with y)
 
 # +/- to zoom in and out
-# next_day (make it values 0,1,2,3,etc), function to set date_now that takes into account "next_day" variable; make it so that before "next" it says "would you like to work ahead even though everything is completed? (Automatically set to fixed mode with input to undo that) (DO NOT do this on SP, do it something like: lw == funct(wlen) with fixed_mode on), THEN display "next"; also put second estimated completion time (showing if every assignment was fixed_mode)
+# next_day (make it values 0,1,2,3,etc), function to set date_now that takes into account "next_day" variable; make it so that BEFORE "next" it automatically set to fixed mode (with an input to undo that) (DO NOT do this on SP, do something like: lw == funct(wlen) with fixed_mode on), THEN display "next"; also put second estimated completion time (showing if every assignment was fixed_mode); make todo linear then y if all assignments completed
 # go over ##
 # min work time with the blue line
-# daily assignments (x and y will change with the assignment, x will always be (DUE TOMORROW!!!), todo will always be the min_work_time) 
+# daily assignments (x and y will change with the assignment, x will always be (DUE TOMORROW!!!), todo will always be the min_work_time); UI: "Enter "none" twice in a row if you want a daily assignment and explain what they are if display_instructions is true 
 # maximum work time (with "would you like y to change?" option)
 # multiple points to hit (piecewise) (combining assignments into one big graph)
 # replace "change skew ratio" to "change a property for all assignments" in settings (skew_ratio, nwd, fixed_mode, total mode, min_work_time)
@@ -134,7 +133,6 @@ else:
 
 # Note: ceil([number] - 0.5) is the same as round([number]). I chose to use this way because it is faster, and I am aware it rounds down when the number ends with .5
 
-# Checks if the manual backup exists
 manual_backup = exists(file_directory + ' Manual Backup')
 
 # Initialize pygame and define fonts
@@ -300,7 +298,7 @@ def home(last_sel=0):
                if dayleft == 1:
                   strdayleft = ' (Assigned Tomorrow!)'
                elif dayleft < 7:
-                  strdayleft = ad.strftime(' (Assigned on %A)')
+                  strdayleft = f'{ad: (Assigned on %A)}'
                else:
                   strdayleft = f' (Assigned in {dayleft} Days)'
                status_value = 5
@@ -542,9 +540,9 @@ def home(last_sel=0):
          else:
             istod = ' (Today)'
          if displayed_na:
-            assignments = '\nYour current assignments:\n\n'+date_now.strftime(f'%B %-d, %Y (%A){istod}:\n')+'\n'.join(assignments)+"\nPriority: NA means you have to complete the more important assignments before you that assignment's priority\n"
+            assignments = f"\nYour current assignments:\n\n{date_now:%B %-d, %Y (%A)}{istod}:\n"+'\n'.join(assignments)+"\nPriority: NA means you have to complete the more important assignments before you that assignment's priority\n"
          else:
-            assignments = '\nYour current assignments:\n\n'+date_now.strftime(f'%B %-d, %Y (%A){istod}:\n')+'\n'.join(assignments)+'\n'
+            assignments = f"\nYour current assignments:\n\n{date_now:%B %-d, %Y (%A)}{istod}:\n"+'\n'.join(assignments)+"\n"
          if nodis:
             if last_sel:
                assignments_time = '\nThe Work time is Incomplete! Please enter in your work done from Previous Days to proceed.'
@@ -552,9 +550,9 @@ def home(last_sel=0):
                assignments_time = '\nThe Work time is Incomplete! Please enter in your work done from Previous Days to proceed.\nEnter "none" to automatically Enter in no work done for every Incomplete Assignment'
          elif tot:
             if tot == tomorrow_tot:
-               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(tot)} (All of it is Due Tomorrow)\nCurrent Time: {date.now().strftime("%-I:%M%p")}\nEstimated Time of Completion: {(date.now() + time(minutes=tot)).strftime("%-I:%M%p")}'
+               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(tot)} (All of it is Due Tomorrow)\nCurrent Time: {date.now():%-I:%M%p}\nEstimated Time of Completion: {(date.now() + time(minutes=tot)).strftime("%-I:%M%p")}'
             else:
-               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(tot)} ({format_minutes(tomorrow_tot)} of it is Due Tomorrow)\nCurrent Time: {date.now().strftime("%-I:%M%p")}\nEstimated Time of Completion: {(date.now() + time(minutes=tot)).strftime("%-I:%M%p")}'
+               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(tot)} ({format_minutes(tomorrow_tot)} of it is Due Tomorrow)\nCurrent Time: {date.now():%-I:%M%p}\nEstimated Time of Completion: {(date.now() + time(minutes=tot)).strftime("%-I:%M%p")}'
          else:
             if last_sel:
                assignments_time = '\nAmazing Effort! You have finished everything for Today!'
@@ -685,7 +683,7 @@ def home(last_sel=0):
                               elif 'cancel' in sel.lower():
                                  outercon = 2
                                  break
-                              sel = int(sel)
+                              sel = int(sel,10)
                               if 0 < sel and sel <= amount_of_assignments:
                                  file_sel,ad,x,y,works,dif_assign,skew_ratio,ctime,funct_round,nwd,fixed_mode,dynamic_start,unit,total_mode,fixed_start,remainder_mode,min_work_time = dat[sel]
                                  if type(x) == float:
@@ -756,7 +754,7 @@ def home(last_sel=0):
 5)  Default Minimum Work Time          : {def_min_work_time} Minutes
 6)  Default Not Working Days           : {format_not_working_days()}
 7)  Display Instructions               : {display_instructions}
-8)  Autofill Work*                     : {autofill} (Select for More Info)
+8)  Autofill Work Inputs*              : {autofill} (Select for More Info)
 9)  Ignore Min Work Time Ends*         : {ignore_ends} (Select for More Info)
 10) Dark Mode in Graph                 : {dark_mode}
 11) Show Progress Bar in Graph         : {show_progress_bar}
@@ -1027,7 +1025,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                     # My goal is to sort the backups by the date the backup was last opened
                                     # Since the first item in the list is the date the backup was last opened, it is will be the first value considered in the sorting algorithm
                                     # Therefore, the backups are sorted from newest to oldest by their date last opened
-                                    backups.append((backup_dat[0][0], backup_dat[0][0].strftime(f'%-m/%-d/%Y %-I:%M%p) Size: {len(dumps(backup_dat[1:],protocol=4))-14} Bytes'), i))
+                                    backups.append((backup_dat[0][0], f'{backup_dat[0][0]:%-m/%-d/%Y %-I:%M%p}) Size: {len(dumps(backup_dat[1:],protocol=4))-14} Bytes', i))
                                     
                            if backups:
                               backups = sorted(backups,reverse=True)
@@ -1127,16 +1125,16 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             # Name of the assignment
             while 1:
                if reenter_mode:
-                  file_sel = qinput(f'\nPress Return at any time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" at any time to stop re-entering the Inputs and keep the original Version\nEnter in "undo" to undo an input\n\nWhat would you Like to Rename this Assignment (Old Value: {selected_assignment[0]})\n').strip().lower()
+                  file_sel = qinput(f'\nPress Return at any time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" at any time to stop re-entering the Inputs and keep the original Version\nEnter in "undo" to undo an input\n\nWhat would you Like to Rename this Assignment (Old Value: {selected_assignment[0]})\n').strip().capitalize()
                   if not file_sel:
                      file_sel = selected_assignment[0]
                      return
                else:
-                  file_sel = qinput('\nEnter in "cancel" at any time to stop entering in the Inputs\nEnter in "undo" to undo an input\n\nWhat would you Like to Name this Assignment\n').strip().lower()
-               if file_sel == 'cancel':
+                  file_sel = qinput('\nEnter in "cancel" at any time to stop entering in the Inputs\nEnter in "undo" to undo an input\n\nWhat would you Like to Name this Assignment\n').strip().capitalize()
+               if file_sel == 'Cancel':
                   outercon = True
                   return
-               elif file_sel == 'undo':
+               elif file_sel == 'Undo':
                   outercon = 2
                   return
                elif file_sel in files and (not reenter_mode or file_sel != files[sel-1]):
@@ -1153,7 +1151,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             while 1:
                try:
                   if reenter_mode:
-                     ad = qinput(f'Re-enter the Assignment Date of this assignment or Enter "today" (Old Value: {selected_assignment[1].strftime("%-m/%-d/%Y")})\nFormat: Month/Day/Year\nThe year is optional and defaults to the currrent year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nYou can Assign in the Future\n').replace(' ','').lower()
+                     ad = qinput(f'Re-enter the Assignment Date of this assignment or Enter "today" (Old Value: {selected_assignment[1]:%-m/%-d/%Y})\nFormat: Month/Day/Year\nThe year is optional and defaults to the currrent year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nYou can Assign in the Future\n').replace(' ','').lower()
                      if not ad:
                         ad = selected_assignment[1]
                         return
@@ -1270,7 +1268,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            else:
                               y = qinput(f'Re-enter how Long this Assignment will take to Complete in Minutes (Allows Decimal Inputs) (Old Value: {selected_assignment[3]} {selected_assignment[12]}s)\n').lower()
                         else:
-                           if x == None: pass
+                           if x == None:pass
                            else:
                               y = qinput(f'Re-enter the Total amount of {unit}s in this Assignment (Allows Decimal Inputs) (Old Value: {selected_assignment[3]} {selected_assignment[12]}s)\n').lower()
                         if not y:
@@ -1278,7 +1276,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            return
                      else:
                         if unit == 'Minute':
-                           if x == None: pass
+                           if x == None:pass
                            else:
                               y = qinput(f'Enter how Long this Assignment will take to Complete in Minutes (Allows Decimal Inputs)\n').lower()
                         else:
@@ -1293,6 +1291,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                      elif x != None and 'none' in y:
                         y = None
                      else:
+
                         # This equation is a faster way than round(,6) of rounding to the nearest millionth place
                         y = ceil(float(y)*1000000-0.5)/1000000
                         
@@ -1381,7 +1380,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         if selected_assignment[8] == 1:
                            funct_round = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: None)\nThis will be the increment of work you will do\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\n').lower()
                         else:
-                           funct_round = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: {selected_assignment[8]} {selected_assignment[12]}s)\nThis will be the increment of work you will do\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\n').lower()
+                           funct_round = qinput(f'Re-enter the Grouping Value of this Assignment (Allows Decimal Inputs) (Enter "none" to skip) (Old Value: {("%f" % selected_assignment[8]).rstrip(".0")} {selected_assignment[12]}s)\nThis will be the increment of work you will do\nFor example, if you Enter in 3 as the Grouping Value, you will only work in Multiples of 3 (such as 6 {unit}s, 9 {unit}s, 15 {unit}s, etc)\n').lower()
                         if not funct_round:
                            funct_round = selected_assignment[8]
                            return
@@ -1419,9 +1418,10 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         min_work_time = ceil(selected_assignment[16]*selected_assignment[7]*1000000-0.5)/1000000
                         if not min_work_time % 1:
                            min_work_time = ceil(min_work_time)
-                        if not min_work_time:
-                           min_work_time = None
-                        min_work_time = qinput(f'Re-enter the Minimum Work Time for each Day you will Work in Minutes (Allows Decimal Inputs) (Enter "none" to disable) (Old Value: {min_work_time} Minutes)\n').strip().lower()
+                        if min_work_time:
+                           min_work_time = qinput(f'Re-enter the Minimum Work Time for each Day you will Work in Minutes (Allows Decimal Inputs) (Enter "none" to disable) (Old Value: {min_work_time} Minutes)\n').strip().lower()
+                        else:
+                           min_work_time = qinput(f'Re-enter the Minimum Work Time for each Day you will Work in Minutes (Allows Decimal Inputs) (Enter "none" to disable) (Old Value: None)\n').strip().lower()
                         if not min_work_time:
                            min_work_time = str(selected_assignment[16]*selected_assignment[7])
                      else:
@@ -1564,6 +1564,8 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                else:
 
                   # My goal here is to find a value where removing all not working days results in x (without not working days)
+                  # I dont really know what I was thinking here but this part isnt important because it works
+                  
                   # For referance, look at this:
                   # x    0 1 2 3 4 5 6 7 | 8 9 10 11 12 13 14 | 15 16 17 18 19 20 21
                   # f(x) 0 0 0 0 0 0 3 6 | 6 6 6  6  6  9  12 | 12 12 15
@@ -1572,15 +1574,14 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                   # To explain this, pretend x = 5 from the above example, which represents the number of days the user will work or x (without not working days)
                   # For every week in this example, the user works 2 days
                   # So, find how many 2 days fit into x = 5 and multiply that number by 7 
-                  # If you aren't me, don't worry if you don't get this
 
                   # Since we want to find the week before the value, round x down to the nearest (7 - len_nwd), or 2 in this example
-                  # that would simplify it to be 7*int(x/(7-len_nwd))*(7-len_nwd)/(7-len_nwd)
-                  # or 7*int(x/(7-len_nwd))
+                  # that would simplify it to be 7*floor(x/(7-len_nwd))*(7-len_nwd)/(7-len_nwd)
+                  # or 7*floor(x/(7-len_nwd))
                   
                   # I subtract one at the end of the assignment for the for loop
                   # And I subtract one in the middle of the equation to fix a wrong week bug
-                  guess_x = 7*int(x/(7-len_nwd) - 1) - 1
+                  guess_x = 7*floor(x/(7-len_nwd) - 1) - 1
 
                   # Guesses for the rest of the week
                   assign_day_of_week = ad.weekday()
@@ -1689,13 +1690,14 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       day = wlen # Day of the assignment you will be at
       smart_skew_ratio = x < 50 # Cutoff for using smart skew ratio (explained later)
       lw = works[wlen] # Last work input
-      stry = '%g' % y # Formatted Total Units of Work
-      wCon = (width-55)/x # Important Scaling Constant for Width
-      hCon = (height-55)/y # Important Scaling Constant for Height
+      stry = '%g' % y # Formatted total units of work
+      wCon = (width-55)/x # Important scaling constant for width
+      hCon = (height-55)/y # Important ccaling constant for height
 
       # Formatting variables for the graph
-      point_text_width = gw(font,f'(Day:00/00/00,{unit}:{y})')
-      point_text_height = font.render(f'(Day:00/00/00,{unit}:{y})',1,black).get_height()
+      point_text = f'(Day:00/00/00,{unit}:' + '0' * (abs(floor(log10(y))) + abs(floor(log10(funct_round))))
+      point_text_width = gw(font,point_text)
+      point_text_height = font.render(point_text,1,black).get_height()
       left_adjust_cutoff = (width - 50 - point_text_width)/wCon
       up_adjust_cutoff = point_text_height/hCon
       
@@ -1752,9 +1754,9 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          y_fremainder = (y - start_lw) % funct_round
          y_mremainder = (y - start_lw) % min_work_time_funct_round
          if nwd:
-            ignore_ends_mwt = ignore_ends and min_work_time and (int(x - red_line_start) - int(x - red_line_start)//7 * len_nwd - mods[int(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
+            ignore_ends_mwt = ignore_ends and min_work_time and (floor(x - red_line_start) - floor(x - red_line_start)//7 * len_nwd - mods[floor(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
          else:
-            ignore_ends_mwt = ignore_ends and min_work_time and (int(x - red_line_start) != 2 or y >= min_work_time_funct_round * 2)
+            ignore_ends_mwt = ignore_ends and min_work_time and (floor(x - red_line_start) != 2 or y >= min_work_time_funct_round * 2)
          if ignore_ends_mwt:
             y1 = y - start_lw
          else:
@@ -1794,12 +1796,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
 
       # Even though the x and y values are precalculated to reach their original value, there still may be a floating point error of a few quadrillionth decimal places, messing up flooring and ceiling functions
       # To make sure this does not happen, I set x and y back to their inputted value
-      x = selected_assignment[2]
+      x = ceil(selected_assignment[2])
       y = selected_assignment[3]
       if nwd:
-         ignore_ends_mwt = ignore_ends and min_work_time and (int(x - red_line_start) - int(x - red_line_start)//7 * len_nwd - mods[int(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
+         ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
       else:
-         ignore_ends_mwt = ignore_ends and min_work_time and (int(x - red_line_start) != 2 or y >= min_work_time_funct_round * 2)
+         ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start != 2 or y >= min_work_time_funct_round * 2)
       funct_round = selected_assignment[8]
       min_work_time = original_min_work_time
       if min_work_time:
@@ -1828,7 +1830,7 @@ def pset():
          try:
 
             # x coordinate of third first point
-            x1 = int(x - red_line_start)
+            x1 = floor(x - red_line_start)
 
             # y coordinate of third first point
             if ignore_ends_mwt:
@@ -1864,11 +1866,11 @@ def pset():
                   return
                
                # More handling of not working days (still explained later)
-               intx2 = int(x2)
+               floorx2 = floor(x2)
                if nwd:
-                  if (assign_day_of_week + intx2 + red_line_start) % 7 in nwd:
-                     x2 = intx2
-                  x2 -= x2//7 * len_nwd + mods[intx2 % 7]
+                  if (assign_day_of_week + floorx2 + red_line_start) % 7 in nwd:
+                     x2 = floorx2
+                  x2 -= x2//7 * len_nwd + mods[floorx2 % 7]
 
                # Checks if the mouse is outside the graph
                if x2 >= x1:
@@ -1968,7 +1970,8 @@ def pset():
                   # If I solve for x in this equation, I get x = (s-b)/(2*a), or x = (s-b)/a/2
 
                   # I set s to min_work_time_funct_round, which is the least amount of units of work a user will do in any given day
-                  cutoff_to_use_round = int(ceil((min_work_time_funct_round-b)/a/2*1000000)/1000000)
+                  # Also, round it to the nearest millionth to prevent a roundoff error
+                  cutoff_to_use_round = floor(ceil((min_work_time_funct_round-b)/a/2*1000000)/1000000)
 
                   # This part calculates the cutoff transition value
                   # The reason why I need this variable is fix the transition in the cutoff
@@ -2473,7 +2476,7 @@ def calc_skew_ratio_lim():
      
 # Formats minutes
 def format_minutes(total_minutes):
-   hour = str(int(total_minutes / 60))
+   hour = str(floor(total_minutes / 60))
    minute = ceil(total_minutes % 60)
    if hour == '0':
       form = f'{minute}m'
@@ -2666,11 +2669,11 @@ def draw(doing_animation=0,do_return=1):
       # The below line is the most important one because it determines the index step for the bigger x axis
       # Let's break it down
 
-      # 10**int(log10(x)) is the magnitude of x
-      # For example, if x is 45387, 10**int(log10(x)) would be 10000
+      # 10**floor(log10(x)) is the magnitude of x
+      # For example, if x is 45387, 10**floor(log10(x)) would be 10000
       # It always steps in powers of 10 for readability 
       
-      # ceil(int(str(x)[0])/ceil((width-100)/100)) makes the step obey the max number of x indexes
+      # ceil(int(str(x)[0],10)/ceil((width-100)/100)) makes the step obey the max number of x indexes
       # For example, if x is 99999, then the steps would be: 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, and 90000
       # This may be too many steps for a user
       # ceil((width-100)/100) is a simple formula that determines an approximate maximum number of x indexes
@@ -2678,14 +2681,14 @@ def draw(doing_animation=0,do_return=1):
       # In the above case, say that the maximum number of index steps is 7
       # If x is 99999, the equation would realize there are too many indexes and instead multiply the step by 2, so the new step value is 20000
       # then the steps would be: 20000, 40000, 60000, and 80000, obeying the maximum number of indexes
-      x_axis_scale = 10**int(log10(x)) * ceil(int(str(x)[0],10)/ceil((width-100)/100))
+      x_axis_scale = 10**floor(log10(x)) * ceil(int(str(x)[0],10)/ceil((width-100)/100))
 
       # Calculates smaller steps
       if x >= 10:
          small_x_axis_scale = x_axis_scale / 5
 
          # Draws smaller x indexes
-         for smaller_index in range(1,int(x/small_x_axis_scale + 1)):
+         for smaller_index in range(1,floor(x/small_x_axis_scale + 1)):
 
             # Doesn't plot the smaller index line if it will be covered up by the bigger index line
             if smaller_index % 5:
@@ -2699,7 +2702,7 @@ def draw(doing_animation=0,do_return=1):
                # If there is enough space to label the smaller indexes, then label it on the graph
                # 1.75 is an eyeballed constant that is ratio of the total width and the total text width
                # Basically, it determines when it is too crowded to include the smaller scale numbers
-               if gw(font4,str(int(x))) * 1.75 < small_x_axis_scale*wCon:
+               if gw(font4,str(floor(x))) * 1.75 < small_x_axis_scale*wCon:
                   numberwidth = gw(font4,str(displayed_number))
 
                   # Subtracts half the width of the number
@@ -2713,14 +2716,14 @@ def draw(doing_animation=0,do_return=1):
                   screen.blit(font4.render(str(displayed_number),1,black),(number_x_pos,height-40))
 
       # This part is exactly the same as the above code, but except in the y axis instead of the x axis       
-      y_axis_scale = 10**int(log10(y)) * ceil(int(str(y)[0],10)/ceil((height-100)/100))
+      y_axis_scale = 10**floor(log10(y)) * ceil(int(str(y)[0],10)/ceil((height-100)/100))
       if y >= 10:
          small_y_axis_scale = y_axis_scale / 5
          font_size = ceil(27.5-(len(str(ceil(y - y % y_axis_scale))))*2.5)
          if font_size < 19:
             font_size = 19
          font5 = pygame.font.Font(font_type,ceil((font_size-4)*font_scale))
-         for smaller_index in range(1,int(y/small_y_axis_scale + 1)):
+         for smaller_index in range(1,floor(y/small_y_axis_scale + 1)):
             if smaller_index % 5:
                displayed_number = smaller_index*small_y_axis_scale
                if not displayed_number % 1:
@@ -2811,14 +2814,14 @@ def draw(doing_animation=0,do_return=1):
       # However, I noticed some inefficiencies
       # Going through the days, the loop will connect a line between f(0) and f(1)
       # Then, it will connect f(1) and f(2)
-      # But wait, f(1) was calculated twice, which is an inefficiency
-      # To solve this, I store f(1) into a variable while the code is connecting a line between f(0) and f(1)
+      # f(1) was calculated twice, which is an inefficiency
+      # To solve this, I store f(1) into a variable while the code is connecting a line between f(0) and f(1) that is then used in connecting the line between f(1) and f(2)
       # That way, each function output is only calculated once
       circle_x, circle_y = ceil(red_line_start*wCon+49.5), ceil(height-start_lw*hCon-50.5)
-      rcircle_y = circle_y
       pygame.draw.circle(screen,red,(circle_x,circle_y),circle_r)
-      line_end = int(x+ceil(1/wCon))
+      line_end = floor(x+ceil(1/wCon))
       if debug_mode:
+         rcircle_y = circle_y
 
          # If debug mode is enabled draw the funct() and rfunct() parabolas
          end = False
@@ -2861,8 +2864,7 @@ def draw(doing_animation=0,do_return=1):
                break
    
       # Blue line
-      # This plots the user inputs
-      # This uses the same logic as the red line
+      # This plots the user inputs and uses the same logic as the red line
       circle_x, circle_y = ceil(dif_assign*wCon+49.5), ceil(height-adone*hCon-50.5)
       pygame.draw.circle(screen,blue,(circle_x,circle_y),circle_r-1)
       if wlen + 1 < line_end:
@@ -2892,12 +2894,14 @@ def draw(doing_animation=0,do_return=1):
             else:
                funct_mouse_x = funct(mouse_x)
             pygame.draw.circle(screen,green,(ceil(wCon*mouse_x + 49.5),ceil(height-funct_mouse_x*hCon-50.5)),circle_r)
-            funct_mouse_x = round(funct_mouse_x,str(float(funct_round))[::-1].find("."))
+
+            # Round to significant figures
+            funct_mouse_x = round(funct_mouse_x,floor(log10(funct_round)))
          str_mouse_x = ad+time(mouse_x)
          if disyear:
-            str_mouse_x = f'{str_mouse_x.day}/{str_mouse_x.month}/{str(str_mouse_x.year)[2:]}'
+            str_mouse_x = f'{str_mouse_x.month}/{str_mouse_x.day}/{str(str_mouse_x.year)[2:]}'
          else:
-            str_mouse_x = f'{str_mouse_x.day}/{str_mouse_x.month}'
+            str_mouse_x = f'{str_mouse_x.month}/{str_mouse_x.day}'
          if mouse_x > left_adjust_cutoff:
             left_adjust = gw(font,f'(Day:{str_mouse_x},{unit}:{funct_mouse_x})')
          else:
@@ -2908,7 +2912,7 @@ def draw(doing_animation=0,do_return=1):
             up_adjust = 0
          screen.blit(font.render(f'(Day:{str_mouse_x},{unit}:{funct_mouse_x})',1,black),(wCon*mouse_x + 50 - left_adjust,height-funct_mouse_x*hCon-50 - up_adjust))
             
-      # Handles moving the progress bar left if the Goal Line does not fit inside the screen
+      # Displays the progress bar
       if show_progress_bar:
          move_text_down = 0
          should_be_done_x = width-153+funct(xdif+1)/y*145
@@ -2925,7 +2929,7 @@ def draw(doing_animation=0,do_return=1):
          if slash_x + 132 + bar_move_left <= width:
             pygame.draw.line(screen,dark_green,(slash_x+70,height-118),(slash_x+115,height-73),15)
          if x > xdif and (doing_animation or lw < selected_assignment[3]):
-            screen.blit(font3.render(f'Your Progress: {int(lw/y*100)}%', 1, black),(width-gw(font3,f'Your Progress: {int(lw/y*100)}%')-5,height-68))
+            screen.blit(font3.render(f'Your Progress: {floor(lw/y*100)}%', 1, black),(width-gw(font3,f'Your Progress: {floor(lw/y*100)}%')-5,height-68))
             done_x = width-153+lw/y*145-bar_move_left
             if done_x < width - 8:
                pygame.draw.line(screen,white,(done_x,height-96),(width-9-bar_move_left,height-96),46)
@@ -2971,7 +2975,7 @@ def draw(doing_animation=0,do_return=1):
          pygame.display.update()
          return
 
-      # Formats and sets up the Central text on the graph that displays the daily information
+      # Formats the central text on the graph that displays the daily information
       row_height = gw(font,'0')*2+1
       dayleft = x - xdif
       if dayleft in (-1,0,1):
@@ -2985,7 +2989,7 @@ def draw(doing_animation=0,do_return=1):
          strdayleft = f'Was Due {-dayleft} Days Ago'
       else:
          strdayleft = f'Due in {dayleft} Days'
-      center('Due Date: '+str(due_date.strftime(f'%B %-d, %Y (%A) ({strdayleft})')),row_height)
+      center(f'Due Date: {due_date:%B %-d, %Y (%A)} ({strdayleft})',row_height)
       if lw < y and dayleft > 0:
          nowork = (date_file_created.weekday() + day) % 7 in nwd
          todo = funct(day+dif_assign+1) - lw
@@ -3001,7 +3005,7 @@ def draw(doing_animation=0,do_return=1):
                reach_deadline = ''
          current_day = date_file_created+time(day)
          dist_from_today = ndif - day
-         display_date = current_day.strftime('%B %-d, %Y (%A)')
+         display_date = f'{current_day:%B %-d, %Y (%A)}'
          if not dist_from_today:
             display_date += ' (Today)'
          elif dist_from_today == -1:
@@ -3368,6 +3372,8 @@ Make sure you read all of the instructions, as some things are important to know
             # Deletes the last work input
             elif key == pygame.K_BACKSPACE:
                 if wlen > 0:
+
+                     # Change x back to an integer if the work input is deleted
                      if type(selected_assignment[2]) == float:
                         selected_assignment[2] = x
 
@@ -3515,6 +3521,7 @@ Make sure you read all of the instructions, as some things are important to know
                     # Formats the day information for the schedule
                     total += dif
                     strtotal = '%g' % total
+                    dif = '%g' % dif
                     if first_loop and str(i) == '0.0':
                        this_day = formatted_date
                        first_loop = False
@@ -3525,9 +3532,8 @@ Make sure you read all of the instructions, as some things are important to know
                           this_day = f'{formatted_date}ZL {dif}XL {unit}{s} (QL{strtotal} / {stry})'
                        else:
                           this_day = f'{formatted_date}\t{dif} {unit}{s} ({strtotal} / {stry})'.expandtabs(32)
-                       if unit != 'Minute' or dif*ctime >= 60:
-                          this_day += f' ({format_minutes(dif*ctime)})'
-                    dif = '%g' % dif
+                       if unit != 'Minute' or float(dif)*ctime >= 60:
+                          this_day += f' ({format_minutes(float(dif)*ctime)})'
                     if dskp > 1:
                        this_day += f' ({dskp} Days Later)'
                        dskp = 1
@@ -3585,10 +3591,7 @@ Make sure you read all of the instructions, as some things are important to know
                         assignment_info = f' ({dskp} Days Later) (Due Date)\nSkew Ratio: {round(skew_ratio-1,3)}\n'
                     if funct_round != 1:
                         if unit == 'Minute':
-                           if selected_assignment[8] >= 60:
-                              assignment_info += f'Grouping Value: {selected_assignment[8]} Minutes of Work ({format_minutes(selected_assignment[8])})\n'
-                           else:
-                              assignment_info += f'Grouping Value: {selected_assignment[8]} Minutes of Work\n'
+                           assignment_info += f'Grouping Value: {("%f" % selected_assignment[8]).rstrip(".0")} Minutes of Work ({format_minutes(selected_assignment[8])})\n'
                         else:
                            assignment_info += f'Grouping Value: {selected_assignment[8]} {unit}s\n'
                     if len_nwd:
@@ -3597,10 +3600,12 @@ Make sure you read all of the instructions, as some things are important to know
                         rounded_original_min_work_time = ceil(selected_assignment[16]*ctime*1000000-0.5)/1000000
                         if not rounded_original_min_work_time % 1:
                            rounded_original_min_work_time = ceil(rounded_original_min_work_time)
-                        if funct_round % 1:
-                           assignment_info += f'Minimum Work Time: {rounded_original_min_work_time} Minutes ({ceil(selected_assignment[16]*str(float(funct_round))[::-1].find("."))/str(float(funct_round))[::-1].find(".")} {unit}s)'
-                        else:
-                           assignment_info += f'Minimum Work Time: {rounded_original_min_work_time} Minutes ({ceil(selected_assignment[16])} {unit}s)'
+                           if unit == 'Minute':
+                              assignment_info += f'Minimum Work Time: {rounded_original_min_work_time} Minutes ({format_minutes(rounded_original_min_work_time)})'
+                           elif funct_round % 1:
+                              assignment_info += f'Minimum Work Time: {rounded_original_min_work_time} Minutes (%g {unit}s)' % (ceil(selected_assignment[16] * 10**abs(floor(log10(funct_round)))/10**abs(floor(log10(funct_round)))))
+                           else:
+                              assignment_info += f'Minimum Work Time: {rounded_original_min_work_time} Minutes ({ceil(selected_assignment[16])} {unit}s)'
                     print('\n'+'\n'.join(info2)+due_date.strftime(f'\n%B %-d{disyear} (%A):') + assignment_info)
 
                     # Prints warnings and errors
