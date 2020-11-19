@@ -290,7 +290,7 @@ def home(last_sel=0):
 
             assign_day_of_week = ad.weekday() # Weekday of assign date
             len_nwd = len(nwd) # Length of not working days
-            len_works = len(works) - 1 # Length of work inputs subtracted by 1 to not count the 0th work input
+            len_works = len(works) - 1 # Length of work inputs subtracted by 1 to not count the 0th or starting work input
             lw = works[len_works] # Last work input
             if nwd:
                set_mod_days()
@@ -466,12 +466,15 @@ def home(last_sel=0):
                   # Then, the program multiplies this value by a constant determined by how well you followed your schedule
                   # The constant is calculated as follows
 
-                  # First, it finds the average distance that each work input is away from the ideal line for every day in the assignment
-                  # That value is divided by the total number of units
-                  if len_works:
+                  # First, it finds the average distance that each work input is away from the ideal work schedule for each work input in the assignment
+                  # That value is divided by the total number of units to get a number
+                  # Then, that number is added to one as the constant
+                  # If that number is negative, meaning you did more work than necessary, the constant will be <1 and your status priority will be slightly reduced
+                  # If that number is positive, meaning you are behind on your schedule, the constant will be >1 and your status priority will be slightly increased
+                  if len_works and daysleft != 1:
                      status_priority = (1-sum(works[i]-funct(i) for i in range(1,len_works+1) if (assign_day_of_week + i - 1) % 7 not in nwd)/len_works/y) * todo*ctime/(x-dif_assign-len_works)
                   else:
-                     status_priority = todo*ctime/(x-dif_assign)
+                     status_priority = todo*ctime/(x-dif_assign-len_works)
                   if status_priority < 0:
                      status_priority = 0 
                   
