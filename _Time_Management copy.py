@@ -24,7 +24,7 @@ except:
 from datetime import datetime as date # Handles dates as an object
 from datetime import timedelta as time # Handles adding and subtracting dates
 from pickle import load, dump, dumps # Stores data into memory to be used later
-from math import ceil, floor, log10 # Ceil to round up to the nearest integer and log10 to find a number's magnitude
+from math import ceil, floor, log10 # Ceil to round up, floor to round down, and log10 to find a number's magnitude
 from os.path import exists # Checks if a file exists
 from os import remove # Removes backups if they are Disabled
 
@@ -139,7 +139,6 @@ manual_backup = exists(file_directory + ' Manual Backup')
 #font_type = '/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/pygame/freesansbold.ttf'
 font_type = None
 pygame.init()
-
 #font_scale = 0.6875
 font_scale = 1
 font3 = pygame.font.Font(font_type,ceil(25*font_scale))
@@ -408,7 +407,7 @@ def home(last_sel=0):
                      if status_value != 1:
                         status_value = 2
                   elif dayleft < 7:
-                     strdayleft = (ad + time(x)).strftime(' (Due on %A)')
+                     strdayleft = f'{(ad + time(x)): (Due on %A)}'
                   else:
                      strdayleft = f' (Due in {dayleft} Days)'
                      
@@ -550,9 +549,9 @@ def home(last_sel=0):
                assignments_time = '\nThe Work time is Incomplete! Please enter in your work done from Previous Days to proceed.\nEnter "none" to automatically Enter in no work done for every Incomplete Assignment'
          elif tot:
             if tot == tomorrow_tot:
-               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(tot)} (All of it is Due Tomorrow)\nCurrent Time: {date.now():%-I:%M%p}\nEstimated Time of Completion: {(date.now() + time(minutes=tot)).strftime("%-I:%M%p")}'
+               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(tot)} (All of it is Due Tomorrow)\nCurrent Time: {date.now():%-I:%M%p}\nEstimated Time of Completion: {(date.now() + time(minutes=tot)):%-I:%M%p}'
             else:
-               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(tot)} ({format_minutes(tomorrow_tot)} of it is Due Tomorrow)\nCurrent Time: {date.now():%-I:%M%p}\nEstimated Time of Completion: {(date.now() + time(minutes=tot)).strftime("%-I:%M%p")}'
+               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(tot)} ({format_minutes(tomorrow_tot)} of it is Due Tomorrow)\nCurrent Time: {date.now():%-I:%M%p}\nEstimated Time of Completion: {(date.now() + time(minutes=tot)):%-I:%M%p}'
          else:
             if last_sel:
                assignments_time = '\nAmazing Effort! You have finished everything for Today!'
@@ -756,7 +755,7 @@ def home(last_sel=0):
 7)  Display Instructions               : {display_instructions}
 8)  Autofill Work Inputs*              : {autofill} (Select for More Info)
 9)  Ignore Min Work Time Ends*         : {ignore_ends} (Select for More Info)
-10) Dark Mode in Graph                 : {dark_mode}
+10) Dark Mode for Graph                : {dark_mode}
 11) Show Progress Bar in Graph         : {show_progress_bar}
 12) Show Past Inputs in Graph Schedule : {show_past}
 13) Backup Every Run*                  : {last_opened_backup}
@@ -877,7 +876,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            if 7 < change_setting and change_setting < 10:
                               print(("\nIf you do not have to Work for a day in an Assignment, and you Forget to input work for that Day, it is assumed you did Nothing\nThe program will auto fill in No work Done on that day because you anyways did Not have to Work\nApplies to periods of a time Longer than a Day",
                                      "\nIgnore Ends is only relevant when Minimum Work Time is also Enabled for an Assignment\nIgnores the Minimum Work Time on the first and last Working Day to make the Work Distribution smoother\nThis also fixes an Issue that causes you to Work a Lot More on the First and Last days of an Assignment\nIt only ignores the minimum work time when Absolutely Necessary and tries to Preserve the original distribution as Much as Possible"
-                                     )[change_setting-8]+f"\nThis Setting\'s new value is {new_value} (Old Value: {not new_value})\n")
+                                     )[change_setting-8]+f"\nThis Setting's new value is {new_value} (Old Value: {not new_value})\n")
                               qinput('Enter Anything to Continue:')
                               
                            # Changes colors
@@ -1183,7 +1182,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             while 1:
                  try:
                      if reenter_mode:
-                        x = qinput(f'Re-enter the Due Date of this assignment (Old Value: {(selected_assignment[1] + time(selected_assignment[2])).strftime("%-m/%-d/%Y")})\nUse the same above Format\nOr, enter the Amount of Days in which this Assignment is Due from the Re-entered Assign Date (As a Whole Number Input)\n(Don\'t Have a Due Date? Enter in "none" to proceed)\n').replace(' ','').lower()
+                        x = qinput(f'Re-enter the Due Date of this assignment (Old Value: {(selected_assignment[1] + time(selected_assignment[2])):%-m/%-d/%Y})\nUse the same above Format\nOr, enter the Amount of Days in which this Assignment is Due from the Re-entered Assign Date (As a Whole Number Input)\n(Don\'t Have a Due Date? Enter in "none" to proceed)\n').replace(' ','').lower()
                         if not x:
                            x = selected_assignment[2] - (ad - selected_assignment[1]).days
                            if x < 1 or x > (date(9999,12,30)-ad).days:
@@ -1695,7 +1694,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       hCon = (height-55)/y # Important ccaling constant for height
 
       # Formatting variables for the graph
-      point_text = f'(Day:00/00/00,{unit}:' + '0' * (abs(floor(log10(y))) + abs(floor(log10(funct_round))))
+      point_text = f'(Day:00/00/00,{unit}:{"0" * (abs(floor(log10(y)))+1 + abs(floor(log10(funct_round))))}'
       point_text_width = gw(font,point_text)
       point_text_height = font.render(point_text,1,black).get_height()
       left_adjust_cutoff = (width - 50 - point_text_width)/wCon
@@ -2498,11 +2497,11 @@ def format_not_working_days(format_default=True):
    if not len_nwd:
       return 'None'
    elif len_nwd == 1:
-      return (date(1,1,1) + time(nwd2[0])).strftime('%A')
+      return f'{(date(1,1,1) + time(nwd2[0])):%A}'
    elif len_nwd == 2:
-      return (date(1,1,1) + time(nwd2[0])).strftime('%A') + ' and ' + (date(1,1,1) + time(nwd2[1])).strftime('%A')
+      return f'{(date(1,1,1) + time(nwd2[0])):%A} and {(date(1,1,1) + time(nwd2[1])):%A}'
    elif len_nwd > 2:
-      return ', '.join((date(1,1,1) + time(nwd_day)).strftime('%A') for nwd_day in nwd2[:len_nwd - 1]) + ', and ' + (date(1,1,1) + time(nwd2[len_nwd - 1])).strftime('%A')
+      return ', '.join(f'{(date(1,1,1) + time(nwd_day)):%A}' for nwd_day in nwd2[:len_nwd - 1]) + f', and {(date(1,1,1) + time(nwd2[len_nwd - 1])):%A}'
 
 # I didn't write any comments because its not really important what happens inside this function
 # Just know it converts inputted dates like "11/30/20" to datetime objects
@@ -3402,7 +3401,7 @@ Make sure you read all of the instructions, as some things are important to know
                      wlen -= 1
                      lw = works[wlen]
                      draw(0,0)
-                     print(f'Deleted Work Input (Used to be at {deleted} Total {unit}s at {(date_file_created + time(day+1)).strftime("%B %-d"+disyear)})')
+                     print(f'Deleted Work Input (Used to be at {deleted} Total {unit}s at {(date_file_created + time(day+1)):%B %-d{disyear}})')
 
             # Displays the entire schedule of the assignment
             elif key == pygame.K_d:
@@ -3463,7 +3462,7 @@ Make sure you read all of the instructions, as some things are important to know
                         d_start = len(info)
                         
                     s = 's'
-                    formatted_date = (date_file_created + time(i-dif_assign)).strftime('%B %-d'+disyear+' (%A):')
+                    formatted_date = f'{(date_file_created+time(i-dif_assign)):%B %-d{disyear} (%A):}'
                     if end_of_works:
 
                        # the variable end_of_works if first set to False, so first read the comments below
@@ -3606,7 +3605,7 @@ Make sure you read all of the instructions, as some things are important to know
                               assignment_info += f'Minimum Work Time: {rounded_original_min_work_time} Minutes (%g {unit}s)' % (ceil(selected_assignment[16] * 10**abs(floor(log10(funct_round)))/10**abs(floor(log10(funct_round)))))
                            else:
                               assignment_info += f'Minimum Work Time: {rounded_original_min_work_time} Minutes ({ceil(selected_assignment[16])} {unit}s)'
-                    print('\n'+'\n'.join(info2)+due_date.strftime(f'\n%B %-d{disyear} (%A):') + assignment_info)
+                    print('\n'+'\n'.join(info2) + f'{due_date:\n%B %-d{disyear} (%A):}{assignment_info}')
 
                     # Prints warnings and errors
                     if not show_past and ndif > day: 
@@ -3814,7 +3813,7 @@ Make sure you read all of the instructions, as some things are important to know
                                 input_message = f'Enter "fin" to enter the Exact amount required to Do\nEntering "0" in total mode is Interpreted as no work done rather than zero {unit}s in total mode\n' + input_message
 
                              # Formatting for the input
-                             formatted_date = (date_file_created + time(day)).strftime('%B %-d'+disyear+' (%A)')
+                             formatted_date = f'{(date_file_created + time(day)):%B %-d{disyear} (%A)}'
                              if not ndif - day:
                                 formatted_date += ' (Today)'
                              elif ndif - day == 1:
@@ -3995,8 +3994,9 @@ Make sure you read all of the instructions, as some things are important to know
             else:
                font_size = ceil((width+450)/47-0.5)
             font = pygame.font.Font(font_type,ceil(font_size*font_scale))
-            point_text_width = gw(font,f'(Day:00/00/00,{unit}:{y})')
-            point_text_height = font.render(f'(Day:00/00/00,{unit}:{y})',1,black).get_height()
+            point_text = f'(Day:00/00/00,{unit}:{"0" * (abs(floor(log10(y)))+1 + abs(floor(log10(funct_round))))}'
+            point_text_width = gw(font,point_text)
+            point_text_height = font.render(point_text,1,black).get_height()
             left_adjust_cutoff = (width - 50 - point_text_width)/wCon
             up_adjust_cutoff = point_text_height/hCon
             draw(0,0)
