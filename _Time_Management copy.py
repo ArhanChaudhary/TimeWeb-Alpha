@@ -41,6 +41,7 @@ debug_mode = False
 # command F "settings[" and modify numeric value
 
 # Todo list:
+# default skew ratio
 # dynamic start change using fixed mode linear todo as referance rather than dynamic mode todo
 # dont know the amount of units? only if due date is known ("none" with y)
 
@@ -220,8 +221,8 @@ def home(last_sel=0):
          assign, ordli, daysleft, fminutes = [], [], [], []
          max_assignment_name_len = len(max(files,key=len))+1
          file_index = 1
-         tot = tomorrow_tot = 0
-         nodis = False
+         total = tomorrow_tot = 0
+         incomplete_works = False
          set_skew_ratio = False
          
          for file in dat[1:]:
@@ -242,7 +243,7 @@ def home(last_sel=0):
                start_lw = works[dynamic_start - dif_assign]
                red_line_start = dynamic_start
                
-            # Caps funct_round at y
+            # Caps the grouping at y
             if funct_round > y - start_lw:
                funct_round = y - start_lw
 
@@ -251,8 +252,7 @@ def home(last_sel=0):
                min_work_time = y - start_lw
 
             # If the minimum work time is less than the grouping value, that means
-            # The minimum work time is always fulfilled by the grouping value, making
-            # It completely irrelevant
+            # The minimum work time is always fulfilled by the grouping value, making it completely irrelevant
             if min_work_time <= funct_round:
                min_work_time = 0
 
@@ -281,7 +281,7 @@ def home(last_sel=0):
                ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start != 2 or y >= min_work_time_funct_round * 2)
 
             y_fremainder = (y - start_lw) % funct_round # Remainder when the total number of units left in the assignment is divided by funct_round, or the grouping value
-            y_mremainder = (y - start_lw) % min_work_time_funct_round # Remainder when the total number of units left in the assignment is divided by min_work_time_funct_round, or the minimum a user will work in a day
+            y_mremainder = (y - start_lw) % min_work_time_funct_round # Remainder when the total number of units left in the assignment is divided by min_work_time_funct_round, or the minimum possible a user can work in a day
 
             # Define a and b for the parabola
             pset()
@@ -355,7 +355,7 @@ def home(last_sel=0):
 
                   # Checks if all the Work Inputs have been Inputted until Today
                   if not autofill_override and ndif > wlen and wlen + dif_assign < x:
-                     nodis = True
+                     incomplete_works = True
                      status_message = '?\u3000Whoops! You have not Entered in your Work Completed from Previous Days!'
                      status_value = 1
                   else:
@@ -400,7 +400,7 @@ def home(last_sel=0):
                            status_message += f' {complete_or_reach} {strtodo} {strtotal}Minute{s} of Work Today.'
                         else:
                            status_message += f' {complete_or_reach} {strtodo} {strtotal}{unit}{s} Today.'
-                        tot += ceil(todo*ctime)
+                        total += ceil(todo*ctime)
                   if dayleft == 1:
                      strdayleft = ' (Due TOMORROW!!)'
                      tomorrow_tot += ceil(todo*ctime)
@@ -542,16 +542,16 @@ def home(last_sel=0):
             assignments = f"\nYour current assignments:\n\n{date_now:%B %-d, %Y (%A)}{istod}:\n"+'\n'.join(assignments)+"\nPriority: NA means you have to complete the more important assignments before you that assignment's priority\n"
          else:
             assignments = f"\nYour current assignments:\n\n{date_now:%B %-d, %Y (%A)}{istod}:\n"+'\n'.join(assignments)+"\n"
-         if nodis:
+         if incomplete_works:
             if last_sel:
                assignments_time = '\nThe Work time is Incomplete! Please enter in your work done from Previous Days to proceed.'
             else:
                assignments_time = '\nThe Work time is Incomplete! Please enter in your work done from Previous Days to proceed.\nEnter "none" to automatically Enter in no work done for every Incomplete Assignment'
-         elif tot:
-            if tot == tomorrow_tot:
-               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(tot)} (All of it is Due Tomorrow)\nCurrent Time: {date.now():%-I:%M%p}\nEstimated Time of Completion: {(date.now() + time(minutes=tot)):%-I:%M%p}'
+         elif total:
+            if total == tomorrow_tot:
+               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(total)} (All of it is Due Tomorrow)\nCurrent Time: {date.now():%-I:%M%p}\nEstimated Time of Completion: {(date.now() + time(minutes=total)):%-I:%M%p}'
             else:
-               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(tot)} ({format_minutes(tomorrow_tot)} of it is Due Tomorrow)\nCurrent Time: {date.now():%-I:%M%p}\nEstimated Time of Completion: {(date.now() + time(minutes=tot)):%-I:%M%p}'
+               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(total)} ({format_minutes(tomorrow_tot)} of it is Due Tomorrow)\nCurrent Time: {date.now():%-I:%M%p}\nEstimated Time of Completion: {(date.now() + time(minutes=total)):%-I:%M%p}'
          else:
             if last_sel:
                assignments_time = '\nAmazing Effort! You have finished everything for Today!'
@@ -572,7 +572,7 @@ def home(last_sel=0):
          else:
             print('\nYour current assignments:\n\nYou have no Assignments!\n')
          input_message = "Enter 'new' to create an Assignment:"
-         nodis = True
+         incomplete_works = True
 
       # Last_sel is used to go to the next assignment when pressing key "n"
       reenter_mode = False
@@ -581,11 +581,11 @@ def home(last_sel=0):
       else:
          while 1:
             
-            # Input which Assignment to Select
+            # Input which assignment to select
             sel = qinput(input_message).strip()
 
             # You might see the variable "outercon" be used a lot.
-            # Outercon is a flag used to either break or continue out of outer loops, which are loops that contain a loop that needs to break out of the outer one
+            # Outercon is a flag used to either break or continue out of outer loops
             outercon = False
 
             # If nothing is entered, select the first assignment
@@ -663,7 +663,7 @@ def home(last_sel=0):
                      autofill_override = True
 
                   # If the input is "next", go to the next day (WIP)
-                  elif 0 and not nodis and not tot and sel == 'next':
+                  elif 0 and not incomplete_works and not total and sel == 'next':
                      next_day = True
 
                   # If the input is "back", go back to the current day
@@ -682,7 +682,7 @@ def home(last_sel=0):
                               elif 'cancel' in sel.lower():
                                  outercon = 2
                                  break
-                              sel = int(sel,10)
+                              sel = int(sel)
                               if 0 < sel and sel <= amount_of_assignments:
                                  file_sel,ad,x,y,works,dif_assign,skew_ratio,ctime,funct_round,nwd,fixed_mode,dynamic_start,unit,total_mode,fixed_start,remainder_mode,min_work_time = dat[sel]
                                  if type(x) == float:
@@ -1263,8 +1263,8 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                  try:
                      if reenter_mode:
                         if unit == 'Minute':
-                           if x == None: pass
-                           else:
+                           if x == None:pass
+                           else: 
                               y = qinput(f'Re-enter how Long this Assignment will take to Complete in Minutes (Allows Decimal Inputs) (Old Value: {selected_assignment[3]} {selected_assignment[12]}s)\n').lower()
                         else:
                            if x == None:pass
@@ -1282,7 +1282,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            if x == None:
                               y = qinput(f'Enter the Total amount of {unit}s in this Assignment (Allows Decimal Inputs)\n').lower()
                            else:
-                              y = qinput(f"Enter the Total amount of {unit}s in this Assignment (Allows Decimal Inputs)\n(Don't know the ").lower()
+                              y = qinput(f'Enter the Total amount of {unit}s in this Assignment (Allows Decimal Inputs)\n(Don\'t know the number of {unit}s in this assingment? Enter "none" to continue)').lower()
                      if 'cancel' in y:
                         outercon = True
                      elif 'undo' in y:
@@ -1815,12 +1815,11 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       print()
       return
 
-# Hey there
 # If you are another person reading this code, then you should consider skipping reading the code for the pset() and funct() functions
 # This is where it gets really complicated and math involved, so it may take a while to understand if you do choose to read it
 # Here is a quick summary if you choose not to read them
-# Since all of the assignments follow a parabola, the pset() function calculates the a and b values
-# Then, the funct(n) function returns an^2 + bn with no c variable
+# All of the assignments follow a parabola, and the pset() function calculates the a and b values
+# Then, the funct(n) function returns the output of an^2 + bn (with no c variable because it goes through the origin)
 def pset():
          global a, b, skew_ratio, cutoff_transition_value, cutoff_to_use_round, return_y_cutoff, return_0_cutoff, add
          add = 0
@@ -1892,7 +1891,6 @@ def pset():
                      b = (y1 - x1 * x1 * a) / x1
                      
                      # Sets skew ratio on the graph depending on the mouse coordinates
-                     # This is to "save" the curve of the parabola as a skew ratio value
                      skew_ratio = (a + b) * x1 / y1
                      if skew_ratio > skew_ratio_lim:
                         skew_ratio = skew_ratio_lim
@@ -1911,7 +1909,6 @@ def pset():
                # If the start of the line is moved, requiring the red line to start not at the origin, translate the parabola onto the start instead of using a variable
                # This increases efficiency and optimizations
                # CREDIT OF THIS ALGORITHM GOES TO https://stackoverflow.com/questions/717762/how-to-calculate-the-vertex-of-a-parabola-given-three-points
-
                a = y1 * (1 - skew_ratio) / ((x1-1) * x1)
                b = (y1 - x1 * x1 * a) / x1
                
@@ -3972,10 +3969,10 @@ Make sure you read all of the instructions, as some things are important to know
             width, height = event.size
 
             # Cap the width and height at their lower limits
-            if height < 375:
-                height = 375
             if width < 350:
                 width = 350
+            if height < 375:
+                height = 375
             if width > max_w:
                 width = max_w
             if height > max_h:
