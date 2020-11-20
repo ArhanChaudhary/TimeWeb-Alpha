@@ -31,7 +31,7 @@ from os import remove # Removes backups if they are Disabled
 # File Directory where the data will be stored
 file_directory = 'Time Management'
 update_backups = True
-debug_mode = 1
+debug_mode = False
 # Adding/removing settings procedure:
 # Add/remove it on the boolean settings and Adjust values for other settings
 # Change range value x2
