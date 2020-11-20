@@ -41,6 +41,7 @@ debug_mode = False
 # command F "settings[" and modify numeric value
 
 # Todo list:
+# manual backup
 # default skew ratio in settings
 # dynamic start change using fixed mode linear todo as referance rather than dynamic mode todo
 # dont know the amount of units? only if due date is known ("none" with y)
@@ -306,18 +307,18 @@ def home(last_sel=0):
 
             todo = funct(len_works+dif_assign+1) - lw # Amount of work to be done
             daysleft = -(date_now-ad).days # Days between assign date and today multiplied by -1 to make some things easier (might rewrite)         
-            strdayleft = '' # Formatting Variable
+            strdaysleft = '' # Formatting Variable
             display_format_minutes = False # May get set to True later
             
             # Checks if assign date is in the Future
             if daysleft > 0:
                status_message = '#\u3000This Assignment has Not been Assigned Yet! Please wait until it is.'
                if daysleft == 1:
-                  strdayleft = ' (Assigned Tomorrow!)'
+                  strdaysleft = ' (Assigned Tomorrow!)'
                elif daysleft < 7:
-                  strdayleft = f'{ad: (Assigned on %A)}'
+                  strdaysleft = f'{ad: (Assigned on %A)}'
                else:
-                  strdayleft = f' (Assigned in {daysleft} Days)'
+                  strdaysleft = f' (Assigned in {daysleft} Days)'
                status_value = 5
             else:
                
@@ -422,14 +423,14 @@ def home(last_sel=0):
                            status_message += f' {complete_or_reach} {strtodo} {strtotal}{unit}{s} Today.'
                         total += ceil(todo*ctime)
                   if daysleft == 1:
-                     strdayleft = ' (Due TOMORROW!!)'
+                     strdaysleft = ' (Due TOMORROW!!)'
                      tomorrow_tot += ceil(todo*ctime)
                      if status_value != 1:
                         status_value = 2
                   elif daysleft < 7:
-                     strdayleft = f'{(ad + time(x)): (Due on %A)}'
+                     strdaysleft = f'{(ad + time(x)): (Due on %A)}'
                   else:
-                     strdayleft = f' (Due in {daysleft} Days)'
+                     strdaysleft = f' (Due in {daysleft} Days)'
                      
             # Assigns each assignment a value based on an algorithm
             # Then, all the assignments are sorted by their value to determine each assignment's priority
@@ -502,7 +503,7 @@ def home(last_sel=0):
 
             # Lists for formatting
             assign.append(file[0].ljust(max_assignment_name_len)+status_message)
-            li_daysleft.append(strdayleft)
+            li_daysleft.append(strdaysleft)
             if display_format_minutes:
                fminutes.append(f' ({format_minutes(todo*ctime)})')
             else:
@@ -3003,16 +3004,16 @@ def draw(doing_animation=0,do_return=1):
       daysleft = x - today_minus_ad
       if daysleft in (-1,0,1):
          if daysleft == -1:
-            strdayleft = 'Yesterday'
+            strdaysleft = 'Yesterday'
          elif not daysleft:
-            strdayleft = 'TODAY!!!'
+            strdaysleft = 'TODAY!!!'
          elif daysleft == 1:
-            strdayleft = 'TOMORROW!!!'
+            strdaysleft = 'TOMORROW!!!'
       elif daysleft < -1:
-         strdayleft = f'Was Due {-daysleft} Days Ago'
+         strdaysleft = f'Was Due {-daysleft} Days Ago'
       else:
-         strdayleft = f'Due in {daysleft} Days'
-      center(f'Due Date: {due_date:%B %-d, %Y (%A)} ({strdayleft})',row_height)
+         strdaysleft = f'Due in {daysleft} Days'
+      center(f'Due Date: {due_date:%B %-d, %Y (%A)} ({strdaysleft})',row_height)
       if lw < y and daysleft > 0:
          nowork = (date_file_created.weekday() + day) % 7 in nwd
          todo = funct(day+dif_assign+1) - lw
@@ -3235,7 +3236,7 @@ Make sure you read all of the instructions, as some things are important to know
     while 1:
 
         # Waits for you to do an event, such as a mouse movement or a key press
-        # This is more efficient than using "for even in pygame.event.get()" which checks for an event dozens of times per second
+        # This is more efficient than using "for event in pygame.event.get()" which checks for an event dozens of times per second
         event = pygame.event.wait()
         etype = event.type
         
@@ -3461,7 +3462,7 @@ Make sure you read all of the instructions, as some things are important to know
                  for i in range(dstart,x):
 
                     # If the total has been reached, break
-                    if total == y:
+                    if total == y and rem_zero:
                         i -= 1
                         break
                      
@@ -3481,7 +3482,7 @@ Make sure you read all of the instructions, as some things are important to know
 
                     # Stores the start of the assignment when the loop ever reaches the start of the assignment
                     if dif_assign and i == dif_assign:
-                        d_start = len(info)
+                       d_start = len(info)
                         
                     s = 's'
                     formatted_date = f'{(date_file_created+time(i-dif_assign)):%B %-d{disyear} (%A):}'
@@ -3509,7 +3510,7 @@ Make sure you read all of the instructions, as some things are important to know
                              raise Exception
 
                           # This uses the same logic the red line start uses
-                          # Once i becomes too high and out of range of works, then this raises an exception
+                          # Once i becomes too high and out of range of works, an exception is raised
                           this_work = next_work
                           next_work = works[i-dif_assign+1]
 
@@ -3548,6 +3549,7 @@ Make sure you read all of the instructions, as some things are important to know
                     else:
 
                        # The phrases "XL", "QL", and "ZL" are all placeholders for whitespace
+                       # This replicates an html table
                        if do_format:
                           this_day = f'{formatted_date}ZL {dif}XL {unit}{s} (QL{strtotal} / {stry})'
                        else:
@@ -3558,23 +3560,22 @@ Make sure you read all of the instructions, as some things are important to know
                        this_day += f' ({dskp} Days Later)'
                        dskp = 1
 
-                    # Stores today as a variable if the loop ever reaches today
+                    # Stores today as a variable if the loop reaches today
                     if not today_minus_dfc - i + dif_assign:
                        d_today = len(info)
 
-                    # Stores the last work input as a variable if the loop ever reaches today
+                    # Stores the last work input as a variable if the loop reaches today
                     if add_last_work_input and i == day + dif_assign - 1:
                        d_end = len(info)
 
                     # Appends to the lists containing all the formatted information
                     info.append(this_day)
                     if do_format:
-                        fdates.append(formatted_date)
-                        difs.append(dif)
-                        totals.append(strtotal)
+                       fdates.append(formatted_date)
+                       difs.append(dif)
+                       totals.append(strtotal)
                     
                  if info:
-
                     if do_format:
                        
                         # Formatting variables
