@@ -31,7 +31,7 @@ from os import remove # Removes backups if they are Disabled
 # File Directory where the data will be stored
 file_directory = 'Time Management'
 update_backups = True
-debug_mode = False
+debug_mode = 1
 # Adding/removing settings procedure:
 # Add/remove it on the boolean settings and Adjust values for other settings
 # Change range value x2
@@ -217,7 +217,7 @@ def home(last_sel=0):
          # If it is, raise an error and run the "except" part of the "try" and prompt the introduction
          files[0]
          
-         assign, ordli, daysleft, fminutes = [], [], [], []
+         assign, ordli, li_daysleft, fminutes = [], [], [], []
          max_assignment_name_len = len(max(files,key=len))+1
          file_index = 1
          total = tomorrow_tot = 0
@@ -502,7 +502,7 @@ def home(last_sel=0):
 
             # Lists for formatting
             assign.append(file[0].ljust(max_assignment_name_len)+status_message)
-            daysleft.append(strdayleft)
+            li_daysleft.append(strdayleft)
             if display_format_minutes:
                fminutes.append(f' ({format_minutes(todo*ctime)})')
             else:
@@ -530,14 +530,14 @@ def home(last_sel=0):
             for j in ordli:
                if j[0] < 5:
                   if maxsp and j[0] == displayed_status_value:
-                     daysleft[j[2]-1] += f' Priority: {ceil(j[1] / maxsp * 100)}%'
+                     li_daysleft[j[2]-1] += f' Priority: {ceil(j[1] / maxsp * 100)}%'
                   elif maxsp:
-                     daysleft[j[2]-1] += ' Priority: NA'
+                     li_daysleft[j[2]-1] += ' Priority: NA'
                      displayed_na = True
                   else:
 
                      # If maxsp is zero, that means all the assignments have no priority
-                     daysleft[j[2]-1] += ' Priority: 0%'
+                     li_daysleft[j[2]-1] += ' Priority: 0%'
          except:
 
             # If there are no valid assignments, pass
@@ -553,7 +553,7 @@ def home(last_sel=0):
 
          #                                                                                                This part displays the assignment name, the status message, and the estimated time    This part displays the formatted  This part displays the days
          #                               This part displays and adjusts the number of the assignment      until completion. It also left adjusts the formatted estimated completetion time      estimated completetion time       left and the status priority
-         assignments = map(lambda ordas: (str(ordli.index(ordas)+1)+')').ljust(max_assignment_name_len) + assign[ordas[2]-1].ljust(max_assign_len+max_fminutes_len-len(fminutes[ordas[2]-1])) + fminutes[ordas[2]-1] +            daysleft[ordas[2]-1], ordli)
+         assignments = map(lambda ordas: (str(ordli.index(ordas)+1)+')').ljust(max_assignment_name_len) + assign[ordas[2]-1].ljust(max_assign_len+max_fminutes_len-len(fminutes[ordas[2]-1])) + fminutes[ordas[2]-1] +            li_daysleft[ordas[2]-1], ordli)
          
          # Saves sorted data to memory if it changed from the original after sorting
          if any(ordli[i][2] != i + 1 for i in range(len(ordli))):
