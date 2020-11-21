@@ -43,7 +43,7 @@ debug_mode = False
 # Todo list:
 # manual backup
 # default skew ratio in settings
-# dynamic start change using fixed mode linear todo as referance rather than dynamic mode todo
+# dynamic start change using fixed mode linear todo as reference rather than dynamic mode todo
 # dont know the amount of units? only if due date is known ("none" with y)
 # +/- to zoom in and out
 # next_day (make it values 0,1,2,3,etc), function to set date_now that takes into account "next_day" variable; make it so that BEFORE "next" it automatically set to fixed mode (with an input to undo that) (DO NOT do this on SP, do something like: lw == funct(len_works) with fixed_mode on), THEN display "next"; also put second estimated completion time (showing if every assignment was fixed_mode); make todo linear then y if all assignments completed
@@ -324,7 +324,7 @@ def home(last_sel=0):
                
                # Checks if assignment is completed
                if lw >= y or daysleft + x < 1:
-                  status_message = '*\u3000You have Finished this Assignment! This will be Deleted Tommorrow.'
+                  status_message = '*\u3000You have Finished this Assignment! This will be Deleted Tomorrow.'
                   status_value = 6
                else:
                   
@@ -626,7 +626,7 @@ def home(last_sel=0):
                sel = int(sel,10)
 
                # If the input is valid, proceed to the next section
-               if 0 < sel and sel <= amount_of_assignments:
+               if 0 < sel <= amount_of_assignments:
                   break
                print('!!!\nInput Number is not Valid!\n!!!')
             except:
@@ -649,7 +649,7 @@ def home(last_sel=0):
                               outercon = True
                               break
                            sel = int(sel,10)
-                           if 0 < sel and sel <= amount_of_assignments:
+                           if 0 < sel <= amount_of_assignments:
                               reenter_mode = True
                               break
                            raise Exception
@@ -673,7 +673,7 @@ def home(last_sel=0):
                                  outercon = 2
                                  break
                               sel = int(sel,10)
-                              if 0 < sel and sel <= amount_of_assignments:
+                              if 0 < sel <= amount_of_assignments:
                                  del dat[sel]
                                  save_data()
                                  break
@@ -711,7 +711,7 @@ def home(last_sel=0):
                                  outercon = 2
                                  break
                               sel = int(sel)
-                              if 0 < sel and sel <= amount_of_assignments:
+                              if 0 < sel <= amount_of_assignments:
 
                                  # Same loaded variables and same algorithms as above
                                  file_sel,ad,x,y,works,dif_assign,skew_ratio,ctime,funct_round,nwd,fixed_mode,dynamic_start,unit,total_mode,fixed_start,remainder_mode,min_work_time = dat[sel]
@@ -815,7 +815,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  outercon = True
                                  break
                               change_setting = int(change_setting,10)
-                              if 0 < change_setting and change_setting < 21:
+                              if 0 < change_setting < 21:
                                  break
                               print('!!!\nInput Number is not Valid!\n!!!')
                            except:
@@ -837,11 +837,11 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  new_value = int(new_value,10)
 
                                  # Width
-                                 if change_setting == 1 and new_value > 349 and new_value <= max_w:
+                                 if change_setting == 1 and 349 < new_value <= max_x:
                                     width = new_value
 
                                  # Height
-                                 elif change_setting == 2 and new_value > 374 and new_value <= max_h:
+                                 elif change_setting == 2 and 374 < new_value <= max_h:
                                     height = new_value
 
                                  # Animation frame count
@@ -849,7 +849,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                     animation_frame_count = new_value
 
                                  # Warning Acceptance
-                                 elif change_setting == 4 and -1 < new_value and new_value < 101:
+                                 elif change_setting == 4 and -1 < new_value < 101:
                                     warning_acceptance = new_value
 
                                  # Default minimum work time
@@ -905,7 +905,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            save_data()
                            
                            # Prints settings instructions
-                           if 7 < change_setting and change_setting < 10:
+                           if 7 < change_setting < 10:
                               print(("\nIf you do not have to Work for a day in an Assignment, and you Forget to input work for that Day, it is assumed you did Nothing\nThe program will auto fill in No work Done on that day because you anyways did Not have to Work\nApplies to periods of a time Longer than a Day",
                                      "\nIgnore Ends is only relevant when Minimum Work Time is also Enabled for an Assignment\nIgnores the Minimum Work Time on the first and last Working Day to make the Work Distribution smoother\nThis also fixes an Issue that causes you to Work a Lot More on the First and Last days of an Assignment\nIt only ignores the minimum work time when Absolutely Necessary and tries to Preserve the original distribution as Much as Possible"
                                      )[change_setting-8]+f"\nThis Setting's new value is {new_value} (Old Value: {not new_value})\n")
@@ -942,7 +942,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  settings[change_setting] = True
 
                                  # If the backup is toggled to True, use the backups dictionary to figure out the name of the backup file to create so it can be referred to later
-                                 # Modifies file_directory so the function save_data() referances a different file
+                                 # Modifies file_directory so the function save_data() references a different file
                                  file_directory += backups[change_setting]
 
                                  # Update dat[0][0] because that is the date the backup is last backed up
@@ -1069,7 +1069,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                     if not selected_backup:
                                        break
                                     selected_backup = int(selected_backup,10) - 1
-                                    if -1 < selected_backup and selected_backup < len(backups):
+                                    if -1 < selected_backup < len(backups):
                                        
                                        if 'YES' not in qinput('\nAre you Sure you Want to load this Backup? This will transfer All Backup data from this Backup to the Current Save File\nThis Will Override the current Version and Replace it with the Backup data\nEnter "YES" in capital letters to Confirm (Enter anything other than "YES" to cancel)\n'):
                                           print('Backup Successfully Cancelled')
@@ -1181,12 +1181,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             while 1:
                try:
                   if reenter_mode:
-                     ad = qinput(f'Re-enter the Assignment Date of this assignment or Enter "today" (Old Value: {selected_assignment[1]:%-m/%-d/%Y})\nFormat: Month/Day/Year\nThe year is optional and defaults to the currrent year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nYou can Assign in the Future\n').replace(' ','').lower()
+                     ad = qinput(f'Re-enter the Assignment Date of this assignment or Enter "today" (Old Value: {selected_assignment[1]:%-m/%-d/%Y})\nFormat: Month/Day/Year\nThe year is optional and defaults to the current year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nYou can Assign in the Future\n').replace(' ','').lower()
                      if not ad:
                         ad = selected_assignment[1]
                         return
                   else:
-                     ad = qinput(f'Enter the Assignment Date of this assignment or Enter "today"\nFormat: Month/Day/Year\nThe year is optional and defaults to the currrent year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nYou can Assign in the Future\n').replace(' ','').lower()
+                     ad = qinput(f'Enter the Assignment Date of this assignment or Enter "today"\nFormat: Month/Day/Year\nThe year is optional and defaults to the current year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nYou can Assign in the Future\n').replace(' ','').lower()
                   if ad == 'cancel':
                      outercon = True
                   elif ad == 'undo':
@@ -1596,7 +1596,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                   # I dont really know what I was thinking here but this part isnt important because it works so ree
                   # These comments make absolutely no sense so you can skip this part
                   
-                  # For referance, look at this:
+                  # For reference, look at this:
                   # x    0 1 2 3 4 5 6 7 | 8 9 10 11 12 13 14 | 15 16 17 18 19 20 21
                   # f(x) 0 0 0 0 0 0 3 6 | 6 6 6  6  6  9  12 | 12 12 15
                   # The goal is to find the week before the value and guess and check each day of the next week for the first value that results in x (without not working days)
@@ -1674,11 +1674,11 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          
       # Fixes a rounding bug with min_work_time
 
-      # Pretent funct_round be 4 and min_work_time be 5
+      # Pretend funct_round be 4 and min_work_time be 5
       # Lets f(4) = 18 and f(5) = 23
       # However, f(4) gets rounded to 20 and f(5) gets rounded to 24, violating min_work_time
       # This fixes the problem
-      # This equation is the same thing as funt_round < min_work_time < funct_round * 2
+      # This equation is the same thing as funct_round < min_work_time < funct_round * 2
       elif 1 < min_work_time / funct_round < 2:
          min_work_time = funct_round * 2
          
@@ -1705,13 +1705,13 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       today_minus_dfc = (date_now-date_file_created).days # Amount of days between today and the date when the assignment was created
       today_minus_ad = (date_now-ad).days # Amount days between today and assign date
       rem_zero = x - dif_assign > 15 # Determines if to overlook zero values in the schedule        
-      len_works = len(works) - 1 # Length of inputs minus one because most calculations involving it don't use the intial work value
+      len_works = len(works) - 1 # Length of inputs minus one because most calculations involving it don't use the initial work value
       day = len_works # Day of the assignment you are at. Only not equal to len_works if the assignment is in progress
       smart_skew_ratio = x < 50 # Cutoff for using smart skew ratio (explained later)
       lw = works[len_works] # Last work input
       stry = '%g' % y # Formatted total units of work
       wCon = (width-55)/x # Important scaling constant for width
-      hCon = (height-55)/y # Important ccaling constant for height
+      hCon = (height-55)/y # Important scaling constant for height
       
       # Calculates weather to display the year or not
       if ad.year != due_date.year:
@@ -2048,7 +2048,7 @@ def pset():
                      # If ignore_ends were disabled, then the last value of the parabola would be at 45, which would round to 50
                      # Pretend the parabola values are 15,25,35, and 45
                      # However, since the 45 is rounded to 50, the real values are 5,15,25,35, and 50
-                     # This causes you to work 15 units at the end while on all the other days you work 10, which is weird and unneccessary
+                     # This causes you to work 15 units at the end while on all the other days you work 10, which is weird and unnecessary
                      # The reason why not connect the parabola directly to y is because it sometimes breaks minimum work time on the very last day of the assignment
                      # Similarly, if the first working day on the parabola is less than the minimum work time, it adds that value to the next working day value, which can sometimes cause excess work to be done on the first day
                      # This is what ignore_ends does; when it is enabled it notifies the user that the minimum work time will be ignored on the first and last working days
@@ -2298,7 +2298,7 @@ def pset():
                   # meaning it sometimes allowed values after its zero to be less than the minimum work time
                   # To fix this, I use another modified version of funct() to keep increasing the cutoff until it finally satisfies the minimum work time
 
-                  # Currently, I'm not satisfied with how this code is implimented, and I plan to figure out a better way to do this in the future
+                  # Currently, I'm not satisfied with how this code is implemented, and I plan to figure out a better way to do this in the future
                   for n in range(ceil(return_0_cutoff),ceil(x)+1):
                      if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (skew_ratio < 1) == (n <= cutoff_to_use_round)):
                         output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
@@ -2335,13 +2335,13 @@ def funct(n):
    # This clearly did not work out because it is extremely inefficient over long periods of time
    
    # I eventually found an efficient method to solve this problem
-   # To make explaining this simpler, instead of thinking as the ending date to be Janruary 31,
+   # To make explaining this simpler, instead of thinking as the ending date to be January 31,
    # think of the end date to be the amount of days between the end date and the start date, in this case 30
    # I know in each 7 consecutive days, or week, of the 30 days, there will always be exactly on tuesday
    # I can take advantage of this property by splitting the 30 days into 7 days at a time like this:
    # 30 days --> 7 days + 7 days + 7 days + 7 days + 2 days
    # I know in each of those 7 days there will be one tuesday
-   # And since there are four 7 days, I know there are at least 4 tuesdays between Janruary 1 and Janruary 31
+   # And since there are four 7 days, I know there are at least 4 tuesdays between January 1 and January 31
    # Finally, what about the remaining 2 days? What if those days contain a 5th tuesday? That problem is solved with the tuple mods
    # Mods simply goes through the remanding days and determines if there is a tuesday and adds to the counter if there is
    
@@ -2449,7 +2449,7 @@ def funct(n):
    if remainder_mode and output:
       output += y_fremainder
             
-   # Returns the final output plus start_lw, which untranslates the graph back to where it orignally was
+   # Returns the final output plus start_lw, which untranslates the graph back to where it originally was
    return output + start_lw
 
 # Debug mode unrounded funct()
@@ -2635,7 +2635,7 @@ def draw(doing_animation=0,do_return=1):
                      
             # Sets the displayed point to the rounded value of the x position
             mouse_x = ceil(mouse_x-0.5)
-            if red_line_start <= mouse_x and mouse_x <= len_works + dif_assign:
+            if red_line_start <= mouse_x <= len_works + dif_assign:
                mouse_y = (height-mouse_y-50.5)/hCon
                mouse_y = abs(mouse_y - funct(mouse_x)) > abs(mouse_y - works[mouse_x - dif_assign])
             else:
@@ -2899,7 +2899,7 @@ def draw(doing_animation=0,do_return=1):
          prev_circle_y = circle_y
          circle_x = ceil((i+dif_assign)*wCon+49.5)
          circle_y = ceil(height-works[i]*hCon-50.5)
-         pygame.draw.line(screen,blue,(prev_circle_x,prev_circle_y),((circle_x,circle_y)),blwidth)
+         pygame.draw.line(screen,blue,(prev_circle_x,prev_circle_y),(circle_x,circle_y),blwidth)
          pygame.draw.circle(screen,blue,(circle_x,circle_y),circle_r-1)
          if circle_x >= width-5:
             break
@@ -3352,7 +3352,7 @@ Make sure you read all of the instructions, as some things are important to know
                else:
                   while 1:
                      try:
-                        choice = qinput(f'Enter the Date at which the Red Line will Start\nFormat: Month/Day/Year\nThe year is optional and defaults to the currrent year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\n\nOr, enter the Amount of Days since the Assignment Date the Red Line will Start at (As a Whole Number Input)\n').replace(' ','')
+                        choice = qinput(f'Enter the Date at which the Red Line will Start\nFormat: Month/Day/Year\nThe year is optional and defaults to the current year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\n\nOr, enter the Amount of Days since the Assignment Date the Red Line will Start at (As a Whole Number Input)\n').replace(' ','')
                         if choice:
                            try:
                               choice = int(choice,10)
@@ -3456,7 +3456,7 @@ Make sure you read all of the instructions, as some things are important to know
                  else:
                     zero_except = (0, today_minus_ad, dif_assign)
                  do_format = return_y_cutoff - return_0_cutoff < 10000
-                 if not do_format and 'YES' not in qinput('Warning!\nSince there are a lot of Days in this Assignment, displaying the schedule may take a Long time\nWould you Like to Print it Anways? Enter "YES" in capital letters to Confirm (Enter anything other than "YES" to cancel)\n'):
+                 if not do_format and 'YES' not in qinput('Warning!\nSince there are a lot of Days in this Assignment, displaying the schedule may take a Long time\nWould you Like to Print it Anyways? Enter "YES" in capital letters to Confirm (Enter anything other than "YES" to cancel)\n'):
                     print('Successfully Cancelled Displaying the Schedule\n')
                     continue
                  for i in range(dstart,x):
@@ -3505,7 +3505,7 @@ Make sure you read all of the instructions, as some things are important to know
                           # First, the loop runs through all of the inputs and raises an exception once it runs out of inputs
 
                           # Makes sure i isn't negative
-                          # An exception must be raised here becuse negative indexing a list is valid and will not raise an exception
+                          # An exception must be raised here because negative indexing a list is valid and will not raise an exception
                           if i < dif_assign:
                              raise Exception
 
