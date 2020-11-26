@@ -68,8 +68,6 @@ try:
       dat = load(datfile)
    if debug_mode:
       print(dat,'\n')
-   dat = [[date(2020, 11, 25, 18, 3), 750, 750, 35, 100, 25, (), True, True, True, True, True, True, True, True, True, False], ['Test', date(2020, 11, 21, 0, 0), 7, 24, [5, 5, 5, 5], 0, 1, 2, 3, (2,), True,2, 'Line', False, 2, False, 12.5]]
-   dat = [[date(2020, 11, 25, 18, 3), 750, 750, 35, 100, 25, (), True, True, True, True, True, True, True, True, True, False], ['Test', date(2020, 11, 10, 0, 0), 18, 24, [5, 5, 5], 15, 2.5, 2, 3, (2,), True, 11, 'Line', False, 13, False, 12.5]]
    first_run = False
       
    # Loads setting data
@@ -2422,7 +2420,7 @@ def funct(n):
    if n > return_y_cutoff:
       return y
    
-   # If the input is less than return_0_cutoff, defined in the pset() function, return red_line_start_y, which is the lowest possible output value
+   # If the input is less than return_0_cutoff, defined in the pset() function, return red_line_start_y, which is also the lowest possible output value
    elif n < return_0_cutoff:
       return red_line_start_y
 
@@ -2440,8 +2438,9 @@ def funct(n):
    # Rounding doesn't require knowing the previous function output, which makes things a lot easier
    # Rounding works when the slope of the graph is low, meaning you would work once every couple days
    # However, rounding does not work when there is a higher slope.
-   # For example, if I were rounding to the nearest 10, It might accidentally round to 20, which makes no
-   # sense to a user considering the only thing inputted was the minimum work time to be 10
+   # For example, if I were rounding to the nearest 10, It might accidentally round to 20, which
+   # makes no sense to a user considering the only thing inputted was the minimum work time to be 10
+   
    # I then thought of finding a cutoff to begin to use rounding on a parabola
    # The logic with the cutoff is to only use rounding when there is a low slope and then run the function normally once the rate of change is greater than the minimum work time
    # When the rate of change of a parabola is greater than the minimum work time, by definition you will work at least the minimum work time amount of units each day
