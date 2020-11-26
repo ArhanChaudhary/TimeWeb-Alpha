@@ -29,7 +29,7 @@ from os.path import exists # Checks if a file exists
 from os import remove # Removes backups if they are Disabled
 
 # File Directory where the data will be stored
-file_directory = 'Time Management'
+file_directory = 'bug'
 update_backups = True
 debug_mode = False
 # Adding/removing settings procedure:
@@ -41,6 +41,7 @@ debug_mode = False
 # command F "settings[" and modify numeric value
 
 # Todo list:
+# make sp 4 if all nwd and due tmw (or the same thing as f(x) != y)
 # manual backup
 # default skew ratio in settings
 # dynamic start change using fixed mode linear todo as reference rather than dynamic mode todo
@@ -67,6 +68,8 @@ try:
       dat = load(datfile)
    if debug_mode:
       print(dat,'\n')
+   dat = [[date(2020, 11, 25, 18, 3), 750, 750, 35, 100, 25, (), True, True, True, True, True, True, True, True, True, False], ['Test', date(2020, 11, 21, 0, 0), 7, 24, [5, 5, 5, 5], 0, 1, 2, 3, (2,), True,2, 'Line', False, 2, False, 12.5]]
+   dat = [[date(2020, 11, 25, 18, 3), 750, 750, 35, 100, 25, (), True, True, True, True, True, True, True, True, True, False], ['Test', date(2020, 11, 10, 0, 0), 18, 24, [5, 5, 5], 15, 2.5, 2, 3, (2,), True, 11, 'Line', False, 13, False, 12.5]]
    first_run = False
       
    # Loads setting data
@@ -160,7 +163,7 @@ def qinput(input_message):
 
 def home(last_sel=0):
    autofill_override = False
-   global outercon, date_now, min_work_time, sel, x, y, ad, ctime, dif_assign, works, day, skew_ratio, file_sel, adone, date_file_created, disyear, dat, screen, today_minus_dfc, today_minus_ad, rem_zero, lw, start_lw, assign_day_of_week, len_works, funct_round, nwd, len_nwd, fixed_mode, dynamic_start, stry, slash_x_counter, red_line_start, unit, wCon, hCon, total_mode, set_start, set_skew_ratio, clicked_once, fixed_start, remainder_mode, smart_skew_ratio, due_date, selected_assignment, width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,show_past,ignore_ends,ignore_ends_mwt,dark_mode,show_progress_bar,last_opened_backup,hourly_backup,daily_backup,weekly_backup,manual_backup, file_directory, black, border, gray, gray1, gray2, gray3, gray4, gray5, white, min_work_time_funct_round, left_adjust_cutoff, up_adjust_cutoff, point_text_width, point_text_height, y_fremainder, y_mremainder, tomorrow
+   global outercon, date_now, min_work_time, sel, x, y, ad, ctime, dif_assign, works, day, skew_ratio, file_sel, adone, date_file_created, disyear, dat, screen, today_minus_dfc, today_minus_ad, rem_zero, lw, red_line_start_y, assign_day_of_week, len_works, funct_round, nwd, len_nwd, fixed_mode, dynamic_start, stry, slash_x_counter, red_line_start_x, unit, wCon, hCon, total_mode, set_start, set_skew_ratio, clicked_once, fixed_start, remainder_mode, smart_skew_ratio, due_date, selected_assignment, width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,show_past,ignore_ends,ignore_ends_mwt,dark_mode,show_progress_bar,last_opened_backup,hourly_backup,daily_backup,weekly_backup,manual_backup, file_directory, black, border, gray, gray1, gray2, gray3, gray4, gray5, white, min_work_time_funct_round, left_adjust_cutoff, up_adjust_cutoff, point_text_width, point_text_height, y_fremainder, y_mremainder, tomorrow
    next_day = False
    set_tomorrow = True
    while 1:
@@ -247,28 +250,30 @@ def home(last_sel=0):
             # total_mode(bool): determines whether total mode is enabled (explained later)
             # fixed_start(int): start of the red line in fixed mode
             # remainder_mode(bool): determines whether remainder mode should be enabled (explained later)
-            # min_work_time(float): minimum work time
+            # min_work_time(float): minimum work time each day
 
             # x is a float because of the comments above
             # Set x back to an integer
             if type(x) == float:
                x = ceil(x)
                
-            # Calculates the start of the red line (used in other functions) and the value of the work input the start is at
+            # Start of the red line
             if fixed_mode:
-               start_lw = works[fixed_start - dif_assign]
-               red_line_start = fixed_start
+               red_line_start_x = fixed_start
             else:
-               start_lw = works[dynamic_start - dif_assign]
-               red_line_start = dynamic_start
+               red_line_start_x = dynamic_start
+            try:
+               red_line_start_y = works[red_line_start_x - dif_assign]
+            except:
+               red_line_start_y = 0
                
             # Caps the grouping at y
-            if funct_round > y - start_lw:
-               funct_round = y - start_lw
+            if funct_round > y - red_line_start_y:
+               funct_round = y - red_line_start_y
 
             # Caps min_work_time at y
-            if min_work_time > y - start_lw:
-               min_work_time = y - start_lw
+            if min_work_time > y - red_line_start_y:
+               min_work_time = y - red_line_start_y
 
             # If the minimum work time is less than the grouping value, that means
             # The minimum work time is always fulfilled by the grouping value, making it completely irrelevant
@@ -294,13 +299,19 @@ def home(last_sel=0):
             len_works = len(works) - 1 # Length of work inputs subtracted by 1 to not count the 0th or starting work input
             lw = works[len_works] # Last work input
             if nwd:
-               set_mod_days()
-               ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
-            else:
-               ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start != 2 or y >= min_work_time_funct_round * 2)
 
-            y_fremainder = (y - start_lw) % funct_round # Remainder when the total number of units left in the assignment is divided by funct_round
-            y_mremainder = (y - start_lw) % min_work_time_funct_round # Remainder when the total number of units left in the assignment is divided by min_work_time_funct_round
+               # set_mod_days() is explained later
+               set_mod_days()
+
+            # ignore_ends is a boolean setting that ignores the minimum work time for the first and last working days
+            # ignore_ends_mwt is referenced in the code instead of ignore_ends. For it to be true, ignore_ends must be True and min_work_time must be actively used in the assignment
+            # The third argument to ignore_ends_mwt makes it False if x is 2 because ignore_ends ignores the minimum work time for the two days in the assignment, making min_work_time practically irrelevant
+               ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start_x) - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 or y >= min_work_time_funct_round * 2)
+            else:
+               ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start_x != 2 or y >= min_work_time_funct_round * 2)
+
+            y_fremainder = (y - red_line_start_y) % funct_round # Remainder when the total number of units left in the assignment is divided by funct_round
+            y_mremainder = (y - red_line_start_y) % min_work_time_funct_round # Remainder when the total number of units left in the assignment is divided by min_work_time_funct_round
 
             # Define a and b for the parabola
             pset()
@@ -354,21 +365,21 @@ def home(last_sel=0):
                         if todo > 0 and (assign_day_of_week + len_works + dif_assign) % 7 not in nwd:
                            dynamic_start = len_works + dif_assign
                            if not fixed_mode:
-                              red_line_start = dynamic_start
-                              start_lw = works[red_line_start - dif_assign]
+                              red_line_start_x = dynamic_start
+                              red_line_start_y = works[red_line_start_x - dif_assign]
                               if nwd:
                                  set_mod_days()
-                                 ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
+                                 ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start_x) - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 or y >= min_work_time_funct_round * 2)
                               else:
-                                 ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start != 2 or y >= min_work_time_funct_round * 2)
+                                 ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start_x != 2 or y >= min_work_time_funct_round * 2)
                               pset()
                      if has_autofilled:
 
                         # Save data if the assignment autofills
                         file[11] = dynamic_start
                         save_data()
-                        y_fremainder = (y - start_lw) % funct_round
-                        y_mremainder = (y - start_lw) % min_work_time_funct_round
+                        y_fremainder = (y - red_line_start_y) % funct_round
+                        y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
                         todo = funct(len_works+dif_assign+1) - lw
 
                   # Daysleft now becomes the amount of days until the assignment is due
@@ -444,14 +455,14 @@ def home(last_sel=0):
                today_minus_dfc += in_progress
                todo = funct((date_now-ad).days+1) - works[today_minus_dfc]
                skew_ratio = 1
-               red_line_start = dif_assign
-               start_lw = works[0]
+               red_line_start_x = dif_assign
+               red_line_start_y = works[0]
                len_works -= in_progress
                if nwd:
                   set_mod_days()
-                  ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
+                  ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start_x) - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 or y >= min_work_time_funct_round * 2)
                else:
-                  ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start != 2 or y >= min_work_time_funct_round * 2)
+                  ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start_x != 2 or y >= min_work_time_funct_round * 2)
                pset()
 
                # todo*ctime is the total amount of minutes it will take to complete the work for that day
@@ -722,11 +733,11 @@ def home(last_sel=0):
                                  lw = works[len_works]
                                  day = len_works
                                  if fixed_mode:
-                                    start_lw = works[fixed_start - dif_assign]
-                                    red_line_start = fixed_start
+                                    red_line_start_y = works[fixed_start - dif_assign]
+                                    red_line_start_x = fixed_start
                                  else:
-                                    start_lw = works[dynamic_start - dif_assign]
-                                    red_line_start = dynamic_start
+                                    red_line_start_y = works[dynamic_start - dif_assign]
+                                    red_line_start_x = dynamic_start
                                  if today_minus_dfc > -1 and today_minus_dfc == day - 1 and lw != works[-2] and lw < funct(day + dif_assign):
                                     day -= 1
                                  if min_work_time:
@@ -737,11 +748,11 @@ def home(last_sel=0):
                                  len_nwd = len(nwd)
                                  if nwd:
                                     set_mod_days()
-                                    ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
+                                    ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start_x) - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 or y >= min_work_time_funct_round * 2)
                                  else:
-                                    ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start != 2 or y >= min_work_time_funct_round * 2)
-                                 y_fremainder = (y - start_lw) % funct_round
-                                 y_mremainder = (y - start_lw) % min_work_time_funct_round
+                                    ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start_x != 2 or y >= min_work_time_funct_round * 2)
+                                 y_fremainder = (y - red_line_start_y) % funct_round
+                                 y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
                                  pset()
                                  todo = funct(day+dif_assign+1) - lw
                                  rem_work = today_minus_dfc == len_works - 1 and lw != works[-2] and lw < funct(len_works+dif_assign)
@@ -977,9 +988,9 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  # Gets the necessary variables from each assignment to calculate the maximum and minimum skew ratio
                                  for file in dat[1:]:
                                     if file[10]:
-                                       red_line_start = file[14]
+                                       red_line_start_x = file[14]
                                     else:
-                                       red_line_start = file[11]
+                                       red_line_start_x = file[11]
                                     x = file[2]
                                     nwd = file[9]
                                     if nwd:
@@ -1142,6 +1153,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          
          if not reenter_mode:
             dif_assign = 0 # (redefined later)
+            dynamic_start = fixed_start = 0
             skew_ratio = 1
 
             # Default variables
@@ -1195,13 +1207,15 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                      date_now = date.now()
                      date_now = date(date_now.year,date_now.month,date_now.day)
                      if ad.lower() == 'today':
-                         ad = date_now
-                         date_file_created = date_now
+                         ad = date_file_created = date_now
                      else:
                         ad = slashed_date_convert(ad.strip('/'),False)
-                        if date_now >= ad:
+                        if reenter_mode:
+                           print(ad,selected_assignment[1])
+                           if selected_assignment[1] > ad:
+                              dif_assign = (selected_assignment[1]-ad).days
+                        elif date_now >= ad:
                            dif_assign = (date_now-ad).days
-                           dynamic_start = fixed_start = dif_assign   
                   return
                except:
                   print('!!!\nInvalid Date!\n!!!')
@@ -1293,6 +1307,8 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             while 1:
                  try:
                      if reenter_mode:
+                        
+                        # WIP
                         if unit == 'Minute':
                            if 0 and x == None:pass
                            else: 
@@ -1321,9 +1337,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                      #elif x != None and 'none' in y:
                       #  y = None
                      else:
-
-                        # This equation is a faster way than round(,6) of rounding to the nearest millionth place
-                        y = ceil(float(y)*1000000-0.5)/1000000
+                        y = round(float(y),6)
                         
                         if y < 1:
                            raise Exception
@@ -1360,7 +1374,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                   elif 'undo' in adone:
                      outercon = 2
                   else:
-                     adone = ceil(float(adone)*1000000-0.5)/1000000
+                     adone = round(float(adone),6)
                      if adone < 0 or adone >= y:
                         raise Exception
                      elif not adone % 1:
@@ -1391,7 +1405,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         elif 'undo' in ctime:
                            outercon = 2
                         else:
-                           ctime = ceil(float(ctime)*1000000-0.5)/1000000
+                           ctime = round(float(ctime),6)
                            if not ctime % 1:
                               ctime = ceil(ctime)
                            if ctime <= 0:
@@ -1429,7 +1443,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                      elif reenter_mode and funct_round in 'none':
                         funct_round = 1
                      else:
-                        funct_round = ceil(float(funct_round)*1000000-0.5)/1000000
+                        funct_round = round(float(funct_round),6)
                         if not funct_round % 1:
                            funct_round = ceil(funct_round)
                         if funct_round <= 0:
@@ -1445,7 +1459,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             while 1:
                 try:
                      if reenter_mode:
-                        min_work_time = ceil(selected_assignment[16]*selected_assignment[7]*1000000-0.5)/1000000
+                        min_work_time = round(selected_assignment[16]*selected_assignment[7],6)
                         if not min_work_time % 1:
                            min_work_time = ceil(min_work_time)
                         if min_work_time:
@@ -1467,9 +1481,9 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                         min_work_time = 0
                      else:
                         if min_work_time:
-                           min_work_time = ceil(float(min_work_time)*1000000-0.5)/1000000/ctime
+                           min_work_time = round(float(min_work_time),6)/ctime
                         else:
-                           min_work_time = ceil(float(def_min_work_time)*1000000-0.5)/1000000/ctime
+                           min_work_time = round(float(def_min_work_time),6)/ctime
                         if min_work_time < 0:
                            raise Exception
                         if not min_work_time % 1:
@@ -1544,19 +1558,24 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          if reenter_mode:
 
             # If the reentered assign date cuts off some of the work inputs, adjust the work inputs accordingly
+            print(ad,selected_assignment[1],dif_assign,works,x,y,adone)
             removed_works_start = (ad - selected_assignment[1]).days - dif_assign
             if removed_works_start < 0:
                removed_works_start = 0
             removed_works_end = len(works) - 1
+
+            # ?
             if x != None and removed_works_end + dif_assign >= x:
                removed_works_end = x - dif_assign
                if works[removed_works_end] != y:
                   removed_works_end -= 1
-            works = [works[n] - works[0] + adone for n in range(removed_works_start,removed_works_end+1)]
-            if not works:
-               works = [adone]
-               if dif_assign:
-                  dif_assign -= 1
+                  
+            if removed_works_start <= removed_works_end:
+               works = [works[n] - works[0] + adone for n in range(removed_works_start,removed_works_end+1)]
+            ##if not works:
+             ##  works = [adone]
+              ## if dif_assign:
+               ##   dif_assign -= 1
             adone = works[0]
             
          else:
@@ -1568,8 +1587,19 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          if reenter_mode:
 
             # Adjust dynamic_start and fixed_start in the same manner as above
-            dynamic_start -= (ad - selected_assignment[1]).days
-            fixed_start -= (ad - selected_assignment[1]).days
+            # Add dynamic_start/fixed_start as a condition because if its x coordinate is 0, keep it a 0
+            # Add not selected_assignment[5] as a condition to not change that variable if dif_assign is not 0
+            # If both of them are False, then that variable doesn't change and stays at 0 
+
+            # If dynamic_start is x coordinate 0, then keep it at x coordinate 0
+            if dynamic_start or not selected_assignment[5]:
+               dynamic_start -= (ad - selected_assignment[1]).days
+
+            # If fixed_start is x coordinate 0, then keep it at x coordinate 0
+            if fixed_start or not selected_assignment[5]:
+               fixed_start -= (ad - selected_assignment[1]).days
+
+            # Caps at their respective limits
             if dynamic_start < 0:
                dynamic_start = 0
             if fixed_start < 0:
@@ -1578,8 +1608,6 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                dynamic_start = x - 1
             if fixed_start > x - 1:
                fixed_start = x - 1
-         else:
-            dynamic_start = fixed_start = dif_assign
 
          # If the user doesn't have a due date, set the due date to the x value of when the line with the slope of min_work_time intersects y
          if x == None:
@@ -1592,9 +1620,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                   x = 1
                else:
 
-                  # My goal here is to find a value where removing all not working days results in x (without not working days)
-                  # I dont really know what I was thinking here but this part isnt important because it works so ree
-                  # These comments make absolutely no sense so you can skip this part
+                  # The goal here is to find a value where removing all not working days results in x, which the user inputted earlier
                   
                   # For reference, look at this:
                   # x    0 1 2 3 4 5 6 7 | 8 9 10 11 12 13 14 | 15 16 17 18 19 20 21
@@ -1610,12 +1636,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                   # or 7*floor(x/(7-len_nwd))
                   
                   # I subtract one at the end of the assignment for the for loop
-                  # And I subtract one in the middle of the equation to fix a wrong week bug
+                  # And I subtract one in the middle of the equation to fix a wrong week bug (?)
                   guess_x = 7*floor(x/(7-len_nwd) - 1) - 1
 
                   # Guesses for the rest of the week
                   assign_day_of_week = ad.weekday()
-                  red_line_start = dif_assign
+                  red_line_start_x = dif_assign
                   set_mod_days()
                   while 1:
                      guess_x += 1
@@ -1650,39 +1676,26 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             # Saves the file to Memory
             save_data()
 
-      # Calculates the start of the red line (used in other functions) and the value of the work input the start is at
+      # This is all explained at the beginning of the home() function
       if fixed_mode:
-         start_lw = works[fixed_start - dif_assign]
-         red_line_start = fixed_start
+         red_line_start_x = fixed_start
       else:
-         start_lw = works[dynamic_start - dif_assign]
-         red_line_start = dynamic_start
+         red_line_start_x = dynamic_start
+      try:
+         red_line_start_y = works[red_line_start_x - dif_assign]
+      except:
+         red_line_start_y = 0
          
-      # Caps funct_round at y
-      if funct_round > y - start_lw:
-         funct_round = y - start_lw
-
-      # Caps min_work_time at y
-      if min_work_time > y - start_lw:
-         min_work_time = y - start_lw
-
-      # If the minimum work time is less than the grouping value, that means
-      # The minimum work time is always fulfilled by the grouping value, making
-      # It completely irrelevant
+      if funct_round > y - red_line_start_y:
+         funct_round = y - red_line_start_y
+      if min_work_time > y - red_line_start_y:
+         min_work_time = y - red_line_start_y
+         
       if min_work_time <= funct_round:
          min_work_time = 0
-         
-      # Fixes a rounding bug with min_work_time
-
-      # Pretend funct_round be 4 and min_work_time be 5
-      # Lets f(4) = 18 and f(5) = 23
-      # However, f(4) gets rounded to 20 and f(5) gets rounded to 24, violating min_work_time
-      # This fixes the problem
-      # This equation is the same thing as funct_round < min_work_time < funct_round * 2
       elif 1 < min_work_time / funct_round < 2:
          min_work_time = funct_round * 2
          
-      # Defining variables (each of the are explained at the start of the home() function)
       if min_work_time:
          min_work_time_funct_round = ceil(min_work_time/funct_round)*funct_round
       else:
@@ -1691,9 +1704,9 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       len_nwd = len(nwd)
       if nwd:
          set_mod_days()
-         ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
+         ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start_x) - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 or y >= min_work_time_funct_round * 2)
       else:
-         ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start != 2 or y >= min_work_time_funct_round * 2)
+         ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start_x != 2 or y >= min_work_time_funct_round * 2)
          
       date_file_created = ad + time(dif_assign) # Date file is created
       set_start = False # Manual set start
@@ -1726,8 +1739,8 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       left_adjust_cutoff = (width - 50 - point_text_width)/wCon
       up_adjust_cutoff = point_text_height/hCon
       
-      y_fremainder = (y - start_lw) % funct_round # Remainder when the total number of units left in the assignment is divided by funct_round, or the grouping value
-      y_mremainder = (y - start_lw) % min_work_time_funct_round # Remainder when the total number of units left in the assignment is divided by min_work_time_funct_round, or the minimum a use will work in a day
+      y_fremainder = (y - red_line_start_y) % funct_round # Remainder when the total number of units left in the assignment is divided by funct_round, or the grouping value
+      y_mremainder = (y - red_line_start_y) % min_work_time_funct_round # Remainder when the total number of units left in the assignment is divided by min_work_time_funct_round, or the minimum a use will work in a day
 
       # Initializing assignment
       calc_skew_ratio_lim()
@@ -1776,16 +1789,16 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          y += increase_y
 
          # Redefines variables dependent on y
-         y_fremainder = (y - start_lw) % funct_round
-         y_mremainder = (y - start_lw) % min_work_time_funct_round
+         y_fremainder = (y - red_line_start_y) % funct_round
+         y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
          if nwd:
-            ignore_ends_mwt = ignore_ends and min_work_time and (floor(x - red_line_start) - floor(x - red_line_start)//7 * len_nwd - mods[floor(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
+            ignore_ends_mwt = ignore_ends and min_work_time and (floor(x - red_line_start_x) - floor(x - red_line_start_x)//7 * len_nwd - mods[floor(x - red_line_start_x) % 7] != 2 or y >= min_work_time_funct_round * 2)
          else:
-            ignore_ends_mwt = ignore_ends and min_work_time and (floor(x - red_line_start) != 2 or y >= min_work_time_funct_round * 2)
+            ignore_ends_mwt = ignore_ends and min_work_time and (floor(x - red_line_start_x) != 2 or y >= min_work_time_funct_round * 2)
          if ignore_ends_mwt:
-            y1 = y - start_lw
+            y1 = y - red_line_start_y
          else:
-            y1 = y - start_lw - y_mremainder
+            y1 = y - red_line_start_y - y_mremainder
          if y1:
             if selected_assignment[8] > y1:
                funct_round = y1
@@ -1813,7 +1826,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             # If an internal error happens then skip that as a safety net
             pass
 
-         # Moves the slash in the progress bar because it looks cool
+         # Moves the slashes in the progress bar during the animation because it looks cool
          if lw: 
             slash_x_counter -= lw/y*4
          else:
@@ -1824,17 +1837,17 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       x = ceil(selected_assignment[2])
       y = selected_assignment[3]
       if nwd:
-         ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
+         ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 or y >= min_work_time_funct_round * 2)
       else:
-         ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start != 2 or y >= min_work_time_funct_round * 2)
+         ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start_x != 2 or y >= min_work_time_funct_round * 2)
       funct_round = selected_assignment[8]
       min_work_time = original_min_work_time
       if min_work_time:
          min_work_time_funct_round = ceil(min_work_time/funct_round)*funct_round
       else:
          min_work_time_funct_round = funct_round
-      y_fremainder = (y - start_lw) % funct_round
-      y_mremainder = (y - start_lw) % min_work_time_funct_round
+      y_fremainder = (y - red_line_start_y) % funct_round
+      y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
 
       # Draws final graph animation
       draw(0,0)
@@ -1853,34 +1866,51 @@ def pset():
          global a, b, skew_ratio, cutoff_transition_value, cutoff_to_use_round, return_y_cutoff, return_0_cutoff, add
          add = 0
 
-         # This entire thing ignores the function outputs before the start and after the end of the assignment
+         # The goal of the first part of this function is to calculate the a and b variables for the parabola
+         # Three points are defined, one of which is (0,0), to generate a and b variables such that the parabola passes through all three of them
+         # This works because a parabola always exists that passes through three chosen points (with different x coordinates)
+         # Notice how the parabola passes through the origin, meaning it does not use a c variable
+         # If the start of the line is moved and it doesn't pass through (0,0) anymore, translate the parabola back to the origin instead of using a c variable
+
+         # This entire thing ignores the function outputs before the start and after the end of the assignment because they aren't relevant
+         # All outputs < 0 and > x won't be valid
          try:
 
-            # x coordinate of third first point
-            x1 = floor(x - red_line_start)
+            # Define the third point to be at (x,y)
+            # x coordinate of third point
+            x1 = floor(x - red_line_start_x)
 
-            # y coordinate of third first point
+            # y coordinate of third point
             if ignore_ends_mwt:
                
                # If ignore_ends is enabled, which ignores the minimum work time for the first and last working days, set the parabola to end at exactly y
-               y1 = y - start_lw
+               # For example, if y is 93 (or f(x) = 93), it doesn't really matter what f(x-1) is because ignore_ends by definition ignores the minimum work time on the last day
+               y1 = y - red_line_start_y
                
             else:
                
                # If ignore_ends is disabled, which ignores the minimum work time for the first and last working days, set the parabola to end at the first value that is rounded to y
-               y1 = y - start_lw - y_mremainder
+               # For example, if y is 93 (or f(x) = 93), it does matter what f(x-1) is
+               # y_mremainder in this case is defined as 3 somewhere above
+               # So, the a and b values will treat 90 as y instead of 93
+               # Lets say the f(x) before that are f(x-2) = 80, f(x-1) = 85, f(x) = 90
+               # There is a check that changes f(x) = 90 to f(x) = 93 after the a and b values have been set
+               # This way, e
+               y1 = y - red_line_start_y - y_mremainder
 
             # Subtracts not working days (explained later)
             if nwd:
                x1 -= x1//7 * len_nwd + mods[x1 % 7]
 
             # Checks if the parabola is being manually set
+            # This makes the graph interactive and allows the user's mouse to set skew_ratio
             if set_skew_ratio:
 
                # x2 and y2 are the mouse coordinates, meaning the parabola will pass through the mouse
+               # x2 and y2 are also the points to the second point
                x2, y2 = pygame.mouse.get_pos()
-               x2 = (x2 - 49.5) / wCon - red_line_start
-               y2 = (height - y2 - 50.5) / hCon - start_lw
+               x2 = (x2 - 49.5) / wCon - red_line_start_x
+               y2 = (height - y2 - 50.5) / hCon - red_line_start_y
                
                # Checks if the mouse is outside the graph
                if x2 < 0:
@@ -1892,18 +1922,18 @@ def pset():
                   return_y_cutoff = 0
                   return
                
-               # More handling of not working days (still explained later)
+               # Handles how the mouse deals with not working days, isn't really important
                floorx2 = floor(x2)
                if nwd:
-                  if (assign_day_of_week + floorx2 + red_line_start) % 7 in nwd:
+                  if (assign_day_of_week + floorx2 + red_line_start_x) % 7 in nwd:
                      x2 = floorx2
                   x2 -= x2//7 * len_nwd + mods[floorx2 % 7]
 
                # Checks if the mouse is outside the graph
                if x2 >= x1:
                   
-                  # Heavy simplification here
-                  # Set y2 to be zero and x2 to be x - 1 and simplify the a and b equations
+                  # Heavy simplification
+                  # Set the y2 to zero and x2 to x - 1
                   a = y1/x1
                   b = a - a*x1
                   skew_ratio = 2 - skew_ratio_lim
@@ -1914,7 +1944,7 @@ def pset():
                      if remainder_mode:
                         y2 -= y_fremainder
 
-                     # If parabola is being manually set, Connects the points (0,0) (x2,y2)[mouse coordinates] and (x,y)
+                     # If parabola is being manually set, connect the points (0,0) (x2,y2) and (x,y)
                      # CREDIT OF THIS ALGORITHM GOES TO https://stackoverflow.com/questions/717762/how-to-calculate-the-vertex-of-a-parabola-given-three-points
                      a = (x2 * y1 - x1 * y2) / ((x1-x2) * x1 * x2)
                      b = (y1 - x1 * x1 * a) / x1
@@ -1934,9 +1964,6 @@ def pset():
             else:
 
                # If parabola is not being manually set, connect the points (0,0) (1,y/x * skew ratio) (x,y)
-               # Notice how the parabola passes through the origin, meaning it does not use a c variable
-               # If the start of the line is moved, requiring the red line to start not at the origin, translate the parabola onto the start instead of using a variable
-               # This increases efficiency and optimizations
                # CREDIT OF THIS ALGORITHM GOES TO https://stackoverflow.com/questions/717762/how-to-calculate-the-vertex-of-a-parabola-given-three-points
                a = y1 * (1 - skew_ratio) / ((x1-1) * x1)
                b = (y1 - x1 * x1 * a) / x1
@@ -1946,8 +1973,9 @@ def pset():
             # A function by definition cannot have two separate y values for the same
             # If any two x's of the points the function must connect to are accidentally the same, then run this
             # For example, this cannot pass through (1,1) and (1,2) at the same time as it is impossible for input 1 to output 1 and 2 at the same time
+            # This can accidentally happen in some situations
 
-            # This makes a line instead of a parabola
+            # Make a line instead of a parabola
             a = 0
             b = y1
             return_y_cutoff = 0
@@ -1957,25 +1985,36 @@ def pset():
 
          # Calculating at which x value the parabola first becomes positive
          # In other words, I am looking for its zero
+         # Since there are two zeros to each parabola, there is an equation that determines which zero to pick
+         # I will break this equation down
          
-         # a * b > 0 makes sure both a and b are positive (they cannot both be negative)
-         # This is because some values of a and b have a skew ratio less than 1, resulting in -b/a being negative number
-         # Since this is only paying attention to the values in the assignment and not outside of the assignment, set it back to zero if this happens
-         if skew_ratio > 1 or not a or a * b > 0:
+         # "skew_ratio >= 1"
+         # If "skew_ratio > 1" is True, the parabola opens downwards and the a value is negative
+         # Since the parabola passes though (0,0), passes through (x,y), and opens downwards, its second zero will always have an x coordinate greater than x
+         # Why this happens isn't important, but since it is greater than x, it is outside of the assignment
+         # And since I am ignoring all outputs < 0 and > x
+         # If "skew_ratio == 1" is True, the parabola is actually just a line. Since it passes at the origin, its zero is at 0
 
-            # If the parabola opens downward, its zero is at 0, because f(0) = a*0+b*0 which simplifies f(0) = 0
-            # I am ignoring the values of the parabola after the end of the assignment, which includes its second zero
+         # "a * b > 0"
+         # If the expression ever reaches this statement, then "skew_ratio >= 1" didn't run from earlier on in the statement
+         # So, skew_ratio < 1 must be True. This will also mean the parabola opens upwards and a is positive
+         # Now suppose b is calculated to be a positive number
+         # As calculated below, the second zero will be at -b/a. Plugging in b as a positive number and a as a positive number yields a negative value for -b/a
+         # Since we are ignoring all outputs < 0 as stated at the beginning of this function, a negative value for -b/a isn't valid
+         # So, if a and b are both positive, set funct_zero to the second zero of f(x) = ax^2 + bx, which is 0
+
+         # As a note, you may think it is possible for a and b to both be negative, making a * b > 0 True
+         # However, it is impossible for a and b to be negative at the same time because f(x) = ax^2 + bx will always return a negative number for every positive value of x
+         if skew_ratio >= 1 or a * b > 0:
+
+            # f(0) is always 0
             funct_zero = 0
             
          else:
 
             # If the parabola opens upwards, its first zero is at 0 by the logic stated above and its second at -b/a by the logic stated below
-            # I want to know the zeros of f(x) = ax^2+bx
-            # I can rewrite this as 0 = ax^2+bx, which simplifies to 0 = x(ax+b)
-            # If a product is equal to zero, then either of the terms must be zero
-            # So, either x = 0, which is a zero we already know, or ax+b = 0, which simplifies to x = -b/a
-            # In this case, I want the rightmost zero because the values between 0 and -b/a are all negative because the parabola opens upwards
-            # Since I am looking for when the parabola first becomes positive, I am focusing on the second zero, -b/a
+            # f(x) = ax^2+bx can be rewritten as 0 = ax^2+bx, which simplifies to 0 = x(ax+b)
+            # Either x = 0, which is a zero we already know, or ax+b = 0, which simplifies to x = -b/a
             funct_zero = -b/a
          
          # FIRST READ THE COMMENTS IN FUNCT() BEFORE READING THE COMMENTS HERE
@@ -1986,7 +2025,8 @@ def pset():
             if a:
                while 1:
 
-                  # The equation (s-b)/a/2 calculates the rate of change "s" on a parabola with the values of a and b
+                  # The expression (s-b)/a/2 calculates the rate of change "s" on a parabola with the values of a and b
+                  
                   # The derivative of an equation is the slope of a line that lies tangent to a curve at a specific point
                   # I want to find when the derivative of the parabola is min_work_time, which I will refer to as "s" for this demonstration
                   # The function of the parabola is in the form: f(x) = ax^2+bx
@@ -1994,9 +2034,10 @@ def pset():
                   # I want to find when 2ax+b is equal to s, so I can make the equation s = 2ax+b
                   # If I solve for x in this equation, I get x = (s-b)/(2*a), or x = (s-b)/a/2
 
-                  # I set s to min_work_time_funct_round, which is the least amount of units of work a user will do in any given day
-                  # Also, round it to the nearest millionth to prevent a roundoff error
-                  cutoff_to_use_round = floor(ceil((min_work_time_funct_round-b)/a/2*1000000)/1000000)
+                  # I set s to min_work_time_funct_round in the below equation
+                  
+                  # Round it to the nearest millionth to prevent a roundoff error
+                  cutoff_to_use_round = floor(round((min_work_time_funct_round-b)/a/2,6))
 
                   # This part calculates the cutoff transition value
                   # The reason why I need this variable is fix the transition in the cutoff
@@ -2037,7 +2078,7 @@ def pset():
                         cutoff_transition_value = min_work_time_funct_round - output + difference
                      else:
 
-                        # If the difference before and after the cutoff is zero, then might as well leave it alone because 0 represents no work that day
+                        # If the difference before and after the cutoff is zero, then leave it alone because 0 represents no work that day
                         cutoff_transition_value = 0
 
                      # This part only runs if ignore_ends is enabled
@@ -2081,23 +2122,24 @@ def pset():
                      # The below line of code keeps adding 1 to y1 until the cutoff_transition_value is positive again, making it so that the above situation never happens
                      # The 2nd to last statement in the line puts a limit to how much can be added to y1
                      # The last statement is a while loop failsafe if it loops for more than 1000 times                     
-                     if ignore_ends_mwt and cutoff_transition_value < y_mremainder - min_work_time_funct_round and y1 + cutoff_transition_value <= y - start_lw and y - start_lw - y1 - cutoff_transition_value < 1000:
+                     if ignore_ends_mwt and cutoff_transition_value < y_mremainder - min_work_time_funct_round and y1 + cutoff_transition_value <= y - red_line_start_y and y - red_line_start_y - y1 - cutoff_transition_value < 1000:
                         y1 += 1
                         a = y1 * (1 - skew_ratio) / ((x1-1) * x1)
                         b = (y1 - x1 * x1 * a) / x1
                         continue
                   else:
                      cutoff_transition_value = 0
+                  break
                      
-         # The rest of the function calculates the return_y_cutoff, or when the parabola exceeds y
+         # This part calculates return_y_cutoff, or when the parabola exceeds y
          # I found it the most efficient to use a cutoff because I can run a check at the beginning of the funct to return y if the inputted value is after the cutoff, increasing efficiency
          # Using cutoffs also allows me to directly control the value on the x axis when y will be returned
-
-         # If the user disables ignore_ends, set the cutoff to when the red line hits y
          
-         # First, I need to calculate the x value when the function first returns y
-         # This was actually a lot more complicated than I originally thought
+         # y_value_to_cutoff is the y value that is set to be the y position of return_y_cutoff
+         # Then, the quadratic equation is used to find its corresponding x position
+         
          # This equation determines whether the function output rounds to the minimum work time or not at the return_y_cutoff
+         # What exactly is happening in this equation isn't important and I don't really remember, but just know that it plugs in x1 as n in funct() to determine whether the function output rounds to the minimum work time or not at the return_y_cutoff
          return_y_cutoff = -1e-10
          if funct_round < min_work_time and (not a and b < min_work_time_funct_round or skew_ratio < 1 and x1 <= cutoff_to_use_round or skew_ratio > 1 and cutoff_to_use_round < ceil(((b*b+4*a*y1)**0.5-b)/a/2-1)):
 
@@ -2122,7 +2164,7 @@ def pset():
                         # The new outputs would be f(5) = 130, f(6) = 148, f(7) = 148
                         # But since ignore_ends is enabled, the minimum work time is ignored and f(6) no longer has to obey the minimum work time
                         # However, since y_value_to_cutoff is 140, you can't really make f(6) = 140 and f(7) = 148 because they both are greater than or equal to y_value_to_cutoff
-                        # To solve this, add one to return_y_cutoff in order to make f(6) 140 and everything beyond that, including f(7), 148
+                        # To solve this, add one to return_y_cutoff in order to make f(6) 140 and everything beyond that 148, including f(7)
                         # This demonstrates an advantage of using a cutoff
                      
                         # (return_y_cutoff2-1) * ((return_y_cutoff2-1) * a + b) > y_value_to_cutoff makes sure the line doesn't accidentally go over y because return_y_cutoff was added one              
@@ -2201,7 +2243,7 @@ def pset():
                   # If ignore_ends is enabled, set y_value_to_cutoff to this
 
                   # This is the first value to round to y1
-                  y_value_to_cutoff = y - start_lw - y_fremainder - funct_round / 2
+                  y_value_to_cutoff = y - red_line_start_y - y_fremainder - funct_round / 2
 
                else:
 
@@ -2209,9 +2251,9 @@ def pset():
                   # The minimum work time will need to be a factor here because the last working day has to follow the minimum work time
 
                   # I dont exactly remember the full logic behind this but it works anyways so ree
-                  y_value_to_cutoff = y - start_lw - y_fremainder - min_work_time_funct_round + funct_round / 2
+                  y_value_to_cutoff = y - red_line_start_y - y_fremainder - min_work_time_funct_round + funct_round / 2
 
-                  # Subtracts the cutoff_transition_value if the function uses it at the return_y_cutoff
+                  # Subtracts cutoff_transition_value along with all the other inputs surrounding if it is after cutoff_to_use_round
                   if funct_round < min_work_time and skew_ratio < 1:
                      y_value_to_cutoff -= cutoff_transition_value
 
@@ -2221,7 +2263,7 @@ def pset():
                      
          # Once the y_value_to_cutoff has been calculated, use the quadratic formula to find when the parabola is equal to that value to find the return_y_cutoff
          if return_y_cutoff != x1 - 1:
-            if y_value_to_cutoff > 0 and y > start_lw and (a or b):
+            if y_value_to_cutoff > 0 and y > red_line_start_y and (a or b):
                if a:
                   return_y_cutoff += ((b*b+4*a*y_value_to_cutoff)**0.5-b)/a/2
                else:
@@ -2248,21 +2290,22 @@ def pset():
             if first_loop:
                difference = output
             first_loop = False
-         if output > original_output and output + start_lw > y:
+         
+         if output > original_output and output + red_line_start_y > y:
             return_y_cutoff -= 1
 
          # The same data collected from the modified version of funct() from above is also used to set the variable add
-         # This variable adds the min_work_time_funct_round on the very last day of the assignment in order to make linear graphs more smooth
-         if ignore_ends_mwt and y - output - start_lw > min_work_time_funct_round and not output - difference and not ((y - start_lw) / funct_round) % 1:
+         # This variable adds the min_work_time_funct_round on the very last day of the assignment in order to make some linear or close to linear graphs more smooth
+         if ignore_ends_mwt and y - output - red_line_start_y > min_work_time_funct_round and not output - difference and not ((y - red_line_start_y) / funct_round) % 1:
             add = min_work_time_funct_round
 
          # Sets return_0_cutoff, which is return_y_cutoff but for the start rather than the end
          if a:
             if ignore_ends_mwt and skew_ratio < 1 and funct_round < min_work_time and cutoff_to_use_round < funct_zero:
 
-               # If skew_ratio is less than 0 and ignore_ends is enabled, then there is a skew_ratio value for when cutoff_to_use_round goes off the graph
-               # However, without this statement, return_0_cutoff will still follow the minimum work time even though cutoff_to_use_round went off the graph
-               # If this happens, set the y_value_to_cutoff to be at 0 instead of min_work_time_funct_round - funct_round / 2
+               # It is possible to have a skew_ratio value less than 0 when cutoff_to_use_round goes off the graph
+               # Without this statement, return_0_cutoff will still follow the minimum work time even if cutoff_to_use_round goes off the graph
+               # If this happens, set y_value_to_cutoff to be at 0 instead of min_work_time_funct_round - funct_round / 2
                return_0_cutoff = funct_zero
                return
             
@@ -2294,9 +2337,8 @@ def pset():
                      return_0_cutoff -= 1
                else:
 
-                  # If ignore_ends is not enabled, the predicted value of return_0_cutoff is sometimes too low
-                  # meaning it sometimes allowed values after its zero to be less than the minimum work time
-                  # To fix this, I use another modified version of funct() to keep increasing the cutoff until it finally satisfies the minimum work time
+                  # If ignore_ends is not enabled, the predicted value of return_0_cutoff is sometimes too low, meaning it sometimes allowed values after its zero to be less than the minimum work time
+                  # To fix this, use another modified version of funct() to keep increasing the cutoff until it finally satisfies the minimum work time
 
                   # Currently, I'm not satisfied with how this code is implemented, and I plan to figure out a better way to do this in the future
                   for n in range(ceil(return_0_cutoff),ceil(x)+1):
@@ -2317,27 +2359,25 @@ def pset():
          else:
 
             # If the graph is linear, then it only intersects zero at the origin
-            # Set the return_0_cutoff to 1
             return_0_cutoff = 1
          
 # Receives an output on the parabola for input value n
 def funct(n):
       
    # If the start is not at the origin, then translate the graph back to the origin
-   n -= red_line_start
-
+   n -= red_line_start_x
+   
    # This part handles not working days
    # The main problem of this is finding the number of any chosen weekday between two dates
    
    # For demonstration, I will choose the starting date to be the Monday 1st of January, the ending date to be Wednesday 31st of January, and the chosen weekday to be Tuesday
-   # The first way I thought of to find the number of any chosen weekday between two dates is to loop through every single day between the start and the
-   # add one to a counter variable if that day is one of the chosen weekdays
+   # The first way I thought of to find the number of any chosen weekday between two dates is to loop through every single day between the start and the end
+   # Then, add one to a counter variable if that day is one of the chosen weekdays
    # This clearly did not work out because it is extremely inefficient over long periods of time
    
-   # I eventually found an efficient method to solve this problem
-   # To make explaining this simpler, instead of thinking as the ending date to be January 31,
+   # To make explaining my second attempt simpler, instead of thinking as the ending date to be January 31,
    # think of the end date to be the amount of days between the end date and the start date, in this case 30
-   # I know in each 7 consecutive days, or week, of the 30 days, there will always be exactly on tuesday
+   # I know in each 7 consecutive days of the 30 days, there will always be exactly on tuesday
    # I can take advantage of this property by splitting the 30 days into 7 days at a time like this:
    # 30 days --> 7 days + 7 days + 7 days + 7 days + 2 days
    # I know in each of those 7 days there will be one tuesday
@@ -2356,7 +2396,7 @@ def funct(n):
    # Then, the tuple mods handles the last two days to get a result of 10 tuesdays or wednesdays
 
    # So, why do I need to know the amount of any chosen weekdays between two dates?
-   # I needed to develop this algorithm because of how the not working days work
+   # I needed to develop this algorithm because of how not working days work
    # First, to make things simpler, let's use the above example
    # The starting date is January 1 and the due date is in 30 days
    # I know there are 10 tuesdays and wednesdays between January 1 and January 31 by using the above algorithm
@@ -2378,13 +2418,13 @@ def funct(n):
    if nwd:
       n -= n//7 * len_nwd + mods[n % 7]
 
-   # If the input is greater than return_y_cutoff, defined in the pset() function, then return y
+   # If the input is greater than return_y_cutoff, defined in the pset() function, return y
    if n > return_y_cutoff:
       return y
    
-   # If the input is less than return_0_cutoff, defined in the pset() function, then return 0
+   # If the input is less than return_0_cutoff, defined in the pset() function, return red_line_start_y, which is the lowest possible output value
    elif n < return_0_cutoff:
-      return start_lw
+      return red_line_start_y
 
    # This section handles minimum work time
    # The goal of minimum work time is to make sure you never work less than the minimum work time
@@ -2392,76 +2432,90 @@ def funct(n):
    # The main challenge with this is that you need to know the previous function output in order to make sure you work
    # at least minimum work time units every working day
    # Originally, I tried to make a list of every single function output from the start to the end of the assignment
-   # Then, I would loop through the list and modify each function output such that they are either at least minimum
-   # work time distance away or at zero (which means that day isn't a working day)
+   # Then, I would loop through the list and modify each function output such that they are either at least min_work_time distance away (or zero which represents a not working day)
    # This obviously was extremely inefficient because it took so much memory that longer assignments could overflow and corrupt the memory
-   # As a note, I cannot do something like this: f(x) - f(x - 1) < minimum work time
-   # This is because f(x - 1) would create an infinitely recurring loop calling the same function back again
+   # I also cannot do this lazily inside this function because tht
    
    # On my second attempt, I thought of utilizing rounding
-   # Rounding doesn't require knowing the previous function output, which solves the recursion problem
+   # Rounding doesn't require knowing the previous function output, which makes things a lot easier
    # Rounding works when the slope of the graph is low, meaning you would work once every couple days
    # However, rounding does not work when there is a higher slope.
-   # For example, if I were rounding to the nearest 10, It might accidentally round to 20, which makes no sense to a
-   # user considering the only thing inputted was the minimum work time to be 10
+   # For example, if I were rounding to the nearest 10, It might accidentally round to 20, which makes no
+   # sense to a user considering the only thing inputted was the minimum work time to be 10
    # I then thought of finding a cutoff to begin to use rounding on a parabola
    # The logic with the cutoff is to only use rounding when there is a low slope and then run the function normally once the rate of change is greater than the minimum work time
-   # When the rate of change of a parabola is greater than the minimum work time, by definition you will work at least the minimum work time amount of units
+   # When the rate of change of a parabola is greater than the minimum work time, by definition you will work at least the minimum work time amount of units each day
    # If I make a tangent line with a certain slope to the parabola, I can find the point on the parabola where the rate of change is that certain slope
    # If I set that slope to be the minimum work time, I can find this cutoff
    # So, I used some basic calculus to calculate the cutoff and applied it to implement to minimum work time
-   # This is all done in the pset() function
+   # If you came here from the pset() function, you can go back to reading the code and comments over there now
+
+   # I wrote (skew_ratio < 1) == (n <= cutoff_to_use_round) instead of n <= cutoff_to_use_round
+   # This is because cutoff_to_use_round is mirrored when the parabola opens up and down
+   # For example, when skew_ratio < 1, meaning the parabola opens upwards, round to the minimum work time if the input number n is <= cutoff_to_use_round
+   # When skew_ratio > 1, meaning the parabola opens upwards, round to the minimum work time if the input number n is > cutoff_to_use_round
    if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (skew_ratio < 1) == (n <= cutoff_to_use_round)):
       
       # If the input number is before the cutoff, round it to the minimum work time
                                                    
       # n*(a*n+b) simplifies to an^2 + bn, which is a quadratic function for returning the output
-      # Then, it is rounded to the nearest multiple of funct_round that is greater than the minimum work time
+      # Then, it is rounded to the lowest multiple of funct_round that is greater than the minimum work time
       output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
+
+      # Consider cutoff_to_use_round to be a divider between two sides of the parabola
       if skew_ratio > 1:
+
+         # if skew_ratio > 1, meaning round to min_work_time_funct_round on the RIGHT side of the divider,
+         # add cutoff_transition_value to all of the parabola outputs on the right side
          output += cutoff_transition_value
       else:
+
+         # However, when skew_ratio <= 1, meaning round to min_work_time_funct_round on the LEFT side of the divider,
+         # don't add cutoff_transition_value to all of the parabola outputs on the right side
+         # Instead of adding cutoff_transition_value to the entire right side, subtract cutoff_transition_value to the entire left side, which results in the same thing
+         # This makes it consistent by only affecting the side that is rounded to min_work_time_funct_round by cutoff_transition_value, making a lot of things smoother and easier
          output -= cutoff_transition_value
             
    else:
       
-      # If input number is after the cutoff, the slope is high enough to satisfy the minimum work time
-      # So, round it to the grouping value
+      # If the input number n is after the cutoff, the slope is high enough to satisfy the minimum work time
+      # So, round it to the grouping value and run everything normally
       output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
 
-   # Makes certain linear distributions better
+   # Makes certain linear distributions better if ignore_ends is True
    if add and n == ceil(return_y_cutoff - 1):
       output += add
                                                       
    # This part handles the remainder
-   # Pretend the amount of units in the assignment is 23, or y, and the grouping value is 5
-   # This looks impossible to do with the grouping value because 23 is not divisible by 5
+   # Pretend y is 23 and the grouping value is 5
+   # It is impossible to perfectly split this up because 23 is not divisible by 5
    # How this is solved is by adding the remainder that isn't divisible by 5, which is 3, to the last working day
    # For example, this would look like: f(0) = 0, f(1) = 5, f(2) = 10, f(3) = 15, and f(4) = 23
-   # If we look at the differences between the function outputs, we see f(4)-f(3) = 8, f(3)-f(2) = 5, f(2)-f(1) = 5,
-   # and f(1)-f(0) = 5
+   # The differences between the function outputs are f(4)-f(3) = 8, f(3)-f(2) = 5, f(2)-f(1) = 5, and f(1)-f(0) = 5
    # There is a difference of 8 even though the grouping value is 5
    # This is unavoidable because 23 is not divisible by 5
    # With remainder mode, you get to choose whether you want the difference of 8 to be at the first or the last working day
    # I implemented this by adding the remainder to all the function outputs
    # If I add 3 to all outputs, it would look like: f(0) = 0, f(1) = 8, f(2) = 13, f(3) = 18, and f(4) = 23
-   # Note: don't add 3 to f(0), because the remainder is added to the next working day. Since f(0) is not a working day don't add 3 to it
+   # The "and output" doesn't add 3 if the function output is 0 
+   # I don't remember what specifically, but there was a pretty big bug with remainder_mode that was solved by putting "and output" at the end
    if remainder_mode and output:
       output += y_fremainder
             
-   # Returns the final output plus start_lw, which untranslates the graph back to where it originally was
-   return output + start_lw
+   # Returns the final output plus red_line_start_y, which untranslates the graph back to where it originally was
+   return output + red_line_start_y
 
 # Debug mode unrounded funct()
+# Ignore this
 if debug_mode:
    def rfunct(n):
-      n -= red_line_start
+      n -= red_line_start_x
       if nwd:
          n -= n//7 * len_nwd + mods[n % 7]
       if ignore_ends_mwt:
-         y1 = y - start_lw     
+         y1 = y - red_line_start_y     
       else:
-         y1 = y - start_lw - y_mremainder
+         y1 = y - red_line_start_y - y_mremainder
       if a and n > (-b + (b*b + 4*a*y1)**0.5)/a/2 or not a and b and n > y/b:
          return y
       if skew_ratio > 1 or not a or a * b > 0:
@@ -2469,15 +2523,15 @@ if debug_mode:
       else:
          funct_zero = -b/a
       if a and n < funct_zero:
-         return start_lw
-      return n*(a*n+b) + start_lw
+         return red_line_start_y
+      return n*(a*n+b) + red_line_start_y
 
 # I didn't write any comments for the next few because its not really important what happens inside this function, just know what they do
 
 # Function to get the modulo days when using not working days (explained in funct())
 def set_mod_days():
    global mods
-   xday = assign_day_of_week + red_line_start
+   xday = assign_day_of_week + red_line_start_x
    mods = [0]
    mod_counter = 0
    for mod_day in range(6):
@@ -2491,13 +2545,13 @@ def set_mod_days():
 # Calculates the skew_ratio limit, which is the skew ratio when first function output reaches y
 def calc_skew_ratio_lim():
    global skew_ratio_lim
-   skew_ratio_lim = x - red_line_start
+   skew_ratio_lim = x - red_line_start_x
    if nwd:
       skew_ratio_lim -= skew_ratio_lim//7 * len_nwd + mods[skew_ratio_lim % 7]
-   if y - start_lw == y_mremainder:
+   if y - red_line_start_y == y_mremainder:
       skew_ratio_lim = ceil(skew_ratio_lim*10)/10
    else:
-      skew_ratio_lim = ceil((y-start_lw)*skew_ratio_lim/(y - start_lw - y_mremainder)*10)/10
+      skew_ratio_lim = ceil((y-red_line_start_y)*skew_ratio_lim/(y - red_line_start_y - y_mremainder)*10)/10
      
 # Formats minutes
 def format_minutes(total_minutes):
@@ -2592,7 +2646,7 @@ def draw(doing_animation=0,do_return=1):
    
       # Used to manually set the start of the red line and the skew ratio of the graph
       if set_start or draw_point:
-         global red_line_start, start_lw, last_mouse_x, last_mouse_y, y_fremainder, y_mremainder, ignore_ends_mwt
+         global red_line_start_x, red_line_start_y, last_mouse_x, last_mouse_y, y_fremainder, y_mremainder, ignore_ends_mwt
 
          # Gets the position of the mouse
          mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -2602,32 +2656,37 @@ def draw(doing_animation=0,do_return=1):
          if set_start:
 
             # If the start of the red line is being set, then run this code
-
+               
             # Rounds the coordinate terms to the nearest whole number
-            mouse_x_set_start = ceil(mouse_x-0.5)
+            mouse_x = ceil(mouse_x-0.5)
 
             # Caps the start at its lower and upper limits
-            if mouse_x_set_start < dif_assign:
-               mouse_x_set_start = dif_assign
-            elif mouse_x_set_start > len_works + dif_assign:
-               mouse_x_set_start = len_works + dif_assign
-            mouse_x = mouse_x_set_start
+            if mouse_x < dif_assign:
+               if mouse_x * 2 < dif_assign:
+                  mouse_x = 0
+               else:
+                  mouse_x = dif_assign
+            elif mouse_x > len_works + dif_assign:
+               mouse_x = len_works + dif_assign
 
-            # If the new just calculate mouse_x_set_start is the same as it was last calculation, return out of the function
-            # This is because there is no point using excess CPU if the graph is exactly the same as last calculation
-            if do_return and mouse_x_set_start == red_line_start:## and mouse_x < dif_assign + 1 and mouse_x > len_works + dif_assign - 1:
+            # If the new mouse_x is the same as it was last calculation, return out of the function
+            # There is no point continuing if the graph is exactly the same as last time
+            if do_return and mouse_x == red_line_start_x:## and mouse_x < dif_assign + 1 and mouse_x > len_works + dif_assign - 1:
                return
 
             # Sets the start
-            red_line_start = mouse_x_set_start
-            start_lw = works[mouse_x_set_start - dif_assign]
-            y_fremainder = (y - start_lw) % funct_round
-            y_mremainder = (y - start_lw) % min_work_time_funct_round
+            red_line_start_x = mouse_x
+            try:
+               red_line_start_y = works[red_line_start_x - dif_assign]
+            except:
+               red_line_start_y = 0
+            y_fremainder = (y - red_line_start_y) % funct_round
+            y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
             if nwd:
                set_mod_days()
-               ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
+               ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start_x) - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 or y >= min_work_time_funct_round * 2)
             else:
-               ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start != 2 or y >= min_work_time_funct_round * 2)
+               ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start_x != 2 or y >= min_work_time_funct_round * 2)
             calc_skew_ratio_lim()
          elif draw_point:
 
@@ -2635,20 +2694,40 @@ def draw(doing_animation=0,do_return=1):
                      
             # Sets the displayed point to the rounded value of the x position
             mouse_x = ceil(mouse_x-0.5)
-            if red_line_start <= mouse_x <= len_works + dif_assign:
+            if red_line_start_x <= mouse_x <= len_works + dif_assign:
                mouse_y = (height-mouse_y-50.5)/hCon
-               mouse_y = abs(mouse_y - funct(mouse_x)) > abs(mouse_y - works[mouse_x - dif_assign])
+
+               # mouse_y is a boolean and is later changed to a integer
+               # If a parabola output and work input are in the same x coordinate, mouse_y determines which one the mouse is closer to
+               try:
+                  mouse_y = abs(mouse_y - funct(mouse_x)) > abs(mouse_y - works[mouse_x - dif_assign])
+               except:
+                  mouse_y = False
             else:
+
+               # If the mouse is outside of the graph, set mouse_y to last_mouse_y. That way, it will satisfy the condition in the below and statement 
                mouse_y = last_mouse_y
 
-            # Caps point X at its lower and upper limits
-            if mouse_x < dif_assign:
-               mouse_x = dif_assign
+            # Caps at lower and upper limits
+            if mouse_x < min(red_line_start_x,dif_assign): 
+               mouse_x = min(red_line_start_x,dif_assign)
             elif mouse_x > x:
                mouse_x = x
 
             # If the new displayed point is the same as it was last calculation, return out of the function
             # This is because there is no point using excess CPU if the graph doesn't change
+
+            # (explain try: except: mouse_x = 0) (make line 2963 to - floor) 
+
+
+
+
+
+
+
+
+
+            
             if do_return and not (set_skew_ratio or set_start) and last_mouse_x == mouse_x and last_mouse_y == mouse_y:
                return
             last_mouse_x = mouse_x
@@ -2784,7 +2863,7 @@ def draw(doing_animation=0,do_return=1):
 
             # Bugchecks for roundoff error
             # The *2 makes sure it doesn't accidentally break out of the loop on a valid y index
-            # Dont worry about it for now
+            # Don't worry about this for now
             if bigger_index * 2 < y_axis_scale:
                break
 
@@ -2817,20 +2896,20 @@ def draw(doing_animation=0,do_return=1):
 
       # Debug mode variables 
       if debug_mode:
-         pygame.draw.line(screen,gray3,((return_0_cutoff+red_line_start)*wCon+47.5+2.5,0),((return_0_cutoff+red_line_start)*wCon+47.5+2.5,height-50),5)
-         screen.blit(pygame.transform.rotate(font3.render('Return 0 Cutoff',1,black),270),((return_0_cutoff+red_line_start)*wCon+47.5-6,(height-50-gw(font3,'Today Line'))/2))
+         pygame.draw.line(screen,gray3,((return_0_cutoff+red_line_start_x)*wCon+47.5+2.5,0),((return_0_cutoff+red_line_start_x)*wCon+47.5+2.5,height-50),5)
+         screen.blit(pygame.transform.rotate(font3.render('Return 0 Cutoff',1,black),270),((return_0_cutoff+red_line_start_x)*wCon+47.5-6,(height-50-gw(font3,'Today Line'))/2))
          try:
-            pygame.draw.line(screen,gray3,((cutoff_to_use_round+red_line_start)*wCon+47.5+2.5,0),((cutoff_to_use_round+red_line_start)*wCon+47.5+2.5,height-50),5)
-            screen.blit(pygame.transform.rotate(font3.render('Cutoff to Use Round',1,black),270),((cutoff_to_use_round+red_line_start)*wCon+47.5-6,(height-50-gw(font3,'Cutoff to Use Round'))/2))
+            pygame.draw.line(screen,gray3,((cutoff_to_use_round+red_line_start_x)*wCon+47.5+2.5,0),((cutoff_to_use_round+red_line_start_x)*wCon+47.5+2.5,height-50),5)
+            screen.blit(pygame.transform.rotate(font3.render('Cutoff to Use Round',1,black),270),((cutoff_to_use_round+red_line_start_x)*wCon+47.5-6,(height-50-gw(font3,'Cutoff to Use Round'))/2))
          except:pass
-         pygame.draw.line(screen,gray3,((return_y_cutoff+red_line_start)*wCon+47.5+2.5,0),((return_y_cutoff+red_line_start)*wCon+47.5+2.5,height-50),5)
-         screen.blit(pygame.transform.rotate(font3.render('Return Y Cutoff',1,black),270),((return_y_cutoff+red_line_start)*wCon+47.5-6,(height-50-gw(font3,'Return Y Cutoff'))/2))
+         pygame.draw.line(screen,gray3,((return_y_cutoff+red_line_start_x)*wCon+47.5+2.5,0),((return_y_cutoff+red_line_start_x)*wCon+47.5+2.5,height-50),5)
+         screen.blit(pygame.transform.rotate(font3.render('Return Y Cutoff',1,black),270),((return_y_cutoff+red_line_start_x)*wCon+47.5-6,(height-50-gw(font3,'Return Y Cutoff'))/2))
 
       # Displays the start if manual set start is enabled
       if set_start:
-         mouse_x_set_start = mouse_x_set_start*wCon + 50
-         pygame.draw.line(screen,gray5,(mouse_x_set_start,0),(mouse_x_set_start,height-50),5)
-         screen.blit(pygame.transform.rotate(font3.render('Click to Set',1,black),270),(mouse_x_set_start-8,(height-50-gw(font3,'Click to Set'))/2))
+         mouse_x = mouse_x*wCon + 50
+         pygame.draw.line(screen,gray5,(mouse_x,0),(mouse_x,height-50),5)
+         screen.blit(pygame.transform.rotate(font3.render('Click to Set',1,black),270),(mouse_x-8,(height-50-gw(font3,'Click to Set'))/2))
       
       # Red line
       # Loops through all the days and plots its corresponding function output
@@ -2841,7 +2920,7 @@ def draw(doing_animation=0,do_return=1):
       # f(1) was calculated twice, which is an inefficiency
       # To solve this, I store f(1) into a variable while the code is connecting a line between f(0) and f(1) that is then used in connecting the line between f(1) and f(2)
       # That way, each function output is only calculated once
-      circle_x, circle_y = ceil(red_line_start*wCon+49.5), ceil(height-start_lw*hCon-50.5)
+      circle_x, circle_y = ceil(red_line_start_x*wCon+49.5), ceil(height-red_line_start_y*hCon-50.5)
       pygame.draw.circle(screen,red,(circle_x,circle_y),circle_r)
       line_end = floor(x+ceil(1/wCon))
       if debug_mode:
@@ -2849,7 +2928,7 @@ def draw(doing_animation=0,do_return=1):
 
          # If debug mode is enabled draw the funct() and rfunct() parabolas
          end = False
-         for i in range(red_line_start+1,line_end,ceil(1/wCon)):
+         for i in range(red_line_start_x+1,line_end,ceil(1/wCon)):
             
             prev_circle_x = circle_x
             prev_circle_y = circle_y
@@ -2876,7 +2955,7 @@ def draw(doing_animation=0,do_return=1):
             pygame.draw.line(screen,red,(prev_circle_x,prev_circle_y),(circle_x,circle_y),circle_r)
             pygame.draw.circle(screen,red,(circle_x,circle_y),circle_r)
       else:
-         for i in range(red_line_start+1,line_end,ceil(1/wCon)):
+         for i in range(red_line_start_x+1,line_end,ceil(1/wCon)):
             prev_circle_x = circle_x
             prev_circle_y = circle_y
             circle_x = ceil(i*wCon+49.5)
@@ -2906,21 +2985,19 @@ def draw(doing_animation=0,do_return=1):
 
       # Draws the point to the parabola from the mouse
       if draw_point and not doing_animation:
-         if mouse_x < red_line_start:
-            funct_mouse_x = works[mouse_x - dif_assign]
-            pygame.draw.circle(screen,green,(ceil(wCon*mouse_x + 49.5),ceil(height-funct_mouse_x*hCon-50.5)),circle_r)
-         else:
-            if mouse_x <= len_works + dif_assign:
-               if mouse_y:
-                  funct_mouse_x = works[mouse_x - dif_assign]
-               else:
-                  funct_mouse_x = funct(mouse_x)
-            else:
-               funct_mouse_x = funct(mouse_x)
-            pygame.draw.circle(screen,green,(ceil(wCon*mouse_x + 49.5),ceil(height-funct_mouse_x*hCon-50.5)),circle_r)
 
-            # Round to significant figures
-            funct_mouse_x = round(funct_mouse_x,floor(log10(funct_round)))
+         if mouse_y:
+            
+            # If mouse_y is True, meaning the mouse is closer to the work inputs than to the parabola, draw the point at the work inputs
+            # Convert mouse_y from a boolean to an integer
+            funct_mouse_x = works[mouse_x - dif_assign]
+         else:
+
+            # If mouse_y is False, the mouse is closer to the parabola than to the work inputs and/or there aren't any work inputs on the mouse's x coordinate
+            # Convert mouse_y from a boolean to an integer
+            funct_mouse_x = funct(mouse_x)
+            
+         # Text next to point
          str_mouse_x = ad+time(mouse_x)
          if disyear:
             str_mouse_x = f'{str_mouse_x.month}/{str_mouse_x.day}/{str(str_mouse_x.year)[2:]}'
@@ -2934,7 +3011,10 @@ def draw(doing_animation=0,do_return=1):
             up_adjust = font.render(f'(Day:{str_mouse_x},{unit}:{funct_mouse_x})',1,black).get_height()
          else:
             up_adjust = 0
+
+         # Displays the point and its text
          screen.blit(font.render(f'(Day:{str_mouse_x},{unit}:{funct_mouse_x})',1,black),(wCon*mouse_x + 50 - left_adjust,height-funct_mouse_x*hCon-50 - up_adjust))
+         pygame.draw.circle(screen,green,(ceil(wCon*mouse_x + 49.5),ceil(height-funct_mouse_x*hCon-50.5)),circle_r)
             
       # Displays the progress bar
       if show_progress_bar:
@@ -2978,7 +3058,7 @@ def draw(doing_animation=0,do_return=1):
          mode = 'Fixed Mode'
       else:
          mode = 'Dynamic Mode'
-      if ((selected_assignment[3] - start_lw) / funct_round) % 1:
+      if ((selected_assignment[3] - red_line_start_y) / funct_round) % 1:
          if remainder_mode:
             strremainder = 'First'
          else:
@@ -3262,10 +3342,10 @@ Make sure you read all of the instructions, as some things are important to know
               if set_start:
                  set_start = False
                  if fixed_mode:
-                    fixed_start = red_line_start
+                    fixed_start = red_line_start_x
                     selected_assignment[14] = fixed_start
                  else:
-                    dynamic_start = red_line_start
+                    dynamic_start = red_line_start_x
                     selected_assignment[11] = dynamic_start
 
               # If the manual set skew ratio is enabled set the skew ratio and disable it
@@ -3336,7 +3416,7 @@ Make sure you read all of the instructions, as some things are important to know
                      try:
                         choice = qinput('Enter in the desired skew ratio value:')
                         if choice:
-                           skew_ratio = ceil(float(choice)*1000000 + 999999.5)/1000000
+                           skew_ratio = round(float(choice) + 1,6)
                            if skew_ratio < 2 - skew_ratio_lim:
                               skew_ratio = 2 - skew_ratio_lim
                            elif skew_ratio > skew_ratio_lim:
@@ -3360,18 +3440,18 @@ Make sure you read all of the instructions, as some things are important to know
                               choice = (slashed_date_convert(choice.strip('/'),False)-ad).days
                            if choice < dif_assign or choice > (date(9999,12,30)-ad).days or choice > dif_assign+len_works:
                               raise Exception
-                           red_line_start = choice
+                           red_line_start_x = choice
                            if fixed_mode:
-                              fixed_start = red_line_start
+                              fixed_start = red_line_start_x
                               selected_assignment[14] = fixed_start
                            else:
-                              dynamic_start = red_line_start
+                              dynamic_start = red_line_start_x
                               selected_assignment[11] = dynamic_start
                            if nwd:
                               set_mod_days()
-                              ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
+                              ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start_x) - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 or y >= min_work_time_funct_round * 2)
                            else:
-                              ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start != 2 or y >= min_work_time_funct_round * 2)
+                              ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start_x != 2 or y >= min_work_time_funct_round * 2)
                         else:
                            print('Successfully Escaped from Input\n')
                         break
@@ -3406,20 +3486,27 @@ Make sure you read all of the instructions, as some things are important to know
                      # Deletes the last work input and sets the start
                      deleted = works[len_works]
                      del works[len_works]
-                     if red_line_start >= len_works + dif_assign:
-                        red_line_start -= 1
-                        start_lw = works[red_line_start - dif_assign]
-                        y_fremainder = (y - start_lw) % funct_round
-                        y_mremainder = (y - start_lw) % min_work_time_funct_round
+
+                     # Changes red_line_start_x to the input before if it was at the deleted work input
+                     if red_line_start_x >= len_works + dif_assign:
+                        red_line_start_x -= 1
+                        red_line_start_y = works[red_line_start_x - dif_assign]
+                        y_fremainder = (y - red_line_start_y) % funct_round
+                        y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
                         if nwd:
                            set_mod_days()
                         calc_skew_ratio_lim()
+
+                     # Changes fixed_start to the input before if it was at the deleted work input
                      if fixed_start >= len_works + dif_assign:
                         fixed_start -= 1
                         selected_assignment[14] = fixed_start
+
+                     # Changes dynamic_start to the input before if it was at the deleted work input
                      if dynamic_start >= len_works + dif_assign:
                         dynamic_start -= 1
                         selected_assignment[11] = dynamic_start
+                        
                      save_data()
                      len_works -= 1
                      lw = works[len_works]
@@ -3619,7 +3706,7 @@ Make sure you read all of the instructions, as some things are important to know
                     if len_nwd:
                         assignment_info += f'Not Working Days: {format_not_working_days(False)}\n'
                     if selected_assignment[16]:
-                        rounded_original_min_work_time = ceil(selected_assignment[16]*ctime*1000000-0.5)/1000000
+                        rounded_original_min_work_time = round(selected_assignment[16]*ctime,6)
                         if not rounded_original_min_work_time % 1:
                            rounded_original_min_work_time = ceil(rounded_original_min_work_time)
                            if unit == 'Minute':
@@ -3654,7 +3741,7 @@ Make sure you read all of the instructions, as some things are important to know
                  # If the assignment is in progress, then define a variable on whether to change the day or not
                  change_day = today_minus_dfc > -1 and today_minus_dfc == len_works - 1 and lw != works[-2] and lw < funct(len_works+dif_assign)
 
-                 # The smart skew ratio first creates a list of all the function outputs before the skew ratio is changed
+                 # Smart skew ratio first creates a list of all the function outputs before the skew ratio is changed
                  # Then, it increases or decrease the skew ratio by 0.1 depending on if you inputted the up or down key
                  # Finally, it creates another list of all the function outputs with the new skew ratio
                  # If the two lists are identical, meaning the graph did not change, then repeat this progress until the lists are not identical
@@ -3664,9 +3751,9 @@ Make sure you read all of the instructions, as some things are important to know
                     while 1:
 
                         # Old List
-                        oldfuncts = tuple(funct(i) for i in range(red_line_start+1,x) if (assign_day_of_week + i) % 7 not in nwd)
+                        oldfuncts = tuple(funct(i) for i in range(red_line_start_x+1,x) if (assign_day_of_week + i) % 7 not in nwd)
 
-                        # Setting Skew Ratio
+                        # Same thing as round(skew_ratio*10 - 1)/10
                         skew_ratio = ceil(skew_ratio*10 - 1.5)/10
                         if skew_ratio < 2 - skew_ratio_lim:
                            skew_ratio = skew_ratio_lim
@@ -3675,9 +3762,9 @@ Make sure you read all of the instructions, as some things are important to know
                            # Compares the new values with the old values and keeps adjusting the skew ratio until they are different
                            pset()
                            oldfuncts_iter = 0
-                           for i in range(1,x - red_line_start):
-                              if (assign_day_of_week + i + red_line_start) % 7 not in nwd:
-                                 if funct(i + red_line_start) != oldfuncts[oldfuncts_iter]:
+                           for i in range(1,x - red_line_start_x):
+                              if (assign_day_of_week + i + red_line_start_x) % 7 not in nwd:
+                                 if funct(i + red_line_start_x) != oldfuncts[oldfuncts_iter]:
                                     outercon = False
                                     break
                                  oldfuncts_iter += 1
@@ -3709,20 +3796,25 @@ Make sure you read all of the instructions, as some things are important to know
                  
             # Down arrow adds 0.1 to the skew ratio
             elif not set_skew_ratio and key == pygame.K_UP:
+
+                 # Same thing as the down arrow but with the up arrow
                  change_day = today_minus_dfc > -1 and today_minus_dfc == len_works - 1 and lw != works[-2] and lw >= funct(len_works+dif_assign)
                  if smart_skew_ratio:
                     outercon = True
                     while 1:
-                        oldfuncts = tuple(funct(i) for i in range(red_line_start+1,x) if (assign_day_of_week + i) % 7 not in nwd)
+                        oldfuncts = tuple(funct(i) for i in range(red_line_start_x+1,x) if (assign_day_of_week + i) % 7 not in nwd)
+
+                        # Same thing as round(skew_ratio*10 + 1)/10
                         skew_ratio = ceil(skew_ratio*10 + 0.5)/10
+                        
                         if skew_ratio > skew_ratio_lim:
                            skew_ratio = 2 - skew_ratio_lim
                         elif skew_ratio != 1:
                            pset()
                            oldfuncts_iter = 0
-                           for i in range(1,x - red_line_start):
-                              if (assign_day_of_week + i + red_line_start) % 7 not in nwd:
-                                 if funct(i + red_line_start) != oldfuncts[oldfuncts_iter]:
+                           for i in range(1,x - red_line_start_x):
+                              if (assign_day_of_week + i + red_line_start_x) % 7 not in nwd:
+                                 if funct(i + red_line_start_x) != oldfuncts[oldfuncts_iter]:
                                     outercon = False
                                     break
                                  oldfuncts_iter += 1
@@ -3745,7 +3837,7 @@ Make sure you read all of the instructions, as some things are important to know
                  draw(0,0)
 
             # Toggles remainder_mode
-            elif ((y - start_lw) / funct_round) % 1 and key == pygame.K_r:
+            elif ((y - red_line_start_y) / funct_round) % 1 and key == pygame.K_r:
                  remainder_mode = not remainder_mode
                  selected_assignment[15] = remainder_mode
                  save_data()
@@ -3785,27 +3877,33 @@ Make sure you read all of the instructions, as some things are important to know
 
                # Sets the start of the red line
                if fixed_mode:
-                  red_line_start = fixed_start
-                  start_lw = works[fixed_start - dif_assign]
+                  red_line_start_x = fixed_start
+                  try:
+                     red_line_start_y = works[red_line_start_x - dif_assign]
+                  except:
+                     red_line_start_y = 0
 
                   # If the assignment is in progress, subtract the day by 1
                   if today_minus_dfc > -1 and today_minus_dfc == len_works - 1 and lw != works[-2] and lw < funct(len_works+dif_assign) and day + dif_assign != x - 1:
                      day -= 1
                else:
-                  red_line_start = dynamic_start
-                  start_lw = works[dynamic_start - dif_assign]
+                  red_line_start_x = dynamic_start
+                  try:
+                     red_line_start_y = works[red_line_start_x - dif_assign]
+                  except:
+                     red_line_start_y = 0
                   day = len_works
                   if day + dif_assign == x:
                      day -= 1
 
                # Redefine some more variables
-               y_fremainder = (y - start_lw) % funct_round
-               y_mremainder = (y - start_lw) % min_work_time_funct_round
+               y_fremainder = (y - red_line_start_y) % funct_round
+               y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
                if nwd:
                   set_mod_days()
-                  ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
+                  ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start_x) - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 or y >= min_work_time_funct_round * 2)
                else:
-                  ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start != 2 or y >= min_work_time_funct_round * 2)
+                  ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start_x != 2 or y >= min_work_time_funct_round * 2)
                draw(0,0)
 
             # Interprets user inputs
@@ -3844,6 +3942,7 @@ Make sure you read all of the instructions, as some things are important to know
                                 print('Press at Any Time Return to Escape')
                                 if today_minus_dfc - day > 1:
                                    formatted_date += ' (Don\'t Remember? Enter "remember" to Proceed)'
+                             first_loop = False
 
                              # Gets input
                              input_done = qinput(input_message+formatted_date+':').strip().lower()
@@ -3867,7 +3966,7 @@ Make sure you read all of the instructions, as some things are important to know
                                           outercon = True
                                           print('Successfully Escaped from Input\n')
                                           break
-                                       input_done = ceil(float(input_done)*1000000-0.5)/1000000 - lw * total_mode
+                                       input_done = round(float(input_done),6) - lw * total_mode
                                        break
                                     except:
                                        print('!!!\nInvalid Number!\n!!!')
@@ -3910,7 +4009,7 @@ Make sure you read all of the instructions, as some things are important to know
                              elif input_done == 'none' or not float(input_done):
                                 input_done = 0
                              else:
-                                input_done = ceil(float(input_done)*1000000-0.5)/1000000 - lw * total_mode
+                                input_done = round(float(input_done),6) - lw * total_mode
 
                              # If the user is at the end of the assignment, check to make sure their input is valid
                              # The below expression will be broken down
@@ -3955,15 +4054,15 @@ Make sure you read all of the instructions, as some things are important to know
                                     dynamic_start = len_works + dif_assign
                                  selected_assignment[11] = dynamic_start
                                  if not fixed_mode:
-                                    red_line_start = dynamic_start
-                                    start_lw = works[dynamic_start - dif_assign]
-                                    y_fremainder = (y - start_lw) % funct_round
-                                    y_mremainder = (y - start_lw) % min_work_time_funct_round
+                                    red_line_start_x = dynamic_start
+                                    red_line_start_y = works[dynamic_start - dif_assign]
+                                    y_fremainder = (y - red_line_start_y) % funct_round
+                                    y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
                                     if nwd:
                                        set_mod_days()
-                                       ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start) - (x - red_line_start)//7 * len_nwd - mods[(x - red_line_start) % 7] != 2 or y >= min_work_time_funct_round * 2)
+                                       ignore_ends_mwt = ignore_ends and min_work_time and ((x - red_line_start_x) - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 or y >= min_work_time_funct_round * 2)
                                     else:
-                                       ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start != 2 or y >= min_work_time_funct_round * 2)
+                                       ignore_ends_mwt = ignore_ends and min_work_time and (x - red_line_start_x != 2 or y >= min_work_time_funct_round * 2)
                                     calc_skew_ratio_lim()
                              if lw >= y:
                                 selected_assignment[2] = float(x)
@@ -3984,7 +4083,6 @@ Make sure you read all of the instructions, as some things are important to know
                                 break
                          except:
                             print('!!!\nInvalid Number!\n!!!')
-                    first_loop = False
                  else:
                     print('\n!!!\nPlease Wait until this is Assigned!\n!!!')
       
