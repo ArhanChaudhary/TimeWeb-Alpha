@@ -69,10 +69,6 @@ try:
       dat = load(datfile)
    if debug_mode:
       print(dat,'\n')
-   import datetime
-   dat = [[datetime.datetime(2020, 11, 26, 19, 36), 699, 548, 35, 50, 25, (4,), False, True, True, True, True, True, True, True, True, True], ['Test3', datetime.datetime(2020, 11, 20, 0, 0), 16, 10, [0], 6, 0, 1, 1, (0, 1, 2, 3, 4, 5, 6), True, 6, 'Minute', False, 0, False, 25], ['Test', datetime.datetime(2020, 11, 26, 0, 0), 2, 10, [0, 0], 0, 1, 1, 1, (4,), True, 0, 'Minute', False, 0, False, 25], ['Pg. 886 #95-107', datetime.datetime(2020, 11, 18, 0, 0), 12, 51, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0, 1, 1.5, 1, (4,), True, 8, 'Question', False, 0, False, 16.666666666666668], ['Daily TM', datetime.datetime(2020, 10, 18, 0, 0), 98, 5000, [0, 60, 60, 60, 60, 60, 60, 330, 450, 470, 510, 570, 630, 630, 690, 750, 810, 810, 870, 930, 990, 990, 1055, 1115, 1115, 1115, 1180, 1180, 1240, 1305, 1365, 1430, 1490, 1555, 1555, 1555, 1555, 1555, 1555, 1555, 1555], 0, 1, 1, 5, (4,), False, 39, 'Minute', False, 0, False, 60], ['Driving Practice', datetime.datetime(2020, 11, 5, 0, 0), 56, 640, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0, 1, 1, 1, (4,), False, 21, 'Minute', False, 4, False, 25], ['Daily C', datetime.datetime(2020, 10, 10, 0, 0), 156, 6000, [140, 140, 140, 140, 140, 140, 140, 140, 185, 185, 185, 185, 185, 185, 185, 185, 185, 235, 235, 235, 280, 280, 280, 330, 380, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430], 0, 1, 1, 5, (4,), False, 47, 'Minute', False, 0, False, 45], ['Web Developer Course', datetime.datetime(2020, 11, 1, 0, 0), 86, 1588, [0, 26, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50], 0, 1, 1, 1, (4,), False, 25, 'Minute', False, 0, False, 25], ['PSAT Prep', datetime.datetime(2020, 10, 5, 0, 0), 253, 1266, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25], 0, 1, 3, 1, (4,), False, 52, 'Page', True, 0, False, 10], ['Test2', datetime.datetime(2020, 11, 27, 0, 0), 5, 30, [0], 0, -0.40469040849573434, 1, 1, (), True, 0, 'Minute', False, 0, False, 25], ['#5 Pen Pal', datetime.datetime(2020, 11, 9, 0, 0), 12, 8, [0, 0, 0, 0, 0, 0, 0, 0, 3, 3], 2, 1, 25, 1, (4,), False, 11, 'Letter', False, 2, False, 1]]
-   from datetime import datetime as date # Handles dates as an object
-   from datetime import timedelta as time # Handles adding and subtracting dates
    first_run = False
       
    # Loads setting data
@@ -84,14 +80,12 @@ except:
    # If the data is not found, create a new file which will hold all the data
    # Initialize default settings in a new file
    
-   # Each Item in the List of the Settings corresponds to the Variable Name above it
    #       date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup
    dat = [[date_now        ,750  ,750   ,35                   ,100               ,25               ,()     ,True                ,True    ,True       ,True     ,True             ,True     ,True              ,True         ,True        ,False        ]]
    first_run = True
    
    # Loads setting data
    date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup = dat[0]
-   #print('Welcome to Time Management Beta!\nThis program will split up an assignment\'s work over days of time for all of your assignments\nAssignments with higher priority will be sorted closer to the top of the list\nIf you have any questions on how to use this program or any suggestions, contact me at arhan.ch@gmail.con')
    print('Welcome to Time Management Beta!\nThis program will split up each of your assignment\'s work until it is due\nThen, it will prioritize each assignment with the most important ones being closer to the top\nUsing this, you will get a clear and organized view of your daily work\nIf you have any questions or suggestions, you probably know me in real life so feel free to ask me')
 
 # Function that saves the main data
@@ -935,7 +929,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            # Prints settings instructions
                            if 7 < change_setting < 10:
                               print(("\nIf you do not have to Work for a day in an Assignment, and you Forget to input work for that Day, it is assumed you did Nothing\nThe program will auto fill in No work Done on that day because you anyways did Not have to Work\nApplies to periods of a time Longer than a Day",
-                                     "\nIgnore Ends is only relevant when Minimum Work Time is also Enabled for an Assignment\nIgnores the Minimum Work Time on the first and last Working Day to make the Work Distribution smoother\nThis also fixes an Issue that causes you to Work a Lot More on the First and Last days of an Assignment\nIt only ignores the minimum work time when Absolutely Necessary and tries to Preserve the original distribution as Much as Possible"
+                                     "\nIgnore Ends is only relevant when Minimum Work Time is also Enabled for an Assignment\nIgnores the Minimum Work Time on the first and last Working Day to make the Work Distribution smoother\nWhen this is Disabled, you Work a Lot More on the First and Last days of an Assignment. Enabling this setting fixes this\nIt only ignores the minimum work time when Absolutely Necessary and tries to Preserve the original distribution as Much as Possible"
                                      )[change_setting-8]+f"\nThis Setting's new value is {new_value} (Old Value: {not new_value})\n")
                               qinput('Enter Anything to Continue:')
                               
