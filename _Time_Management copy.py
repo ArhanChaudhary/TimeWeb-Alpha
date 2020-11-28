@@ -31,7 +31,6 @@ from os import remove # Removes backups if they are Disabled
 
 # File Directory where the data will be stored
 file_directory = 'Time Management'
-update_backups = True
 debug_mode = False
 # Adding/removing settings procedure:
 # Add/remove it on the boolean settings and Adjust values for other settings
@@ -40,10 +39,13 @@ debug_mode = False
 # Change dat[0]
 # command F
 # command F "settings[" and modify numeric value
+# Add:
+# Global setting
+# Add to the big list of setting data (command f "date_last_closed,width,")
 
 # Todo list:
+# draw(0,0) to just draw()
 # go over in_progress equation, document it, and make it consistent
-# default skew ratio in settings
 # dynamic start change using fixed mode linear todo as reference rather than dynamic mode todo
 # dont know the amount of units? only if due date is known ("none" with y)
 # +/- to zoom in and out
@@ -72,7 +74,7 @@ try:
    first_run = False
       
    # Loads setting data
-   date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup = dat[0]
+   date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_skew_ratio,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup = dat[0]
    print('Please enter "quit" or crtl+c into any input to properly exit the program\nTry not to force quit or rerun the program without entering "quit"\n\nPress Return at any Time to Cancel an Input (Unless Specifically told Otherwise)\n')
        
 except:
@@ -80,12 +82,12 @@ except:
    # If the data is not found, create a new file which will hold all the data
    # Initialize default settings in a new file
    
-   #       date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup
-   dat = [[date_now        ,750  ,750   ,35                   ,100               ,25               ,()     ,True                ,True    ,True       ,True     ,True             ,True     ,True              ,True         ,True        ,False        ]]
+   #       date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_skew_ratio,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup
+   dat = [[date_now        ,750  ,750   ,35                   ,100               ,25               ,1             ,()     ,True                ,True    ,True       ,True     ,True             ,True     ,True              ,True         ,True        ,False        ]]
    first_run = True
    
    # Loads setting data
-   date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup = dat[0]
+   date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_skew_ratio,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup = dat[0]
    print('Welcome to Time Management Beta!\nThis program will split up each of your assignment\'s work until it is due\nThen, it will prioritize each assignment with the most important ones being closer to the top\nUsing this, you will get a clear and organized view of your daily work\nIf you have any questions or suggestions, you probably know me in real life so feel free to ask me')
 
 # Function that saves the main data
@@ -160,7 +162,7 @@ def qinput(input_message):
 
 def home(last_sel=0):
    autofill_override = False
-   global outercon, date_now, min_work_time, sel, x, y, ad, ctime, dif_assign, works, day, skew_ratio, file_sel, adone, date_file_created, disyear, dat, screen, today_minus_dfc, today_minus_ad, rem_zero, lw, red_line_start_y, assign_day_of_week, len_works, funct_round, nwd, len_nwd, fixed_mode, dynamic_start, stry, slash_x_counter, red_line_start_x, unit, wCon, hCon, total_mode, set_start, set_skew_ratio, clicked_once, fixed_start, remainder_mode, smart_skew_ratio, due_date, selected_assignment, width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,show_past,ignore_ends,ignore_ends_mwt,dark_mode,show_progress_bar,last_opened_backup,hourly_backup,daily_backup,weekly_backup,manual_backup, file_directory, black, border, gray, gray1, gray2, gray3, gray4, gray5, white, min_work_time_funct_round, left_adjust_cutoff, up_adjust_cutoff, point_text_width, point_text_height, y_fremainder, y_mremainder, tomorrow
+   global outercon, date_now, min_work_time, sel, x, y, ad, ctime, dif_assign, works, day, skew_ratio, file_sel, adone, date_file_created, disyear, dat, screen, today_minus_dfc, today_minus_ad, rem_zero, lw, red_line_start_y, assign_day_of_week, len_works, funct_round, nwd, len_nwd, fixed_mode, dynamic_start, stry, slash_x_counter, red_line_start_x, unit, wCon, hCon, total_mode, set_start, set_skew_ratio, clicked_once, fixed_start, remainder_mode, smart_skew_ratio, due_date, selected_assignment, width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_skew_ratio,def_nwd,display_instructions,autofill,show_past,ignore_ends,ignore_ends_mwt,dark_mode,show_progress_bar,last_opened_backup,hourly_backup,daily_backup,weekly_backup,manual_backup, file_directory, black, border, gray, gray1, gray2, gray3, gray4, gray5, white, min_work_time_funct_round, left_adjust_cutoff, up_adjust_cutoff, point_text_width, point_text_height, y_fremainder, y_mremainder, tomorrow
    next_day = False
    set_tomorrow = True
    while 1:
@@ -231,7 +233,7 @@ def home(last_sel=0):
             # Load the assignment's variables
             file_sel,ad,x,y,works,dif_assign,skew_ratio,ctime,funct_round,nwd,fixed_mode,dynamic_start,unit,total_mode,fixed_start,remainder_mode,min_work_time = file
             
-            # File_sel: name of the assignment
+            # file_sel(str): name of the assignment
             # ad(str): assignment date
             # x(int): days between the assignment date and the due date
             # y(float): total number of units in the assignment
@@ -283,8 +285,10 @@ def home(last_sel=0):
 
             # Let funct_round be 4 and min_work_time be 5
             # Pretend f(4) = 18 and f(5) = 23
-            # f(4) gets rounded to 20 and f(5) gets rounded to 24, breaking the min_work_time of 5
+            # f(4) gets rounded to 20 and f(5) gets rounded to 24, violating the min_work_time of 5
             # This fixes the problem
+
+            # Same thing as funct_round < min_work_time < funct_round * 2
             elif 1 < min_work_time / funct_round < 2:
                min_work_time = funct_round * 2
 
@@ -301,12 +305,13 @@ def home(last_sel=0):
             lw = works[len_works] # Last work input
             if nwd:
 
-               # set_mod_days() is explained later
-               set_mod_days()
+               set_mod_days() # Initializes not working days (explained later)
 
             # ignore_ends is a boolean setting that ignores the minimum work time for the first and last working days
             # ignore_ends_mwt is referenced in the code instead of ignore_ends. For it to be true, ignore_ends must be True and min_work_time must be actively used in the assignment
             # The third argument to ignore_ends_mwt makes it False if x is 2 because ignore_ends ignores the minimum work time for the two days in the assignment, making min_work_time practically irrelevant
+            # Things are also really buggy for some reason when x = 2
+            # The fourth argument makes sure y is greater than or equal to double min_work_time_funct_round
                ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
 
             else:
@@ -314,9 +319,8 @@ def home(last_sel=0):
 
             y_fremainder = (y - red_line_start_y) % funct_round # Remainder when the total number of units left in the assignment is divided by funct_round
             y_mremainder = (y - red_line_start_y) % min_work_time_funct_round # Remainder when the total number of units left in the assignment is divided by min_work_time_funct_round
-
-            # Define a and b for the parabola
-            pset()
+            
+            pset() # Define a and b for the parabola (explained later)
 
             todo = funct(len_works+dif_assign+1) - lw # Amount of work to be done
             daysleft = -(date_now-ad).days # Days between assign date and today multiplied by -1 to make some things easier (might rewrite)         
@@ -759,7 +763,6 @@ def home(last_sel=0):
                                  if nwd:
                                     set_mod_days()
                                     ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-
                                  else:
                                     ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
                                  y_fremainder = (y - red_line_start_y) % funct_round
@@ -802,24 +805,25 @@ def home(last_sel=0):
                            change_setting = f'''
 1)  Screen Width                       : {width} Pixels
 2)  Screen Height                      : {height} Pixels
-3)  Graph Animation Frame Count        : {animation_frame_count}
+3)  Graph Animation Frame Count        : {animation_frame_count} (Enter 1 to Disable Animation)
 4)  Warning Flexibility                : {warning_acceptance}% (Select for More Info)
 5)  Default Minimum Work Time          : {def_min_work_time} Minutes
-6)  Default Not Working Days           : {format_not_working_days()}
-7)  Display Instructions               : {display_instructions}
-8)  Autofill Work Inputs*              : {autofill} (Select for More Info)
-9)  Ignore Min Work Time Ends*         : {ignore_ends} (Select for More Info)
-10) Dark Mode for Graph                : {dark_mode}
-11) Show Progress Bar in Graph         : {show_progress_bar}
-12) Show Past Inputs in Graph Schedule : {show_past}
-13) Backup Every Run*                  : {last_opened_backup}
-14) Backup Every Hour*                 : {hourly_backup}
-15) Backup Every Day                   : {daily_backup}
-16) Backup Every Week                  : {weekly_backup}
-17) Set Skew Ratio for each Assignment
-18) Create/Delete Manual Backup
-19) Load Backups
-20) Restore all Default Setting Values
+6)  Default Skew Ratio                 : {def_skew_ratio}
+7)  Default Not Working Days           : {format_not_working_days()}
+8)  Display Instructions               : {display_instructions}
+9)  Autofill Work Inputs*              : {autofill} (Select for More Info)
+10) Ignore Min Work Time Ends*         : {ignore_ends} (Select for More Info)
+11) Dark Mode for Graph                : {dark_mode}
+12) Show Progress Bar in Graph         : {show_progress_bar}
+13) Show Past Inputs in Graph Schedule : {show_past}
+14) Backup Every Run*                  : {last_opened_backup}
+15) Backup Every Hour*                 : {hourly_backup}
+16) Backup Every Day                   : {daily_backup}
+17) Backup Every Week                  : {weekly_backup}
+18) Set Skew Ratio for each Assignment
+19) Create/Delete Manual Backup
+20) Load Backups
+21) Restore all Default Setting Values
 
 Backups only update at the end of this program once you enter "quit" or ctrl-c
 
@@ -837,7 +841,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  outercon = True
                                  break
                               change_setting = int(change_setting,10)
-                              if 0 < change_setting < 21:
+                              if 1 <= change_setting <= 21:
                                  break
                               print('!!!\nInput Number is not Valid!\n!!!')
                            except:
@@ -847,7 +851,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            break
 
                         # Settings with Numeric Values
-                        if change_setting in range(1,6):
+                        if change_setting in range(1,7):
                            if change_setting == 4:
                               print('\nWarning flexibility determines whether an Assignment should display a Warning if you fall behind\nFor example, if your warning flexibility is 60%, then you have complete less than 60% of an assingment\'s work for on any day to trigger a warning\nIf your warning flexibility is 100%, then you have to complete less than 100% of an assignment\'s work on any day to trigger a warning\nNote: A warning has no effect on determining an assignment\'s priority\nEnter the percent of warning flexibility from 1 - 100\n')
                            while 1:
@@ -867,17 +871,21 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                     height = new_value
 
                                  # Animation frame count
-                                 elif change_setting == 3 and new_value > 0:
+                                 elif change_setting == 3 and 0 < new_value:
                                     animation_frame_count = new_value
 
-                                 # Warning Acceptance
+                                 # Warning acceptance
                                  elif change_setting == 4 and -1 < new_value < 101:
                                     warning_acceptance = new_value
 
                                  # Default minimum work time
                                  elif change_setting == 5 and -1 < new_value:
                                     def_min_work_time = new_value
-                                    
+
+                                 # Default skew ratio
+                                 elif change_setting == 6:
+                                    def_skew_ratio = new_value + 1
+
                                  else:
                                     print('!!!\nInput Number is not Valid! (Too Big or Too Small)\n!!!')
                                     continue
@@ -891,7 +899,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            continue
 
                         # Change default not working days
-                        if change_setting == 6:
+                        if change_setting == 7:
                            new_value = qinput(f'\nEnter the Default Days of the Week you will Not Work on any assignment separated by a Space as your Default Setting\nPress Return to set as None\nExample: mon tue wed thu fri sat sun\n').strip().lower().replace(',',' ').replace('.',' ')
                            if new_value:
                               new_value = new_value.split(' ')
@@ -907,12 +915,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                               new_value = tuple(new_value)
                            else:
                               new_value = ()
-                           settings[6] = new_value
+                           settings[7] = new_value
                            def_nwd = new_value
                            save_data()
 
                         # Toggles boolean settings
-                        elif change_setting in range(7,17):
+                        elif change_setting in range(8,18):
 
                            # Toggles True to False and False to True
                            new_value = not settings[change_setting]
@@ -921,20 +929,27 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                            settings[change_setting] = new_value
 
                            # Redefines changed variables
-                           display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past = settings[7:13]
+                           display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past = settings[8:14]
 
                            # Saves data
                            save_data()
                            
-                           # Prints settings instructions
-                           if 7 < change_setting < 10:
-                              print(("\nIf you do not have to Work for a day in an Assignment, and you Forget to input work for that Day, it is assumed you did Nothing\nThe program will auto fill in No work Done on that day because you anyways did Not have to Work\nApplies to periods of a time Longer than a Day",
-                                     "\nIgnore Ends is only relevant when Minimum Work Time is also Enabled for an Assignment\nIgnores the Minimum Work Time on the first and last Working Day to make the Work Distribution smoother\nWhen this is Disabled, you Work a Lot More on the First and Last days of an Assignment. Enabling this setting fixes this\nIt only ignores the minimum work time when Absolutely Necessary and tries to Preserve the original distribution as Much as Possible"
-                                     )[change_setting-8]+f"\nThis Setting's new value is {new_value} (Old Value: {not new_value})\n")
+                           # Prints instructions
+                           if 9 <= change_setting <= 10:
+                              print(('''
+If you do not have to Work for a day in an Assignment and you Forget to input work for that Day, it is assumed you did Nothing
+The program will auto fill in No work Done on that day because you anyways did Not have to Work\nApplies to Longer periods of a time''',
+'''
+Ignores the Minimum Work Time on the first and last Working Day to make the Work Distribution smoother
+When this is Disabled, you Work a Lot More on the First and Last days of an Assignment. Enabling this setting fixes this
+It only ignores the minimum work time when Absolutely Necessary and tries to Preserve the original distribution as Much as Possible
+Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assignment'''
+                              )
+                              [change_setting-9]+f"\nThis Setting's new value is {new_value} (Old Value: {not new_value})\n")
                               qinput('Enter Anything to Continue:')
                               
                            # Changes colors
-                           elif change_setting == 10:
+                           elif change_setting == 11:
                               if dark_mode:
                                  black = (255,255,255)
                                  border = (200,200,200)
@@ -956,10 +971,10 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  gray5 = (120,120,120)
                                  white = (255,255,255)
                   
-                           elif change_setting > 12:
+                           elif change_setting >= 14:
                               
                               # Handles removing and creating backups
-                              backups = {13:' Every Run Backup',14:' Hourly Backup',15:' Daily Backup',16:' Weekly Backup'}
+                              backups = {14:' Every Run Backup',15:' Hourly Backup',16:' Daily Backup',17:' Weekly Backup'}
                               if new_value:
                                  settings[change_setting] = True
 
@@ -984,40 +999,20 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                               else:
                                  qinput(f'Successfully Cancelled Deleting the{backups[change_setting]}\nEnter Anything to Continue:')
                                  continue
-                              last_opened_backup,hourly_backup,daily_backup,weekly_backup = settings[13:17]
+                              last_opened_backup,hourly_backup,daily_backup,weekly_backup = settings[14:18]
                                  
                         # Sets skew ratio for every assignment
-                        elif change_setting == 17:
+                        elif change_setting == 18:
                            while 1:
                               try:
                                  selected_skew_ratio = qinput('Enter the Skew Ratio for Each Assignment (Will be Capped at each assignment\'s Skew Ratio Limit) (Note: 0 is linear):')
                                  if not selected_skew_ratio:
                                     break
                                  selected_skew_ratio = int(selected_skew_ratio,10) + 1
-                                 file_index = 1
 
-                                 # Gets the necessary variables from each assignment to calculate the maximum and minimum skew ratio
+                                 # Changes skew ratio
                                  for file in dat[1:]:
-                                    if file[10]:
-                                       red_line_start_x = file[14]
-                                    else:
-                                       red_line_start_x = file[11]
-                                    x = file[2]
-                                    nwd = file[9]
-                                    if nwd:
-                                       ad = file[1]
-                                       assign_day_of_week = ad.weekday()
-                                       set_mod_days()
-                                    calc_skew_ratio_lim()
-
-                                    # Compares the selected skew_ratio to the skew_ratio limit and caps the skew_ratio at its min/max
-                                    if selected_skew_ratio > skew_ratio_lim:
-                                       dat[file_index][6] = skew_ratio_lim
-                                    elif selected_skew_ratio < 2 - skew_ratio_lim:
-                                       dat[file_index][6] = 2 - skew_ratio_lim
-                                    else:
-                                       dat[file_index][6] = selected_skew_ratio
-                                    file_index += 1
+                                    dat[file_index][6] = selected_skew_ratio
 
                                  # Saves data
                                  if amount_of_assignments:
@@ -1027,7 +1022,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  print('!!!\nInput is Not an Integer!\n!!!')
                                  
                         # Updates the Manual Backup
-                        elif change_setting == 18:
+                        elif change_setting == 19:
                            if manual_backup:
                               selected_backup = qinput('Updating the Manual Backup will Override and Permanently delete the Last manual backup.\nEnter "YES" in capital letters to Confirm\nEnter "DELETE" in capital letters to Permanently Delete the Last Manual Backup\n(Enter anything other than "YES" or "DELETE" to cancel)\n')
                               
@@ -1057,7 +1052,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                               qinput(f'Successfully Cancelled Deleting the Manual Backup\nEnter Anything to Continue:')
                               
                         # Loads Backups
-                        elif change_setting == 19:
+                        elif change_setting == 20:
                            backups = []
 
                            # Loops through all enabled backups and appends the date the backup was last opened (as a datetime object), the date the backup was last opened and the size of the backup, and the name of the backup
@@ -1116,12 +1111,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                                  break
                               continue
                            print('!!!\nThere are no Available Backups to Load!\n!!!')
-                        elif change_setting == 20:
+                        elif change_setting == 21:
                            if 'YES' in qinput('Are you Sure you Want to Restore all Default Setting Values? (This will NOT affect the backup settings)\nEnter "YES" in capital letters to Confirm (Enter anything other than "YES" to cancel)\n'):
                               
-                              # Resets Setting Data
-                              settings[1:13] = [750,750,35,100,30,(),True,True,True,True,True,True]
-                              width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past = settings[1:13]
+                              # Resets setting data
+                              settings[1:14] = [750,750,35,100,25,1,(),True,True,True,True,True,True]
+                              width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_skew_ratio,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past = settings[1:14]
                               black = (255,255,255)
                               border = (200,200,200)
                               gray = (55,55,55)
@@ -1165,7 +1160,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          if not reenter_mode:
             dif_assign = 0 # (redefined later)
             dynamic_start = fixed_start = 0
-            skew_ratio = 1
+            skew_ratio = def_skew_ratio
 
             # Default variables
             fixed_mode = True
@@ -1574,7 +1569,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
             removed_works_end = len(works) - 1
 
             # ?
-            if x != None and removed_works_end + dif_assign >= x:
+            if x != None and removed_works_end >= x - dif_assign:
                removed_works_end = x - dif_assign
                if works[removed_works_end] != y:
                   removed_works_end -= 1
@@ -1684,7 +1679,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
 
             # Saves the file to Memory
             save_data()
-
+            
       # This is all explained at the beginning of the home() function
       if fixed_mode:
          red_line_start_x = fixed_start
@@ -1716,6 +1711,21 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
       else:
          ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
+
+      y_fremainder = (y - red_line_start_y) % funct_round
+      y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
+
+      calc_skew_ratio_lim() # Defines upper and lower bounds for the skew ratio
+
+      # Caps the skew ratio (which is set to def_skew_ratio) to its lower and upper bounds
+      changed_skew_ratio = False
+      if skew_ratio > skew_ratio_lim:
+         skew_ratio = skew_ratio_lim
+         changed_skew_ratio = True
+      elif skew_ratio < 2 - skew_ratio_lim:
+         skew_ratio = 2 - skew_ratio_lim
+         changed_skew_ratio = True
+      pset()
          
       date_file_created = ad + time(dif_assign) # Date file is created
       set_start = False # Manual set start
@@ -1747,22 +1757,15 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       point_text_height = font.render(point_text,1,black).get_height()
       left_adjust_cutoff = (width - 50 - point_text_width)/wCon
       up_adjust_cutoff = point_text_height/hCon
-      
-      y_fremainder = (y - red_line_start_y) % funct_round # Remainder when the total number of units left in the assignment is divided by funct_round, or the grouping value
-      y_mremainder = (y - red_line_start_y) % min_work_time_funct_round # Remainder when the total number of units left in the assignment is divided by min_work_time_funct_round, or the minimum a use will work in a day
-
-      # Initializing assignment
-      calc_skew_ratio_lim()
-      pset()
 
       # Subtracts 1 day if the assignment is in progress
       # This is because if the an assignment is in progress, there is an input less than the amount needed to be done for a day
       # Normally each input increases the day by 1
-      # However, if the assignment is in progress, then it do not increase the day by 1 because the work has not been done, and the day is still same
+      # However, if the assignment is in progress, then it do not increase the day by 1 because the work has not been done for the day
       if today_minus_dfc > -1 and today_minus_dfc == day - 1 and lw != works[-2] and lw < funct(day + dif_assign) and date_now.weekday() not in nwd:
          day -= 1
 
-      # Limits animation_frame_count if x or y is too small
+      # Limits animation_frame_count to two frames per day if x or y is too small
       min_xy = min(x,y)
       if (min_xy - 1)/animation_frame_count < 0.5:
          local_animation_frame_count = ceil((min_xy - 1)/0.5)
@@ -1779,7 +1782,7 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       x = 1
       y = 1
          
-      # Initializes Screen
+      # Initializes screen
       pygame.display.set_caption('Time Management')
       screen = pygame.display.set_mode((width,height), pygame.RESIZABLE)
 
@@ -1788,14 +1791,25 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
       # Used for positioning the slashes in the progress bar during the animation
       slash_x_counter = width-145
       pygame.event.get()
-      for i in range(local_animation_frame_count - 1):
-         
-         if any(event.type not in (1,4) for event in pygame.event.get()):
-            break
+      for i in range(local_animation_frame_count):
 
-         # increase_x and increase_y are added a precalculated amount such that x and y will reach their original value after the animation
-         x += increase_x
-         y += increase_y
+         # Stop animation if the user does any event except for a mouse movement
+         if any(event.type not in (pygame.ACTIVEEVENT,pygame.MOUSEMOTION) for event in pygame.event.get()):
+            i = local_animation_frame_count - 1
+
+         if i == local_animation_frame_count - 1:
+            
+            # Even though the x and y values are precalculated to reach their original value, there still may be a roundoff error messing up flooring and ceiling functions
+            # To make sure this does not happen, I set x and y back to their inputted value on the last frame of the animation
+
+            # ceil() on x because x can be a float in the data
+            x = ceil(selected_assignment[2])
+            y = selected_assignment[3]
+         else:
+            
+            # increase_x and increase_y are added a precalculated amount such that x and y will reach their original value after the animation
+            x += increase_x
+            y += increase_y
 
          # Redefines variables dependent on x and y
          y_fremainder = (y - red_line_start_y) % funct_round
@@ -1827,9 +1841,21 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
                min_work_time_funct_round = funct_round
          try:
             
-            # Draws the graph every loop
-            draw(1,0)
-            pygame.event.pump()
+            if i == local_animation_frame_count - 1:
+               draw(0,0)
+               pygame.event.pump()
+               if changed_skew_ratio:
+                  print('\nThe Default skew ratio has been Capped at its lower/upper Limit')
+               else:
+                  print()
+
+               # Return on the last loop
+               return
+            else:
+
+               # Draws the graph every loop
+               draw(1,0)
+               pygame.event.pump()
          except:
 
             # If an internal error happens, skip that as a safety net
@@ -1841,36 +1867,12 @@ Select a Setting you would like to Change by Entering its Corresponding Number:
          else:
             slash_x_counter -= 4/y
 
-      # Even though the x and y values are precalculated to reach their original value, there still may be a roundoff error messing up flooring and ceiling functions
-      # To make sure this does not happen, I set x and y back to their inputted value
-      x = ceil(selected_assignment[2])
-      y = selected_assignment[3]
-      if nwd:
-         ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-      else:
-         ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
-      funct_round = selected_assignment[8]
-      min_work_time = original_min_work_time
-      if min_work_time:
-         min_work_time_funct_round = ceil(min_work_time/funct_round)*funct_round
-      else:
-         min_work_time_funct_round = funct_round
-      y_fremainder = (y - red_line_start_y) % funct_round
-      y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
-
-      # Draws final graph animation
-      draw(0,0)
-      pygame.event.pump()
-      
-      print()
-      return
-
 # If you are another person reading this code, consider skipping reading the code for the pset(), funct(), and set_mod_days() functions
 # This is where it gets really complicated and math involved, so it may take a while to understand if you do choose to read it
 # Here is a quick summary if you choose not to read them
 # All of the assignments follow a parabola, and the pset() function calculates the a and b values
 # Then, the funct(n) function returns the output of an^2 + bn (with no c variable because it goes through the origin)
-# set_mod_days() makes not working days work
+# set_mod_days() helps integrate not working days into the schedule
 def pset():
 
          # This entire function defines these eight global variables
@@ -2534,7 +2536,7 @@ if debug_mode:
 
 # I didn't write any comments for the next few because its not really important what happens inside this function, just know what they do
 
-# Function to get the modulo days when using not working days (explained in funct())
+# Function to get the mod days when using not working days (explained in funct())
 def set_mod_days():
    global mods
    xday = assign_day_of_week + red_line_start_x
@@ -3183,31 +3185,30 @@ def quit_program(internal_error=False):
    else:
       
       # If the files have already been created, then update the backups by comparing the last opened date to today
-      if update_backups:
-         date_now = date.now()
-         date_now = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
-         dat[0][0] = date_now
-         save_data()
-         if last_opened_backup or hourly_backup or daily_backup or weekly_backup:
-            print('\nUpdating Backups... Go to the Settings to Enable/Disable Different types of Backups\n')
-            if last_opened_backup:
-               file_directory += ' Every Run Backup'
-               save_data()
-               print('EVERY RUN BACKUP UPDATED')
-            if hourly_backup and (date_last_closed.year,date_last_closed.month,date_last_closed.day,date_last_closed.hour) != (date_now.year,date_now.month,date_now.day,date_now.hour):
-               file_directory = original_file_directory + ' Hourly Backup'
-               save_data()
-               print('HOURLY BACKUP UPDATED')
-            if daily_backup and day_date_last_closed != (date_now.year,date_now.month,date_now.day):
-               file_directory = original_file_directory + ' Daily Backup'
-               save_data()
-               print('DAILY BACKUP UPDATED')
-            if weekly_backup and date(*day_date_last_closed) - time(date_last_closed.weekday()) != date(date_now.year,date_now.month,date_now.day) - time(date_now.weekday()):
-               file_directory = original_file_directory + ' Weekly Backup'
-               save_data()
-               print('WEEKLY BACKUP UPDATED')
-            if debug_mode:
-               file_directory = original_file_directory
+      date_now = date.now()
+      date_now = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
+      dat[0][0] = date_now
+      save_data()
+      if last_opened_backup or hourly_backup or daily_backup or weekly_backup:
+         print('\nUpdating Backups... Go to the Settings to Enable/Disable Different types of Backups\n')
+         if last_opened_backup:
+            file_directory += ' Every Run Backup'
+            save_data()
+            print('EVERY RUN BACKUP UPDATED')
+         if hourly_backup and (date_last_closed.year,date_last_closed.month,date_last_closed.day,date_last_closed.hour) != (date_now.year,date_now.month,date_now.day,date_now.hour):
+            file_directory = original_file_directory + ' Hourly Backup'
+            save_data()
+            print('HOURLY BACKUP UPDATED')
+         if daily_backup and day_date_last_closed != (date_now.year,date_now.month,date_now.day):
+            file_directory = original_file_directory + ' Daily Backup'
+            save_data()
+            print('DAILY BACKUP UPDATED')
+         if weekly_backup and date(*day_date_last_closed) - time(date_last_closed.weekday()) != date(date_now.year,date_now.month,date_now.day) - time(date_now.weekday()):
+            file_directory = original_file_directory + ' Weekly Backup'
+            save_data()
+            print('WEEKLY BACKUP UPDATED')
+         if debug_mode:
+            file_directory = original_file_directory
       print('\nQuitting... Thanks for using!\nYou may now close this window.')
    if debug_mode:
       raise Exception
