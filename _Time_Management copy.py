@@ -31,7 +31,7 @@ from os import remove # Removes backups if they are Disabled
 
 # File Directory where the data will be stored
 file_directory = 'Time Management'
-debug_mode = 1
+debug_mode = False
 # Adding/removing settings procedure:
 # Add/remove it on the boolean settings and Adjust values for other settings
 # Change range value x2
@@ -44,6 +44,7 @@ debug_mode = 1
 # Add to the big list of setting data (command f "date_last_closed,width,")
 
 # Todo list:
+# "y - red_line_start_y - y_fremainder" can be 0
 # go over in_progress equation, document it, and make it consistent; is today_minus_dfc >= 0 really needed when there is today_minus_dfc == len_works-1
 # dynamic start change using fixed mode linear todo as reference rather than dynamic mode todo
 # dont know the amount of units? only if due date is known ("none" with y)
@@ -1540,7 +1541,6 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
             removed_works_start = (ad - selected_assignment[1]).days - dif_assign
             if removed_works_start < 0:
                removed_works_start = 0
-            print(removed_works_start,len(works) - 1,dif_assign)
             removed_works_end = len(works) - 1
 
             # If the reentered due date cuts off some of the work inputs, remove the work input for the last day because that must complete assignment
