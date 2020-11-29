@@ -44,6 +44,7 @@ debug_mode = False
 # Add to the big list of setting data (command f "date_last_closed,width,")
 
 # Todo list:
+# remove mx
 # draw(0,0) to just draw()
 # go over in_progress equation, document it, and make it consistent
 # dynamic start change using fixed mode linear todo as reference rather than dynamic mode todo
@@ -251,7 +252,7 @@ def home(last_sel=0):
             # remainder_mode(bool): determines whether remainder mode should be enabled (explained later)
             # min_work_time(float): minimum work time each day
 
-            # x is a float because of the comments above
+            # x can be a float because of the comments above
             # Set x back to an integer
             if type(x) == float:
                x = ceil(x)
@@ -313,7 +314,6 @@ def home(last_sel=0):
             # Things are also really buggy for some reason when x = 2
             # The fourth argument makes sure y is greater than or equal to double min_work_time_funct_round
                ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-
             else:
                ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
 
@@ -451,7 +451,7 @@ def home(last_sel=0):
                      if status_value != 1:
                         status_value = 2
                   elif daysleft < 7:
-                     strdaysleft = f'{(ad + time(x)): (Due on %A)}'
+                     strdaysleft = f' {(ad + time(x)):(Due on %A)}'
                   else:
                      strdaysleft = f' (Due in {daysleft} Days)'
                      
@@ -464,8 +464,6 @@ def home(last_sel=0):
 
                # Sets the graph to linear with the start of the red line being at the beginning
                # This represents the ideal work distribution, so therefore it is used as a comparison in the priority algorithm
-               today_minus_dfc += in_progress
-               todo = funct((date_now-ad).days+1) - works[today_minus_dfc]
                skew_ratio = 1
                red_line_start_x = dif_assign
                red_line_start_y = works[0]
@@ -473,7 +471,6 @@ def home(last_sel=0):
                if nwd:
                   set_mod_days()
                   ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-
                else:
                   ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
                pset()
@@ -1039,9 +1036,10 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
                               save_data()
                               settings[0] = local_date_last_closed
                               file_directory = original_file_directory
-                              if 'YES' not in selected_backup:
+                              if manual_backup:
+                                 qinput('Manual Backup Successfully Updated\nEnter Anything to Continue:')
+                              else:
                                  qinput('Manual Backup Successfully Created\nEnter Anything to Continue:')
-                              
                            elif 'DELETE' in selected_backup:
 
                               # Delete the manual backup using os.remove
@@ -1173,12 +1171,12 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
             # Name of the assignment
             while 1:
                if reenter_mode:
-                  file_sel = qinput(f'\nPress Return at any time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" instead of Returning at any time to stop re-entering the Inputs and keep the original Version\nEnter in "undo" to undo an input\n\nWhat would you Like to Rename this Assignment (Old Value: {selected_assignment[0]})\n').strip().capitalize()
+                  file_sel = qinput(f'\nPress Return at any time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" instead of Returning at any time to stop re-entering the Inputs and keep the original Version\nEnter in "undo" to undo an input\n\nWhat would you Like to Rename this Assignment (Old Value: {selected_assignment[0]})\n').strip().capitalize_each_word()
                   if not file_sel:
                      file_sel = selected_assignment[0]
                      return
                else:
-                  file_sel = qinput('\nEnter in "cancel" instead of Returning at any time to stop entering in the Inputs\nEnter in "undo" to undo an input\n\nWhat would you Like to Name this Assignment\n').strip().capitalize()
+                  file_sel = qinput('\nEnter in "cancel" instead of Returning at any time to stop entering in the Inputs\nEnter in "undo" to undo an input\n\nWhat would you Like to Name this Assignment\n').strip().capitalize_each_word()
                if file_sel == 'Cancel':
                   outercon = True
                   return
@@ -1291,13 +1289,13 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
                if unit == 'none':
                   unit = 'Minute'
                elif unit:
-                  unit = unit.rstrip('s').capitalize()
+                  unit = unit.rstrip('s').capitalize_each_word()
                else:
                   unit = selected_assignment[12]
             else:
                unit = qinput('Enter the name of each Unit of Work in this Assignment\nThis is how your assignment will be divided up\nExample: If this assignment is a book, enter "page"\nIf you are not sure what to name each unit of work, Press Return\n').strip().lower()
                if unit:
-                  unit = unit.rstrip('s').capitalize()
+                  unit = unit.rstrip('s').capitalize_each_word()
                else:
                   unit = 'Minute'
             if unit == 'Cancel':
@@ -2640,6 +2638,9 @@ def gw(font,text):
 # Centers text on the graph
 def center(text,y_pos):
    screen.blit(font.render(text,1,black),((width+45-gw(font,text))/2,y_pos))
+
+def capitalize_each_word(text):
+   return ' '.join(word[0].upper() + word[1:] for word in text.split())
 
 # Draws graph
 def draw(doing_animation=0,do_return=1):
