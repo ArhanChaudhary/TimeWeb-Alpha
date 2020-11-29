@@ -31,7 +31,7 @@ from os import remove # Removes backups if they are Disabled
 
 # File Directory where the data will be stored
 file_directory = 'Time Management'
-debug_mode = False
+debug_mode = 1
 # Adding/removing settings procedure:
 # Add/remove it on the boolean settings and Adjust values for other settings
 # Change range value x2
@@ -44,9 +44,7 @@ debug_mode = False
 # Add to the big list of setting data (command f "date_last_closed,width,")
 
 # Todo list:
-# remove mx
-# draw(0,0) to just draw()
-# go over in_progress equation, document it, and make it consistent
+# go over in_progress equation, document it, and make it consistent; is today_minus_dfc >= 0 really needed when there is today_minus_dfc == len_works-1
 # dynamic start change using fixed mode linear todo as reference rather than dynamic mode todo
 # dont know the amount of units? only if due date is known ("none" with y)
 # +/- to zoom in and out
@@ -67,17 +65,12 @@ date_now = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now
 
 try:
 
-   # Loads Data from Memory if it is found
+   # Loads data from memory if it is found
    with open(file_directory,'rb') as datfile:
       dat = load(datfile)
    if debug_mode:
       print(dat,'\n')
-   first_run = False
-      
-   # Loads setting data
-   date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_skew_ratio,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup = dat[0]
-   print('Please enter "quit" or crtl+c into any input to properly exit the program\nTry not to force quit or rerun the program without entering "quit"\n\nPress Return at any Time to Cancel an Input (Unless Specifically told Otherwise)\n')
-       
+   first_run = False       
 except:
 
    # If the data is not found, create a new file which will hold all the data
@@ -86,12 +79,15 @@ except:
    #       date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_skew_ratio,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup
    dat = [[date_now        ,750  ,750   ,35                   ,100               ,25               ,1             ,()     ,True                ,True    ,True       ,True     ,True             ,True     ,True              ,True         ,True        ,False        ]]
    first_run = True
-   
-   # Loads setting data
-   date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_skew_ratio,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup = dat[0]
-   print('Welcome to Time Management Beta!\nThis program will split up each of your assignment\'s work until it is due\nThen, it will prioritize each assignment with the most important ones being closer to the top\nUsing this, you will get a clear and organized view of your daily work\nIf you have any questions or suggestions, you probably know me in real life so feel free to ask me')
 
-# Function that saves the main data
+# Loads setting data
+date_last_closed,width,height,animation_frame_count,warning_acceptance,def_min_work_time,def_skew_ratio,def_nwd,display_instructions,autofill,ignore_ends,dark_mode,show_progress_bar,show_past,last_opened_backup,hourly_backup,daily_backup,weekly_backup = dat[0]
+if first_run:
+   print("Welcome to Time Management Beta!\nThis program will split up each of your assignment's work until it is due\nThen, it will prioritize each assignment with the most important ones being closer to the top\nUsing this, you will get a clear and organized view of your daily work\nIf you have any questions or suggestions, you probably know me in real life so feel free to ask me")
+else:
+   print('Please enter "quit" or crtl+c into any input to properly exit the program\nTry not to force quit or rerun the program without entering "quit"\n\nPress Return at any Time to Cancel an Input (Unless Specifically told Otherwise)\n')
+
+# Saves main data into a pickle file
 def save_data():
     with open(file_directory,'wb') as datfile:
         dump(dat,datfile,protocol=4)
@@ -178,7 +174,7 @@ def home(last_sel=0):
             for file in dat[1:]:
 
                # This loop removes completed assignments
-               # It makes sure that the user sees the completed assignment for at least one day before it is deleted
+               # It makes sure that the user sees the completed assignment at least one time before it is deleted
 
                # file[4][-1] >= file[3] checks if an assignment is completed
                
@@ -236,7 +232,7 @@ def home(last_sel=0):
             
             # file_sel(str): name of the assignment
             # ad(str): assignment date
-            # x(int): days between the assignment date and the due date
+            # x(int or float): days between the assignment date and the due date
             # y(float): total number of units in the assignment
             # works(list): work inputs
             # dif_assign(int): days between the assignment date and the date the assignment was created
@@ -400,7 +396,7 @@ def home(last_sel=0):
 
                      day_funct = funct(len_works+dif_assign)
 
-                     # Document this
+                     # This 
                      in_progress = today_minus_dfc == len_works - 1 and lw != works[-2] and lw < day_funct and date_now.weekday() not in nwd
                      
                      # Checks if assignment is completed for today
@@ -749,7 +745,7 @@ def home(last_sel=0):
                                  else:
                                     red_line_start_y = works[dynamic_start - dif_assign]
                                     red_line_start_x = dynamic_start
-                                 if today_minus_dfc > -1 and today_minus_dfc == day - 1 and lw != works[-2] and lw < funct(day + dif_assign) and date_now.weekday() not in nwd:
+                                 if today_minus_dfc >= 0 and today_minus_dfc == day - 1 and lw != works[-2] and lw < funct(day + dif_assign) and date_now.weekday() not in nwd:
                                     day -= 1
                                  if min_work_time:
                                     min_work_time_funct_round = ceil(min_work_time/funct_round)*funct_round
@@ -1171,12 +1167,12 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
             # Name of the assignment
             while 1:
                if reenter_mode:
-                  file_sel = qinput(f'\nPress Return at any time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" instead of Returning at any time to stop re-entering the Inputs and keep the original Version\nEnter in "undo" to undo an input\n\nWhat would you Like to Rename this Assignment (Old Value: {selected_assignment[0]})\n').strip().capitalize_each_word()
+                  file_sel = capitalize_each_word(qinput(f'\nPress Return at any time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" instead of Returning at any time to stop re-entering the Inputs and keep the original Version\nEnter in "undo" to undo an input\n\nWhat would you Like to Rename this Assignment (Old Value: {selected_assignment[0]})\n').strip())
                   if not file_sel:
                      file_sel = selected_assignment[0]
                      return
                else:
-                  file_sel = qinput('\nEnter in "cancel" instead of Returning at any time to stop entering in the Inputs\nEnter in "undo" to undo an input\n\nWhat would you Like to Name this Assignment\n').strip().capitalize_each_word()
+                  file_sel = capitalize_each_word(qinput('\nEnter in "cancel" instead of Returning at any time to stop entering in the Inputs\nEnter in "undo" to undo an input\n\nWhat would you Like to Name this Assignment\n').strip())
                if file_sel == 'Cancel':
                   outercon = True
                   return
@@ -1211,12 +1207,16 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
                      date_now = date.now()
                      date_now = date(date_now.year,date_now.month,date_now.day)
                      if ad.lower() == 'today':
-                         ad = date_file_created = date_now
+                        ad = date_file_created = date_now
                      else:
                         ad = slashed_date_convert(ad.strip('/'),False)
                         if reenter_mode:
-                           if selected_assignment[1] > ad:
-                              dif_assign = (selected_assignment[1]-ad).days
+                           if date_now < selected_assignment[1]:
+
+                              # If the old assignnment date was entered ahead of time, keep dif_assign at 0
+                              dif_assign = 0
+                           else:
+                              dif_assign = selected_assignment[5] + (selected_assignment[1]-ad).days
                         elif date_now >= ad:
                            dif_assign = (date_now-ad).days
                   return
@@ -1224,7 +1224,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
                   print('!!!\nInvalid Date!\n!!!')
                   
          def input3():
-            global outercon, x, mx, date_now
+            global outercon, x, date_now
 
             # Due date of the assignment
             while 1:
@@ -1244,30 +1244,6 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
                         outercon = 2
                      elif x == 'none':
                         x = None
-                        while 1:
-                           try:
-                              mx = qinput(f'Enter the Latest date this Assignment can be Due\nUse the same above Format\nOr, enter the Amount of Days until the Latest date this Assignment can be Due (As a Whole Number Input)\n(Don\'t Care when this Assignment will be Due? Enter "none" to skip)\n').lower()
-                              if 'none' in mx:
-                                 mx = float('inf')
-                              elif 'cancel' in mx:
-                                 outercon = True
-                                 break
-                              elif 'undo' in mx:
-                                 break
-                              else:
-                                 try:
-                                    mx = int(mx,10)
-                                 except:
-                                    date_now = date.now()
-                                    mx = (slashed_date_convert(mx.strip('/'))-ad).days
-                                 if mx < 1 or mx > (date(9999,12,30)-ad).days:
-                                    raise Exception
-                              return
-                           except:
-                              print('!!!\nInvalid Date!\n!!!')
-                        if outercon == True:
-                           return
-                        continue
                      else:
                         try:
                            x = int(x,10)
@@ -1289,13 +1265,13 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
                if unit == 'none':
                   unit = 'Minute'
                elif unit:
-                  unit = unit.rstrip('s').capitalize_each_word()
+                  unit = capitalize_each_word(unit.rstrip('s'))
                else:
                   unit = selected_assignment[12]
             else:
                unit = qinput('Enter the name of each Unit of Work in this Assignment\nThis is how your assignment will be divided up\nExample: If this assignment is a book, enter "page"\nIf you are not sure what to name each unit of work, Press Return\n').strip().lower()
                if unit:
-                  unit = unit.rstrip('s').capitalize_each_word()
+                  unit = capitalize_each_word(unit.rstrip('s'))
                else:
                   unit = 'Minute'
             if unit == 'Cancel':
@@ -1564,9 +1540,10 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
             removed_works_start = (ad - selected_assignment[1]).days - dif_assign
             if removed_works_start < 0:
                removed_works_start = 0
+            print(removed_works_start,len(works) - 1,dif_assign)
             removed_works_end = len(works) - 1
 
-            # ?
+            # If the reentered due date cuts off some of the work inputs, remove the work input for the last day because that must complete assignment
             if x != None and removed_works_end >= x - dif_assign:
                removed_works_end = x - dif_assign
                if works[removed_works_end] != y:
@@ -1595,11 +1572,11 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
 
             # If dynamic_start is x coordinate 0, then keep it at x coordinate 0
             if dynamic_start or not selected_assignment[5]:
-               dynamic_start -= (ad - selected_assignment[1]).days
+               dynamic_start += dif_assign - selected_assignment[5]
 
             # If fixed_start is x coordinate 0, then keep it at x coordinate 0
             if fixed_start or not selected_assignment[5]:
-               fixed_start -= (ad - selected_assignment[1]).days
+               fixed_start += dif_assign - selected_assignment[5]
 
             # Caps at their respective limits
             if dynamic_start < 0:
@@ -1654,8 +1631,6 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
                x = ceil(x)
             else:
                x = 1
-            if x > mx:
-               x = mx
 
          # Appends all the inputted information to the main file
          #                         0     1  2 3   4       5          6        7        8       9      10          11        12      13         14            15            16
@@ -1760,7 +1735,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
       # This is because if the an assignment is in progress, there is an input less than the amount needed to be done for a day
       # Normally each input increases the day by 1
       # However, if the assignment is in progress, then it do not increase the day by 1 because the work has not been done for the day
-      if today_minus_dfc > -1 and today_minus_dfc == day - 1 and lw != works[-2] and lw < funct(day + dif_assign) and date_now.weekday() not in nwd:
+      if today_minus_dfc >= 0 and today_minus_dfc == day - 1 and lw != works[-2] and lw < funct(day + dif_assign) and date_now.weekday() not in nwd:
          day -= 1
 
       # Limits animation_frame_count to two frames per day if x or y is too small
@@ -1785,6 +1760,8 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
       screen = pygame.display.set_mode((width,height), pygame.RESIZABLE)
 
       original_min_work_time = min_work_time
+      original_min_work_time_funct_round = min_work_time_funct_round
+      original_funct_round = funct_round
          
       # Used for positioning the slashes in the progress bar during the animation
       slash_x_counter = width-145
@@ -1810,16 +1787,20 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
             y += increase_y
 
          # Redefines variables dependent on x and y
-         y_fremainder = (y - red_line_start_y) % funct_round
-         y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
+         y_fremainder = (y - red_line_start_y) % original_funct_round
+         y_mremainder = (y - red_line_start_y) % original_min_work_time_funct_round
          if nwd:
             ignore_ends_mwt = ignore_ends and min_work_time and floor(x - red_line_start_x) - floor(x - red_line_start_x)//7 * len_nwd - mods[floor(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
          else:
             ignore_ends_mwt = ignore_ends and min_work_time and floor(x - red_line_start_x) != 2 and y >= min_work_time_funct_round * 2
+
+         # Defines y1 from the pset() function and caps the variables to their limits
          if ignore_ends_mwt:
             y1 = y - red_line_start_y
          else:
             y1 = y - red_line_start_y - y_mremainder
+            if not y1:
+               y1 += y_mremainder
          if y1:
             if selected_assignment[8] > y1:
                funct_round = y1
@@ -1837,27 +1818,22 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
                min_work_time_funct_round = ceil(min_work_time/funct_round)*funct_round
             else:
                min_work_time_funct_round = funct_round
-         try:
             
-            if i == local_animation_frame_count - 1:
-               draw(0,0)
-               pygame.event.pump()
-               if changed_skew_ratio:
-                  print('\nThe Default skew ratio has been Capped at its lower/upper Limit')
-               else:
-                  print()
-
-               # Return on the last loop
-               return
+         if i == local_animation_frame_count - 1:
+            draw()
+            pygame.event.pump()
+            if changed_skew_ratio:
+               print('\nThe Default skew ratio has been Capped at its lower/upper Limit')
             else:
+               print()
 
-               # Draws the graph every loop
-               draw(1,0)
-               pygame.event.pump()
-         except:
+            # Return on the last loop
+            return
+         else:
 
-            # If an internal error happens, skip that as a safety net
-            pass
+            # Draws the graph every loop
+            draw(True)
+            pygame.event.pump()
 
          # Moves the slashes in the progress bar during the animation because it looks cool
          if lw: 
@@ -1906,8 +1882,13 @@ def pset():
                # So, the a and b values will treat 90 as y instead of 93
                # Lets say the f(x) before that are f(x-2) = 80, f(x-1) = 85, f(x) = 90
                # There is a check that changes f(x) = 90 to f(x) = 93 after the a and b values have been set
-               # This way, e
+               # The reason why not to use y_fremainder is because y_fremainder causes ignore_ends_mwt to not work when it's False; y_mremainder makes 100% sure that the last work input by adding on the remainder to the last working day 
                y1 = y - red_line_start_y - y_mremainder
+
+               # If y is less than min_work_time_funct_round, then y1 will be set to 0
+               # If this happens, set y1 to y
+               if not y1:
+                  y1 += y_mremainder
 
             # Subtracts not working days (explained later)
             if nwd:
@@ -1984,7 +1965,7 @@ def pset():
             # A function by definition cannot have two separate y values for the same
             # If any two x's of the points the function must connect to are accidentally the same, then run this
             # For example, a parabola cannot pass through (1,1) and (1,2) at the same time
-            # This can accidentally happen in some situations
+            # This can accidentally happen in the animation
 
             # Make a line instead of a parabola
             a = 0
@@ -1995,7 +1976,7 @@ def pset():
                return_y_cutoff = 0
             else:
 
-               # If x1 is 0, meaning the rest of the days are not working days, set funct(0) to y because theres no other way of reaching y
+               # If x1 is 0, meaning the rest of the days are not working days, set funct(0) to y because there is no other way of reaching y
                return_y_cutoff = -1
             return_0_cutoff = 1
             cutoff_transition_value = 0
@@ -2011,7 +1992,8 @@ def pset():
          # Since the parabola passes though (0,0), passes through (x,y), and opens downwards, its second zero will always have an x coordinate greater than x
          # Why this happens isn't important, but since it is greater than x, it is outside of the assignment
          # And since I am ignoring all outputs < 0 and > x
-         # If "skew_ratio == 1" is True, the parabola is actually just a line. Since it passes at the origin, its zero is at 0
+         
+         # If "not a" is True, the parabola is actually just a line. Since it passes at the origin, its zero is at 0
 
          # "a * b > 0"
          # If the expression ever reaches this statement, then "skew_ratio >= 1" didn't run from earlier on in the statement
@@ -2023,7 +2005,7 @@ def pset():
 
          # As a note, you may think it is possible for a and b to both be negative, making a * b > 0 True
          # However, it is impossible for a and b to be negative at the same time because f(x) = ax^2 + bx will always return a negative number for every positive value of x
-         if skew_ratio >= 1 or a * b > 0:
+         if skew_ratio > 1 or not a or a * b > 0:
 
             # f(0) is always 0
             funct_zero = 0
@@ -2210,9 +2192,9 @@ def pset():
                   # Know that f(9) - f(8) = 6 and f(10) - f(9) = 6
                   # Now, let's say the cutoff_transition_value from above is 2, which means add 2 to these values
                   # So, f(8) = 134 and f(9) = 140 and f(10) = 144
-                  # f(10) doesn't increase to 146 because 144 is the y or maximum value
+                  # f(10) doesn't increase to 146 because 144 is y
                   # When you compare the differences, f(9) - f(8) = 6 and f(10) - f(9) = 4
-                  # This violates the minimum work time, since even though I inputted 6, there is a difference of 4 units at the end
+                  # This violates the minimum work time, since even though I inputted 6, there is a difference of 4 at the end
                   # This line of code below checks for that error and adjusts the y_value_to_cutoff appropriately
                   if y_mremainder < cutoff_transition_value:
 
@@ -2252,9 +2234,9 @@ def pset():
                   if remainder_mode:
                      y_value_to_cutoff -= y_fremainder
          else:
-               # This section is defines the y_value_to_cutoff happens after the cutoff
-               # On the values before the cutoff_to_use_round, the outputs are not rounded
-               # On the values after the cutoff_to_use_round, the outputs are rounded
+               # This section is defines the y_value_to_cutoff after the cutoff
+               # On the values before the cutoff_to_use_round, the outputs are not rounded to the minimum work time
+               # On the values after the cutoff_to_use_round, the outputs are rounded to the minimum work time
                # Since this is focusing on the after part, the minimum work time is no longer necessary
                if ignore_ends_mwt:
 
@@ -2292,7 +2274,7 @@ def pset():
          # Fixes a glitch when cutoff_transition_value is a high value that causes the output value right before the return_y_cutoff to exceed y
          # It does this by running a modified version of funct() and checking whether it exceeds y
          first_loop = True
-         for n in range(ceil(return_y_cutoff - 2),ceil(return_y_cutoff)):
+         for n in (ceil(return_y_cutoff - 2),ceil(return_y_cutoff - 1)):
             if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (skew_ratio < 1) == (n <= cutoff_to_use_round)):
                original_output = output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
                if skew_ratio > 1:
@@ -2329,12 +2311,12 @@ def pset():
             
             if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (skew_ratio < 1) == (funct_zero <= cutoff_to_use_round)):
 
-               # If the function rounds to min_work_time_funct_round at its zero, set the y_value_to_cutoff to this
+               # If the function rounds to min_work_time_funct_round at its zero, set the y_value_to_cutoff to the first value that rounds to min_work_time_funct_round
                y_value_to_cutoff = min_work_time_funct_round / 2
                
             else:
 
-               # If the function rounds to funct_round at its zero, set the y_value_to_cutoff to this
+               # If the function rounds to funct_round at its zero, set the y_value_to_cutoff to the first value that rounds to min_work_time_funct_round 
                y_value_to_cutoff = min_work_time_funct_round - funct_round / 2
 
             # Uses the quadratic equation to find the x value when the y value is y_value_to_cutoff
@@ -2643,12 +2625,12 @@ def capitalize_each_word(text):
    return ' '.join(word[0].upper() + word[1:] for word in text.split())
 
 # Draws graph
-def draw(doing_animation=0,do_return=1):
+def draw(doing_animation=False,do_return=False):
 
       # Important Scaling Variables
       # When given a coordinate point, for example (6,8), multiply the x value by wCon and the y value by hCon
       # This puts the coordinate in "graph terms," where it can be plotted to its respective coordinates on the actual graph window
-      # Similarly, dividing the "graph terms" coordinates by wCon and hCon yield the original "coordinate terms" of (6,8)
+      # Dividing the "graph terms" coordinates by wCon and hCon yield the original "coordinate terms" of (6,8)
       global hCon, wCon
       wCon = (width-55)/x
       hCon = (height-55)/y
@@ -2689,12 +2671,13 @@ def draw(doing_animation=0,do_return=1):
                red_line_start_y = works[red_line_start_x - dif_assign]
             else:
                red_line_start_y = 0
+
+            # Redefines variables dependent on red_line_start_x and red_line_start_y
             y_fremainder = (y - red_line_start_y) % funct_round
             y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
             if nwd:
                set_mod_days()
                ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-
             else:
                ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
             calc_skew_ratio_lim()
@@ -2719,7 +2702,7 @@ def draw(doing_animation=0,do_return=1):
                   mouse_y = True
                else:
 
-                  # If a parabola output and work input are in the same x coordinate, determines which one the mouse is closer to
+                  # If a parabola output and work input are in the same x coordinate, this determines which one the mouse is closer to
                   mouse_y = abs(mouse_y - funct(mouse_x)) > abs(mouse_y - works[mouse_x - dif_assign])
             else:
 
@@ -2824,7 +2807,7 @@ def draw(doing_animation=0,do_return=1):
                   # Draws the number
                   screen.blit(font4.render(str(displayed_number),1,black),(number_x_pos,height-40))
 
-      # This part is exactly the same as the above code, but except in the y axis instead of the x axis       
+      # This part is exactly the same as the above code but except in the y axis instead of the x axis       
       y_axis_scale = 10**floor(log10(y)) * ceil(int(str(y)[0],10)/ceil((height-100)/100))
       if y >= 10:
          small_y_axis_scale = y_axis_scale / 5
@@ -2913,9 +2896,11 @@ def draw(doing_animation=0,do_return=1):
 
       # Displays the start if manual set start is enabled
       if set_start:
-         mouse_x = mouse_x*wCon + 50
-         pygame.draw.line(screen,gray5,(mouse_x,0),(mouse_x,height-50),5)
-         screen.blit(pygame.transform.rotate(font3.render('Click to Set',1,black),270),(mouse_x-8,(height-50-gw(font3,'Click to Set'))/2))
+
+         # Define a new variable mouse_x2 because mouse_x is still needed for later
+         mouse_x2 = mouse_x*wCon + 50
+         pygame.draw.line(screen,gray5,(mouse_x2,0),(mouse_x2,height-50),5)
+         screen.blit(pygame.transform.rotate(font3.render('Click to Set',1,black),270),(mouse_x2-8,(height-50-gw(font3,'Click to Set'))/2))
       
       # Red line
       # Loops through all the days and plots its corresponding function output
@@ -3329,7 +3314,7 @@ Make sure you read all of the instructions, as some things are important to know
 
            # Draws every time mouse is moved
            if etype == pygame.MOUSEMOTION:
-              draw()
+              draw(False,True)
 
            # When the mouse is pressed, the interactive mouse stops
            elif etype == pygame.MOUSEBUTTONDOWN:
@@ -3338,7 +3323,7 @@ Make sure you read all of the instructions, as some things are important to know
               if draw_point and not (set_start or set_skew_ratio):
                  draw_point = False
                  last_mouse_x = -1
-                 draw(0,0)
+                 draw()
                  continue
 
               # If the manual set start is enabled set the skew ratio and disable it
@@ -3366,13 +3351,13 @@ Make sure you read all of the instructions, as some things are important to know
 
               # Saves Data
               save_data()
-              draw(0,0)
+              draw()
               continue
 
         # If draw_point is disabled, enable it if the user clicks
         if not draw_point and etype == pygame.MOUSEBUTTONDOWN:
               draw_point = True
-              draw()
+              draw(False,True)
         elif etype == pygame.KEYDOWN:
             key = event.key
 
@@ -3383,20 +3368,20 @@ Make sure you read all of the instructions, as some things are important to know
 
             # Initializes manually setting the start of the red line
             elif not set_start and key == pygame.K_s:
-               change_day_mouse = today_minus_dfc > -1 and today_minus_dfc == len_works - 1 and lw != works[-2] and date_now.weekday() not in nwd
+               change_day_mouse = today_minus_dfc >= 0 and today_minus_dfc == len_works - 1 and lw != works[-2] and date_now.weekday() not in nwd
                if change_day_mouse:
                   change_day_upper = lw >= funct(len_works+dif_assign)
                set_skew_ratio = True
-               draw()
+               draw(False,True)
                print('\nManual Set Skew Ratio Enabled\nHover Over the Graph and Click to set the Skew Ratio of the Red Line')
 
             # Initializes manually setting the skew ratio
             elif not set_skew_ratio and key == pygame.K_c:
-               change_day_mouse = today_minus_dfc > -1 and today_minus_dfc == len_works - 1 and lw != works[-2] and date_now.weekday() not in nwd
+               change_day_mouse = today_minus_dfc >= 0 and today_minus_dfc == len_works - 1 and lw != works[-2] and date_now.weekday() not in nwd
                if change_day_mouse:
                   change_day_upper = lw >= funct(len_works+dif_assign)
                set_start = True
-               draw(0,0)
+               draw()
                pygame.event.pump()
                print('\nManual Set Start Enabled\nHover Over the Graph and Click to set the Start of the Red Line')
 
@@ -3411,7 +3396,7 @@ Make sure you read all of the instructions, as some things are important to know
                   print('!!!\nInvalid Number!\n!!!')
 
                # Changes day to +-1 if the assignment is in progress after manually setting the skew ratio (copied from set start and set skew ratio)
-               change_day_mouse = today_minus_dfc > -1 and today_minus_dfc == len_works - 1 and lw != works[-2] and date_now.weekday() not in nwd
+               change_day_mouse = today_minus_dfc >= 0 and today_minus_dfc == len_works - 1 and lw != works[-2] and date_now.weekday() not in nwd
                if change_day_mouse:
                   change_day_upper = lw >= funct(len_works+dif_assign)
                if choice == '1':
@@ -3472,7 +3457,7 @@ Make sure you read all of the instructions, as some things are important to know
 
                # Saves data and draws
                save_data()
-               draw(0,0)
+               draw()
                continue
 
             # Deletes the last work input
@@ -3514,7 +3499,7 @@ Make sure you read all of the instructions, as some things are important to know
                      save_data()
                      len_works -= 1
                      lw = works[len_works]
-                     draw(0,0)
+                     draw()
                      print(f'Deleted Work Input (Used to be at {deleted} Total {unit}s at {(date_file_created + time(day+1)):%B %-d{disyear}})')
 
             # Displays the entire schedule of the assignment
@@ -3524,7 +3509,7 @@ Make sure you read all of the instructions, as some things are important to know
                  next_work = adone
 
                  # If the assignment is in progress, temporarily remove the last work because it is irrelevant for now
-                 if today_minus_dfc > -1 and today_minus_dfc == len_works - 1 and lw != works[-2] and lw < funct(len_works+dif_assign) and date_now.weekday() not in nwd:
+                 if today_minus_dfc >= 0 and today_minus_dfc == len_works - 1 and lw != works[-2] and lw < funct(len_works+dif_assign) and date_now.weekday() not in nwd:
                     remlw = works[len_works]
                     del works[len_works]
                     lw = works[-1]
@@ -3745,7 +3730,7 @@ Make sure you read all of the instructions, as some things are important to know
             elif not set_skew_ratio and key == pygame.K_DOWN:
                
                  # If the assignment is in progress, then define a variable on whether to change the day or not
-                 change_day = today_minus_dfc > -1 and today_minus_dfc == len_works - 1 and lw != works[-2] and lw < funct(len_works+dif_assign) and date_now.weekday() not in nwd
+                 change_day = today_minus_dfc >= 0 and today_minus_dfc == len_works - 1 and lw != works[-2] and lw < funct(len_works+dif_assign) and date_now.weekday() not in nwd
 
                  # Smart skew ratio first creates a list of all the function outputs before the skew ratio is changed
                  # Then, it increases or decrease the skew ratio by 0.1 depending on if you inputted the up or down key
@@ -3798,13 +3783,13 @@ Make sure you read all of the instructions, as some things are important to know
                     if lw >= funct(len_works+dif_assign):
                        day += 1
                        
-                 draw(0,0)
+                 draw()
                  
             # Down arrow adds 0.1 to the skew ratio
             elif not set_skew_ratio and key == pygame.K_UP:
 
                  # Same thing as the down arrow but with the up arrow
-                 change_day = today_minus_dfc > -1 and today_minus_dfc == len_works - 1 and lw != works[-2] and lw >= funct(len_works+dif_assign) and date_now.weekday() not in nwd
+                 change_day = today_minus_dfc >= 0 and today_minus_dfc == len_works - 1 and lw != works[-2] and lw >= funct(len_works+dif_assign) and date_now.weekday() not in nwd
                  if smart_skew_ratio:
                     outercon = True
                     while 1:
@@ -3840,21 +3825,21 @@ Make sure you read all of the instructions, as some things are important to know
                     pset()
                     if lw < funct(len_works+dif_assign):
                        day -= 1
-                 draw(0,0)
+                 draw()
 
             # Toggles remainder_mode
             elif ((y - red_line_start_y) / funct_round) % 1 and key == pygame.K_r:
                  remainder_mode = not remainder_mode
                  selected_assignment[15] = remainder_mode
                  save_data()
-                 draw(0,0)
+                 draw()
 
             # Toggles total_mode
             elif key == pygame.K_t:
                  total_mode = not total_mode
                  selected_assignment[13] = total_mode
                  save_data()
-                 draw(0,0)
+                 draw()
 
             # Goes to the next assignment on the list of assignments
             elif key == pygame.K_n:
@@ -3890,7 +3875,7 @@ Make sure you read all of the instructions, as some things are important to know
                      red_line_start_y = 0
 
                   # If the assignment is in progress, subtract the day by 1
-                  if today_minus_dfc > -1 and today_minus_dfc == len_works - 1 and lw != works[-2] and lw < funct(len_works+dif_assign) and date_now.weekday() not in nwd:##and day + dif_assign != x - 1
+                  if today_minus_dfc >= 0 and today_minus_dfc == len_works - 1 and lw != works[-2] and lw < funct(len_works+dif_assign) and date_now.weekday() not in nwd:##and day + dif_assign != x - 1
                      day -= 1
                else:
                   red_line_start_x = dynamic_start
@@ -3911,7 +3896,7 @@ Make sure you read all of the instructions, as some things are important to know
 
                else:
                   ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
-               draw(0,0)
+               draw()
 
             # Interprets user inputs
             elif key == pygame.K_RETURN:
@@ -4006,7 +3991,7 @@ Make sure you read all of the instructions, as some things are important to know
                                     except:
                                        quit_program(True)
                                  else:
-                                    draw(0,0)
+                                    draw()
                                     pygame.event.pump()
                                  if today_minus_dfc == len_works or lw >= y:
                                     break
@@ -4079,7 +4064,7 @@ Make sure you read all of the instructions, as some things are important to know
                              # If the assignment is in progress, subtract the current day by one
                              if today_minus_dfc == len_works - 1 and lw != works[-2] and lw < funct(len_works+dif_assign) and date_now.weekday() not in nwd:
                                 day -= 1
-                             draw(0,0)
+                             draw()
                              pygame.event.pump()
 
                              # Check if the assignment is finished
@@ -4126,7 +4111,7 @@ Make sure you read all of the instructions, as some things are important to know
             point_text_height = font.render(point_text,1,black).get_height()
             left_adjust_cutoff = (width - 50 - point_text_width)/wCon
             up_adjust_cutoff = point_text_height/hCon
-            draw(0,0)
+            draw()
         elif etype == pygame.QUIT:
             pygame.display.set_mode((1,1))
             home()
