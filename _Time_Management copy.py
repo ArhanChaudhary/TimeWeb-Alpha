@@ -44,13 +44,18 @@ debug_mode = False
 # Add to the big list of setting data (command f "date_last_closed,width,")
 
 # Todo list:
-# "y - red_line_start_y - y_fremainder" can be 0
+# document add
+# Time management copy, why didnt it delete
+# remove manual set start
+# "y - red_line_start_y - y_fremainder" can be < 0 or == 0
 # go over in_progress equation, document it, and make it consistent; is today_minus_dfc >= 0 really needed when there is today_minus_dfc == len_works-1
 # dynamic start change using fixed mode linear todo as reference rather than dynamic mode todo
 # dont know the amount of units? only if due date is known ("none" with y)
+
 # +/- to zoom in and out
 # next_day (make it values 0,1,2,3,etc), function to set date_now that takes into account "next_day" variable; make it so that BEFORE "next" it automatically set to fixed mode (with an input to undo that) (DO NOT do this on SP, do something like: lw == funct(len_works) with fixed_mode on), THEN display "next"; also put second estimated completion time (showing if every assignment was fixed_mode); make todo linear then y if all assignments completed
 # go over ##
+# Good job, you are ahead of schedule
 # custom nwd (try to do yourself, use https://www.geeksforgeeks.org/count-smaller-equal-elements-sorted-array/)
 # min work time with the blue line
 # daily assignments (x and y will change with the assignment, x will always be (DUE TOMORROW!!!), todo will always be the min_work_time); UI: "Enter "none" twice in a row if you want a daily assignment and explain what they are if display_instructions is true 
@@ -302,17 +307,12 @@ def home(last_sel=0):
             len_works = len(works) - 1 # Length of work inputs subtracted by 1 to not count the 0th or starting work input
             lw = works[len_works] # Last work input
             if nwd:
-
                set_mod_days() # Initializes not working days (explained later)
 
             # ignore_ends is a boolean setting that ignores the minimum work time for the first and last working days
             # ignore_ends_mwt is referenced in the code instead of ignore_ends. For it to be true, ignore_ends must be True and min_work_time must be actively used in the assignment
-            # The third argument to ignore_ends_mwt makes it False if x is 2 because ignore_ends ignores the minimum work time for the two days in the assignment, making min_work_time practically irrelevant
-            # Things are also really buggy for some reason when x = 2
-            # The fourth argument makes sure y is greater than or equal to double min_work_time_funct_round
-               ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-            else:
-               ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
+            # The last argument makes sure y is greater than or equal to double min_work_time_funct_round
+            ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
 
             y_fremainder = (y - red_line_start_y) % funct_round # Remainder when the total number of units left in the assignment is divided by funct_round
             y_mremainder = (y - red_line_start_y) % min_work_time_funct_round # Remainder when the total number of units left in the assignment is divided by min_work_time_funct_round
@@ -372,9 +372,7 @@ def home(last_sel=0):
                               red_line_start_y = works[red_line_start_x - dif_assign]
                               if nwd:
                                  set_mod_days()
-                                 ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-                              else:
-                                 ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
+                              ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
                               pset()
                      if has_autofilled:
 
@@ -467,9 +465,7 @@ def home(last_sel=0):
                len_works -= in_progress
                if nwd:
                   set_mod_days()
-                  ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-               else:
-                  ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
+               ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
                pset()
 
                # todo*ctime is the total amount of minutes it will take to complete the work for that day
@@ -756,9 +752,7 @@ def home(last_sel=0):
                                  len_nwd = len(nwd)
                                  if nwd:
                                     set_mod_days()
-                                    ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-                                 else:
-                                    ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
+                                 ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
                                  y_fremainder = (y - red_line_start_y) % funct_round
                                  y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
                                  pset()
@@ -1154,7 +1148,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
          
          if not reenter_mode:
             dif_assign = 0 # (redefined later)
-            dynamic_start = fixed_start = 0
+            fixed_start = 0
             skew_ratio = def_skew_ratio
 
             # Default variables
@@ -1188,7 +1182,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
                   return
 
          def input2():
-            global outercon, ad, date_now, date_file_created, dif_assign, dynamic_start, fixed_start
+            global outercon, ad, date_now, date_file_created, dif_assign, dynamic_start
             
             # Assignment date of the assignment
             while 1:
@@ -1218,8 +1212,10 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
                               dif_assign = 0
                            else:
                               dif_assign = selected_assignment[5] + (selected_assignment[1]-ad).days
-                        elif date_now >= ad:
-                           dif_assign = (date_now-ad).days
+                        else:
+                           if date_now >= ad:
+                              dif_assign = (date_now-ad).days
+                           dynamic_start = dif_assign
                   return
                except:
                   print('!!!\nInvalid Date!\n!!!')
@@ -1681,9 +1677,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
       len_nwd = len(nwd)
       if nwd:
          set_mod_days()
-         ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-      else:
-         ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
+      ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
 
       y_fremainder = (y - red_line_start_y) % funct_round
       y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
@@ -1789,10 +1783,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
          # Redefines variables dependent on x and y
          y_fremainder = (y - red_line_start_y) % original_funct_round
          y_mremainder = (y - red_line_start_y) % original_min_work_time_funct_round
-         if nwd:
-            ignore_ends_mwt = ignore_ends and min_work_time and floor(x - red_line_start_x) - floor(x - red_line_start_x)//7 * len_nwd - mods[floor(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-         else:
-            ignore_ends_mwt = ignore_ends and min_work_time and floor(x - red_line_start_x) != 2 and y >= min_work_time_funct_round * 2
+         ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
 
          # Defines y1 from the pset() function and caps the variables to their limits
          if ignore_ends_mwt:
@@ -2296,7 +2287,9 @@ def pset():
 
          # The same data collected from the modified version of funct() from above is also used to set the variable add
          # This variable adds the min_work_time_funct_round on the very last day of the assignment in order to make some linear or close to linear graphs more smooth
-         if ignore_ends_mwt and y - output - red_line_start_y > min_work_time_funct_round and not output - difference and not ((y - red_line_start_y) / funct_round) % 1:
+         # Document
+         # x1 != 2 for the earlier problem
+         if x1 != 2 and ignore_ends_mwt and y - output - red_line_start_y > min_work_time_funct_round and not output - difference and not ((y - red_line_start_y) / funct_round) % 1:
             add = min_work_time_funct_round
 
          # Sets return_0_cutoff, which is return_y_cutoff but for the start rather than the end
@@ -2584,7 +2577,8 @@ def slashed_date_convert(slashed_date,next_year=True):
          date_now_wd += 7
       if not next_year:
          date_now_wd -= 7
-      return date(date_now.year,date_now.month,(date_now + time(date_now_wd - date_now.weekday())).day)
+      date_now_wd = date_now + time(date_now_wd - date_now.weekday())
+      return date(date_now_wd.year,date_now_wd.month,date_now_wd.day)
    except:
       slashes = []
       spos = -1
@@ -2677,9 +2671,7 @@ def draw(doing_animation=False,do_return=False):
             y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
             if nwd:
                set_mod_days()
-               ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-            else:
-               ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
+            ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
             calc_skew_ratio_lim()
          elif draw_point:
 
@@ -3437,10 +3429,7 @@ Make sure you read all of the instructions, as some things are important to know
                               selected_assignment[11] = dynamic_start
                            if nwd:
                               set_mod_days()
-                              ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-
-                           else:
-                              ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
+                           ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
                         else:
                            print('Successfully Escaped from Input\n')
                         break
@@ -3892,10 +3881,7 @@ Make sure you read all of the instructions, as some things are important to know
                y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
                if nwd:
                   set_mod_days()
-                  ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-
-               else:
-                  ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
+               ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
                draw()
 
             # Interprets user inputs
@@ -4052,9 +4038,7 @@ Make sure you read all of the instructions, as some things are important to know
                                     y_mremainder = (y - red_line_start_y) % min_work_time_funct_round
                                     if nwd:
                                        set_mod_days()
-                                       ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x - (x - red_line_start_x)//7 * len_nwd - mods[(x - red_line_start_x) % 7] != 2 and y >= min_work_time_funct_round * 2
-                                    else:
-                                       ignore_ends_mwt = ignore_ends and min_work_time and x - red_line_start_x != 2 and y >= min_work_time_funct_round * 2
+                                    ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
                                     calc_skew_ratio_lim()
                              if lw >= y:
                                 selected_assignment[2] = float(x)
