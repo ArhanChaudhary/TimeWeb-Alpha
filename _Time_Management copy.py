@@ -30,7 +30,7 @@ from os.path import exists # Checks if a file exists
 from os import remove # Removes backups if they are disabled
 
 # File Directory where the data will be stored
-file_directory = 'Demo'
+file_directory = 'Time Management'
 debug_mode = False
 # Adding/removing settings procedure:
 # Add/remove it on the boolean settings and adjust values for other settings
@@ -67,7 +67,7 @@ debug_mode = False
 # time table, use (this assignment is complete because there is no time left in today), (add in "enter in the times you are at work/school(don't need to enter when you wake up, do that automatically) classes)
    
 # Gets today's date
-date_now = date(2020,12,1)
+date_now = date.now()
 date_now = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
 
 try:
@@ -172,7 +172,7 @@ def home(last_sel=0):
    while 1:
       
       # Update date_now, which is today's time
-      date_now = date(2020,12,1)
+      date_now = date.now()
       date_now = date(date_now.year,date_now.month,date_now.day)
       if set_tomorrow:
           tomorrow = (date_now.year,date_now.month,date_now.day) != day_date_last_closed
@@ -598,9 +598,9 @@ def home(last_sel=0):
                assignments_time = '\nThe Work time is Incomplete! Please enter in your work done from Previous Days to proceed.\nEnter "none" to automatically Enter in no work done for every Incomplete Assignment'
          elif total:
             if total == tomorrow_tot:
-               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(total)} (All of it is Due Tomorrow)\nCurrent Time: {date(2020,12,1):%-I:%M%p}\nEstimated Time of Completion: {(date(2020,12,1) + time(minutes=total)):%-I:%M%p}'
+               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(total)} (All of it is Due Tomorrow)\nCurrent Time: {date.now():%-I:%M%p}\nEstimated Time of Completion: {(date.now() + time(minutes=total)):%-I:%M%p}'
             else:
-               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(total)} ({format_minutes(tomorrow_tot)} of it is Due Tomorrow)\nCurrent Time: {date(2020,12,1):%-I:%M%p}\nEstimated Time of Completion: {(date(2020,12,1) + time(minutes=total)):%-I:%M%p}'
+               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(total)} ({format_minutes(tomorrow_tot)} of it is Due Tomorrow)\nCurrent Time: {date.now():%-I:%M%p}\nEstimated Time of Completion: {(date.now() + time(minutes=total)):%-I:%M%p}'
          else:
             if last_sel:
                assignments_time = '\nAmazing Effort! You have finished everything for Today!'
@@ -718,7 +718,7 @@ def home(last_sel=0):
                   # If the input is "back", go back to the current day
                   elif next_day and sel == "back":
                      next_day = False
-                     date_now = date(2020,12,1)
+                     date_now = date.now()
                      date_now = date(date_now.year,date_now.month,date_now.day)
 
                   elif sel == 'fin':
@@ -978,7 +978,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
 
                                  # Update dat[0][0] because that is the date the backup is last backed up
                                  local_date_last_closed = settings[0]
-                                 date_now = date(2020,12,1)
+                                 date_now = date.now()
                                  settings[0] = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
                                  save_data()
                                  settings[0] = local_date_last_closed
@@ -1028,7 +1028,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
 
                               # Update dat[0][0] because that is the date the backup was last backed up
                               local_date_last_closed = settings[0]
-                              date_now = date(2020,12,1)
+                              date_now = date.now()
                               settings[0] = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
                               save_data()
                               settings[0] = local_date_last_closed
@@ -1205,7 +1205,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
                   elif ad == 'undo':
                      outercon = 2
                   else:
-                     date_now = date(2020,12,1)
+                     date_now = date.now()
                      date_now = date(date_now.year,date_now.month,date_now.day)
                      if ad.lower() == 'today':
                         ad = date_file_created = date_now
@@ -1252,7 +1252,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
                         try:
                            x = int(x,10)
                         except:
-                           date_now = date(2020,12,1)
+                           date_now = date.now()
                            x = (slashed_date_convert(x.strip('/'))-ad).days
                         if x < 1 or x > (date(9999,12,30)-ad).days:
                            raise Exception
@@ -1706,7 +1706,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
       set_skew_ratio = False # Manual set skew_ratio
       clicked_once = False # Flag if "n" is pressed once in the graph (explained later)
       due_date = ad + time(x) # Due date
-      date_now = date(2020,12,1)
+      date_now = date.now()
       date_now = date(date_now.year,date_now.month,date_now.day)
       today_minus_dfc = (date_now-date_file_created).days # Amount of days between today and the date when the assignment was created
       today_minus_ad = (date_now-ad).days # Amount days between today and assign date
@@ -3190,7 +3190,7 @@ def quit_program(internal_error=False):
    else:
       
       # If the files have already been created, then update the backups by comparing the last opened date to today
-      date_now = date(2020,12,1)
+      date_now = date.now()
       date_now = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
       dat[0][0] = date_now
       save_data()
@@ -3861,7 +3861,7 @@ Make sure you read all of the instructions, as some things are important to know
             elif key == pygame.K_n:
 
                # Alerts you if the work hasn't been completed
-               if not clicked_once and len_works <= today_minus_ad and date(2020,12,1).weekday() not in nwd and lw < funct(today_minus_ad+1):
+               if not clicked_once and len_works <= today_minus_ad and date.now().weekday() not in nwd and lw < funct(today_minus_ad+1):
                   print('\n!!!\nEnter your Work Done for Today before going to the Next Assignment\n!!!\nPress "n" again to Ignore this Warning and go to the Next Assignment Anyways')
                   clicked_once = True
 
