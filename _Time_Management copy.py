@@ -27,13 +27,13 @@ from datetime import timedelta as time # Handles adding and subtracting dates
 from pickle import load, dump, dumps # Stores data into memory to be used later
 from math import ceil, floor, log10 # Ceil to round up, floor to round down, and log10 to find a number's magnitude
 from os.path import exists # Checks if a file exists
-from os import remove # Removes backups if they are Disabled
+from os import remove # Removes backups if they are disabled
 
 # File Directory where the data will be stored
-file_directory = 'Time Management'
+file_directory = 'Demo'
 debug_mode = False
 # Adding/removing settings procedure:
-# Add/remove it on the boolean settings and Adjust values for other settings
+# Add/remove it on the boolean settings and adjust values for other settings
 # Change range value x2
 # Change setting "Restore all def setting values" x2
 # Change dat[0]
@@ -44,13 +44,15 @@ debug_mode = False
 # Add to the big list of setting data (command f "date_last_closed,width,")
 
 # Todo list:
-# document add
-# Time management copy, why didnt it delete
+# document y1 - cutoff <= y - start_lw
+# ['Demo', datetime.datetime(2020, 12, 3, 0, 0), 30, 200, [0], 0, 2.7705579123314084, 3, 1, (4,), True, 29, 'Page', False, 0, False, 8.333333333333334] last work
+# fixed start ALWAYS at (0,0) (c doesn't work); dynamic start lock if not at date_minus_ad
+# document "add"
+# Time management copy, why didnt it delete, also Time management copydatenowequalsdec1; remove 0<= because user could finish assignment early however still wont delete
 # remove manual set start
 # "y - red_line_start_y - y_fremainder" can be < 0 or == 0
-# go over in_progress equation, document it, and make it consistent; is today_minus_dfc >= 0 really needed when there is today_minus_dfc == len_works-1
 # dynamic start change using fixed mode linear todo as reference rather than dynamic mode todo
-# dont know the amount of units? only if due date is known ("none" with y)
+# go over in_progress equation, document it, and make it consistent; is today_minus_dfc >= 0 really needed when there is today_minus_dfc == len_works-1
 
 # +/- to zoom in and out
 # next_day (make it values 0,1,2,3,etc), function to set date_now that takes into account "next_day" variable; make it so that BEFORE "next" it automatically set to fixed mode (with an input to undo that) (DO NOT do this on SP, do something like: lw == funct(len_works) with fixed_mode on), THEN display "next"; also put second estimated completion time (showing if every assignment was fixed_mode); make todo linear then y if all assignments completed
@@ -58,15 +60,14 @@ debug_mode = False
 # Good job, you are ahead of schedule
 # custom nwd (try to do yourself, use https://www.geeksforgeeks.org/count-smaller-equal-elements-sorted-array/)
 # min work time with the blue line
-# daily assignments (x and y will change with the assignment, x will always be (DUE TOMORROW!!!), todo will always be the min_work_time); UI: "Enter "none" twice in a row if you want a daily assignment and explain what they are if display_instructions is true 
+# dont know the amount of units? only if due date is known ("none" with y); daily assignments (x and y will change with the assignment, x will always be (DUE TOMORROW!!!), todo will always be the min_work_time); UI: "Enter asdaily assignment" and show more to explain what they are if display_instructions is true 
 # maximum work time (with "would you like y to change?" option)
 # multiple points to hit (piecewise) (combining assignments into one big graph)
 # replace "change skew ratio" to "change a property for all assignments" in settings (skew_ratio, nwd, fixed_mode, total mode, min_work_time)
-# time table, use (this assignment is complete because there is no time left in today)
-# convert to javascript using brython, draw box around text if it collides with other text in css
+# time table, use (this assignment is complete because there is no time left in today), (add in "enter in the times you are at work/school(don't need to enter when you wake up, do that automatically) classes)
    
 # Gets today's date
-date_now = date.now()
+date_now = date(2020,12,1)
 date_now = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
 
 try:
@@ -104,7 +105,7 @@ if first_run:
 
    # Create the main file and backup files
    for open_files in (file_directory + ' Every Run Backup',file_directory + ' Hourly Backup',file_directory + ' Daily Backup',file_directory + ' Daily Backup',file_directory):
-      if not exists(open_files):
+      if not debug_mode or not exists(open_files):
          file_directory = open_files
          save_data()
 
@@ -170,11 +171,12 @@ def home(last_sel=0):
    set_tomorrow = True
    while 1:
       
-      # Update the today's time in the date_now variable
-      date_now = date.now()
+      # Update date_now, which is today's time
+      date_now = date(2020,12,1)
       date_now = date(date_now.year,date_now.month,date_now.day)
       if set_tomorrow:
           tomorrow = (date_now.year,date_now.month,date_now.day) != day_date_last_closed
+      set_tomorrow = True
       try:
          if tomorrow:
             for file in dat[1:]:
@@ -203,14 +205,17 @@ def home(last_sel=0):
 
                # The expression (file[1]-date_now).days > 1 - (date_now-date(*day_date_last_closed)).days checks for the second condition for an assignment to be deleted
                # For example, pretend an assignment is due on jan 1 and the current date is jan 5. Lets say the user has not opened the program ever since
-               # (file[1]-date_now).days is the amount of days between the assignment date and the current date, which is -4
-               # 1 - (date_now-date(*day_date_last_closed)).days is the amount of days between the date last closed and the current date, which is also -4
-               # Since they are both -4, the below expression is false
-               # Now, when the user quits, the date_last_closed variable will update. If the user runs it again on lets say jan 10, then the expression becomes:
-               # 1 > -9 < -4, which evaluates to True and the assignment is correctly deleted 
-               
-               # This way makes sure there is a one day pre-deletion time before the assignment is actually deleted
-               if file[4][-1] >= file[3] and type(file[2]) != float or 1 > (file[1]-date_now).days + file[2] < 1 - (date_now-date(*day_date_last_closed)).days:
+               # (file[1]-date_now).days + file[2] is the amount of days between the due date and the current date, which is -4 in this example
+               # The user last quit on the december 31 
+               # 1 - (date_now-date(*day_date_last_closed)).days is the amount of days between date_last_closed and the current date, which is -4
+               # The below expression becomes 0 >= -4 < -4 which evaluates to false
+               # Now, when the user quits, date_last_closed will update. If the user runs it again on lets say jan 10, then the expression becomes:
+               # 0 >= -9 < -4, which evaluates to True and the assignment is correctly deleted
+
+               # This way makes sure there is a pre-deletion time before the assignment is actually deleted
+               if debug_mode:
+                  print(file_sel,(file[1]-date_now).days + file[2],1 - (date_now-date(*day_date_last_closed)).days)
+               if file[4][-1] >= file[3] and type(file[2]) != float or 0 >= (file[1]-date_now).days + file[2] < 1 - (date_now-date(*day_date_last_closed)).days:
                   dat.remove(file)
                   
          tomorrow = False
@@ -532,12 +537,13 @@ def home(last_sel=0):
          ordli = sorted(ordli)
          statuses = tuple(i[0] for i in ordli)
                
-         # If display status priority is enabled, this gets the assignment with the highest priority and finds the ratio of all the other assignments' status priority by the one with the highest priority
-         # The priority will only be displayed for all assignments with the most important status value
-         # "statuses != 1" won't allow an incompleted assignment to be displayed_status_value
-         displayed_status_value = next(i for i in statuses if statuses != 1)
          displayed_na = False
          try:
+
+            # If display status priority is enabled, this gets the assignment with the highest priority and finds the ratio of all the other assignments' status priority by the one with the highest priority
+            # The priority will only be displayed for all assignments with the most important status value
+            # "statuses != 1" won't allow an incompleted assignment to be displayed_status_value
+            displayed_status_value = next(i for i in statuses if i != 1)
 
             # Finds the assignment with the highest status priority
             maxsp = next(i[1] for i in ordli if i[0] == displayed_status_value)
@@ -592,9 +598,9 @@ def home(last_sel=0):
                assignments_time = '\nThe Work time is Incomplete! Please enter in your work done from Previous Days to proceed.\nEnter "none" to automatically Enter in no work done for every Incomplete Assignment'
          elif total:
             if total == tomorrow_tot:
-               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(total)} (All of it is Due Tomorrow)\nCurrent Time: {date.now():%-I:%M%p}\nEstimated Time of Completion: {(date.now() + time(minutes=total)):%-I:%M%p}'
+               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(total)} (All of it is Due Tomorrow)\nCurrent Time: {date(2020,12,1):%-I:%M%p}\nEstimated Time of Completion: {(date(2020,12,1) + time(minutes=total)):%-I:%M%p}'
             else:
-               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(total)} ({format_minutes(tomorrow_tot)} of it is Due Tomorrow)\nCurrent Time: {date.now():%-I:%M%p}\nEstimated Time of Completion: {(date.now() + time(minutes=total)):%-I:%M%p}'
+               assignments_time = f'\nEstimated Total Completion Time: {format_minutes(total)} ({format_minutes(tomorrow_tot)} of it is Due Tomorrow)\nCurrent Time: {date(2020,12,1):%-I:%M%p}\nEstimated Time of Completion: {(date(2020,12,1) + time(minutes=total)):%-I:%M%p}'
          else:
             if last_sel:
                assignments_time = '\nAmazing Effort! You have finished everything for Today!'
@@ -712,7 +718,7 @@ def home(last_sel=0):
                   # If the input is "back", go back to the current day
                   elif next_day and sel == "back":
                      next_day = False
-                     date_now = date.now()
+                     date_now = date(2020,12,1)
                      date_now = date(date_now.year,date_now.month,date_now.day)
 
                   elif sel == 'fin':
@@ -972,7 +978,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
 
                                  # Update dat[0][0] because that is the date the backup is last backed up
                                  local_date_last_closed = settings[0]
-                                 date_now = date.now()
+                                 date_now = date(2020,12,1)
                                  settings[0] = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
                                  save_data()
                                  settings[0] = local_date_last_closed
@@ -1022,7 +1028,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
 
                               # Update dat[0][0] because that is the date the backup was last backed up
                               local_date_last_closed = settings[0]
-                              date_now = date.now()
+                              date_now = date(2020,12,1)
                               settings[0] = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
                               save_data()
                               settings[0] = local_date_last_closed
@@ -1199,10 +1205,11 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
                   elif ad == 'undo':
                      outercon = 2
                   else:
-                     date_now = date.now()
+                     date_now = date(2020,12,1)
                      date_now = date(date_now.year,date_now.month,date_now.day)
                      if ad.lower() == 'today':
                         ad = date_file_created = date_now
+                        dynamic_start = 0
                      else:
                         ad = slashed_date_convert(ad.strip('/'),False)
                         if reenter_mode:
@@ -1245,7 +1252,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
                         try:
                            x = int(x,10)
                         except:
-                           date_now = date.now()
+                           date_now = date(2020,12,1)
                            x = (slashed_date_convert(x.strip('/'))-ad).days
                         if x < 1 or x > (date(9999,12,30)-ad).days:
                            raise Exception
@@ -1699,7 +1706,7 @@ Ignore Ends is only relevant when Minimum Work Time is also Enabled for an Assig
       set_skew_ratio = False # Manual set skew_ratio
       clicked_once = False # Flag if "n" is pressed once in the graph (explained later)
       due_date = ad + time(x) # Due date
-      date_now = date.now()
+      date_now = date(2020,12,1)
       date_now = date(date_now.year,date_now.month,date_now.day)
       today_minus_dfc = (date_now-date_file_created).days # Amount of days between today and the date when the assignment was created
       today_minus_ad = (date_now-ad).days # Amount days between today and assign date
@@ -2030,25 +2037,25 @@ def pset():
                   # Round it to the nearest millionth to prevent a roundoff error
                   cutoff_to_use_round = floor(round((min_work_time_funct_round-b)/a/2,6))
 
-                  # This part calculates the cutoff transition value
-                  # The reason why I need this variable is fix the transition in the cutoff
-                  # This is better explained with an example
-                  # pretend the minimum work time is 10 and the cutoff to stop using round is at 9.5
-                  # Let's say the raw unrounded of the function outputs are f(8) = 46, f(9) = 56, f(10) = 66
-                  # Since f(8) and f(9) are before the cutoff, they will both be rounded to the nearest 10, because that is the minimum work time.
-                  # So, the final values of the function outputs are f(8) = 50 and f(9) = 60
-                  # Since f(10) is after the cutoff, it will not be rounded. So, f(10) = 66
-                  # Notice how f(9) = 60 and f(10) = 66
-                  # You will only have to work 6 units even though the minimum work time is 10 units
-                  # To fix this issue, I decided to add a cutoff transition value to all the function outputs after the cutoff
-                  # In this case, after calculating the cutoff transition value, 4 will be added to f(10) and all outputs after it.
-                  # So, f(10) will be 70 instead of 66
-                  # This entire bottom section's purpose is to calculate the cutoff transition value
-
-                  # Once I have calculated the zero, it checks whether the cutoff is between the zero and the end of the assignment
-                  # If it is not, the cutoff is outside of the graph, which makes the cutoff_transition_value irrelevant
+                  # Once I have calculated the zero, check whether the cutoff is between the zero and the end of the assignment
+                  # If it is not, the cutoff is outside of the graph, making cutoff_transition_value irrelevant
                   # If it is, then calculate the cutoff transition value
                   if funct_zero < cutoff_to_use_round and cutoff_to_use_round < x1:
+
+                     # This part calculates the cutoff transition value
+                     # The reason why I need this variable is fix the transition in the cutoff
+                     # This is better explained with an example
+                     # pretend the minimum work time is 10 and the cutoff to stop using round is at 9.5
+                     # Let's say the raw unrounded of the function outputs are f(8) = 46, f(9) = 56, f(10) = 66
+                     # Since f(8) and f(9) are before the cutoff, they will both be rounded to the nearest 10, because that is the minimum work time.
+                     # So, the final values of the function outputs are f(8) = 50 and f(9) = 60
+                     # Since f(10) is after the cutoff, it will not be rounded. So, f(10) = 66
+                     # Notice how f(9) = 60 and f(10) = 66
+                     # You will only have to work 6 units even though the minimum work time is 10 units
+                     # To fix this issue, I decided to add a cutoff transition value to all the function outputs after the cutoff
+                     # In this case, after calculating the cutoff transition value, 4 will be added to f(10) and all outputs after it.
+                     # So, f(10) will be 70 instead of 66
+                     # This entire bottom section's purpose is to calculate the cutoff transition value
 
                      # Uses a modified version of funct to find the difference between the output before the after the cutoff
                      # Then, it calculates the cutoff transition value by finding out how much to add or subtract
@@ -2069,7 +2076,7 @@ def pset():
                         cutoff_transition_value = min_work_time_funct_round - output + difference
                      else:
 
-                        # If the difference before and after the cutoff is zero, leave it alone because 0 represents no work that day
+                        # If the difference before and after the cutoff is zero, leave it alone because 0 represents no work
                         cutoff_transition_value = 0
 
                      # This part only runs if ignore_ends is enabled
@@ -2098,22 +2105,37 @@ def pset():
                      # Since ignore_ends is on in this situation, it is ok that the last working day is less than the minimum work time
                      # So far, there is nothing wrong with this
 
-                     # Now pretend the cutoff_transition_valus is less than 0
-                     # For this example, pretend it is -5
-                     # This would mean all values of the parabola will be added to 5
+                     # Now pretend the cutoff_transition_valus is less than 0, and is -5
+                     # This would mean all values of the parabola will be subtracted
                      # Pretend y is 100 and the minimum work time is 10 units
-                     # The parabola values for this example are ...70, 80, 90, 100
+                     # The f(x) values for this example are ...70, 80, 90, 100
                      # In this situation, since the cutoff transition value is -5, all values will be subtracted 5
                      # Since 100 is the end of the assignment, 100 stays at 100
                      # The new values of the parabola are now ...65, 75, 85, 100
                      # This time, the user will have to work an excess amount on the last working day
                      # On all the other days, the user will work 10 units but on the last day, the user works 15 units
-                     # The whole point of ignore_ends was the fix this issue and it is still happening
+                     # The whole point of ignore_ends was the fix this issue, and it is still happening
                      # Instead of trying to fix the parabola values when it negative, I thought the best way to fix this issue was to make sure it never happened
                      # The below line of code keeps adding 1 to y1 until the cutoff_transition_value is positive again, making it so that the above situation never happens
+                     # Here is an explation of every expression:
+
+                     # "ignore_ends_mwt"
+                     # All of the above is only valid if ignore_ends is enabled
+
+                     # "skew_ratio > 1"
+                     # In the above example the problem is present only when the f(x) to the right of cutoff_to_use_round is rounded to the minimum work time
+                     # The parabola only rounds to the minimum work time when skew_ratio > 1 as explained in funct()
+
+                     # "cutoff_transition_value"
+                     # cutoff_transition_value cannot be 0
+                     # If it is zero, then in the above example, the issue does not apply
+                     # A later expression makes sure cutoff_transition_value is less than 0d
+
+                     # "-cutoff_transition_value < min_work_time_funct_round"
+                     # cutoff_transition_value can only be negative for the issue to apply
                      # The 2nd to last statement in the line puts a limit to how much can be added to y1
-                     # The last statement is a while loop failsafe if it loops for more than 1000 times                     
-                     if ignore_ends_mwt and cutoff_transition_value < y_mremainder - min_work_time_funct_round and y1 + cutoff_transition_value <= y - red_line_start_y and y - red_line_start_y - y1 - cutoff_transition_value < 1000:
+                     # The last statement is a while loop failsafe if it loops for more than 100 times
+                     if ignore_ends_mwt and skew_ratio > 1 and cutoff_transition_value and y1 + cutoff_transition_value <= y - red_line_start_y and y - red_line_start_y - y1 - cutoff_transition_value < 100:
                         y1 += 1
                         a = y1 * (1 - skew_ratio) / ((x1-1) * x1)
                         b = (y1 - x1 * x1 * a) / x1
@@ -2147,18 +2169,23 @@ def pset():
                         return_y_cutoff2 = y_value_to_cutoff/b
                      else:
                         return_y_cutoff2 = 1
-                     if cutoff_transition_value < y_mremainder and (return_y_cutoff2-1) * ((return_y_cutoff2-1) * a + b) >= y_value_to_cutoff:
-
-                        # Suppose min_work_time_funct_round is 10 and y is 148
-                        # Suppose return_y_cutoff has not been implemented yet, and f(5) = 130, f(6) = 140, and f(7) = 150
-                        # If ignore_ends is disabled, y_value_to_cutoff would be set at 140 and then f(6) would output 148 instead of 140 in order to obey the minimum work time
-                        # The new outputs would be f(5) = 130, f(6) = 148, f(7) = 148
-                        # But since ignore_ends is enabled, the minimum work time is ignored and f(6) no longer has to obey the minimum work time
-                        # However, since y_value_to_cutoff is 140, you can't really make f(6) = 140 and f(7) = 148 because they both are greater than or equal to y_value_to_cutoff
-                        # To solve this, add one to return_y_cutoff in order to make f(6) 140 and everything beyond that 148, including f(7)
-                        # This demonstrates an advantage of using a cutoff
-                     
-                        # (return_y_cutoff2-1) * ((return_y_cutoff2-1) * a + b) > y_value_to_cutoff makes sure the line doesn't accidentally go over y because return_y_cutoff was added one              
+                     output = min_work_time_funct_round * round(ceil(return_y_cutoff2)*(a*ceil(return_y_cutoff2)+b)/min_work_time_funct_round)
+                     if skew_ratio > 1:
+                        output += cutoff_transition_value
+                     else:
+                        output -= cutoff_transition_value
+                        
+                     # Suppose min_work_time_funct_round is 10 and y is 148
+                     # Suppose return_y_cutoff has not been implemented yet, and f(5) = 130, f(6) = 140, and f(7) = 150
+                     # If ignore_ends is disabled, y_value_to_cutoff would be set at 140 and then f(6) would output 148 instead of 140 in order to obey the minimum work time
+                     # The new outputs would be f(5) = 130, f(6) = 148, f(7) = 148
+                     # But since ignore_ends is enabled, the minimum work time is ignored and f(6) no longer has to obey the minimum work time
+                     # However, since y_value_to_cutoff is 140, you can't really make f(6) = 140 and f(7) = 148 because they both are greater than or equal to y_value_to_cutoff
+                     # To solve this, add one to return_y_cutoff in order to make f(6) 140 and everything beyond that 148, including f(7)
+                     # This demonstrates an advantage of using a cutoff
+                  
+                     # "output <= y" makes sure the line doesn't accidentally go over y when is return_y_cutoff added one and "return_y_cutoff2 + 1 < x" makes sure return_y_cutoff isn't after the due date
+                     if cutoff_transition_value < y_mremainder and output <= y and return_y_cutoff2 + 1 < x:
                         return_y_cutoff += 1
                   
                else:
@@ -3163,7 +3190,7 @@ def quit_program(internal_error=False):
    else:
       
       # If the files have already been created, then update the backups by comparing the last opened date to today
-      date_now = date.now()
+      date_now = date(2020,12,1)
       date_now = date(date_now.year,date_now.month,date_now.day,date_now.hour,date_now.minute)
       dat[0][0] = date_now
       save_data()
@@ -3834,7 +3861,7 @@ Make sure you read all of the instructions, as some things are important to know
             elif key == pygame.K_n:
 
                # Alerts you if the work hasn't been completed
-               if not clicked_once and len_works <= today_minus_ad and date.now().weekday() not in nwd and lw < funct(today_minus_ad+1):
+               if not clicked_once and len_works <= today_minus_ad and date(2020,12,1).weekday() not in nwd and lw < funct(today_minus_ad+1):
                   print('\n!!!\nEnter your Work Done for Today before going to the Next Assignment\n!!!\nPress "n" again to Ignore this Warning and go to the Next Assignment Anyways')
                   clicked_once = True
 
