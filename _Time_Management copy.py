@@ -31,7 +31,7 @@ from os import remove # Removes backups if they are disabled
 
 # File Directory where the data will be stored
 file_directory = 'Time Management'
-debug_mode = True
+debug_mode = False
 # Adding/removing settings procedure:
 # Add/remove it on the boolean settings and adjust values for other settings
 # Change range value x2
@@ -45,16 +45,18 @@ debug_mode = True
 
 # Todo list:
 # command f "document" and document pset()
-# skew_ratio_lim always set to 99 (change and redo)
+# test x1 == 2
+# default grouping value when unit == Minute
 # fixed start ALWAYS at (0,0) (with c doesn't work); dynamic start lock if not at date_minus_ad; actually just remove fixed and dynamic mode, when start up dynamic mode in the system but not seen by user, fixed mode enabled when user changes start, make dynamic start change when input_done != todo
 # remove and reformat total mode
-# "Try not to underestimate" at ctime input
+# "Try not to underestimate" at ctime input, "if you dont remember ad enter "today" at ad input, "first letters auto capitalized" for file_sel input
 # remove manual set start
 # "y - red_line_start_y - y_fremainder" can be < 0 or == 0
 # dynamic start change using fixed mode linear todo as reference rather than dynamic mode todo
 # go over in_progress equation, document it, and make it consistent; is today_minus_dfc >= 0 really needed when there is today_minus_dfc == len_works-1
 
 # +/- to zoom in and out
+# if y=100,mwt_funct_round=20 and you have (51 71 91 9), keep it like that dont change to (51 71 100 0); make return_y_cutoff smart and consider both options
 # AI to predict how much you overestimate or underestimate, AI for REAL estimated completion time
 # next_day (make it values 0,1,2,3,etc), function to set date_now that takes into account "next_day" variable; make it so that BEFORE "next" it automatically set to fixed mode (with an input to undo that) (DO NOT do this on SP, do something like: lw == funct(len_works) with fixed_mode on), THEN display "next"; also put second estimated completion time (showing if every assignment was fixed_mode); make todo linear then y if all assignments completed
 # go over ##
@@ -1175,7 +1177,7 @@ This is only relevant when Minimum Work Time is Enabled for an Assignment'''
                      else:
                         ad = slashed_date_convert(ad.strip('/'),False)
                         if reenter_mode:
-                           if date_now < selected_assignment[1]:
+                           if date_now < selected_assignment[1] or selected_assignment[5] + (selected_assignment[1]-ad).days < 0:
 
                               # If the old assignnment date was entered ahead of time, keep dif_assign at 0
                               dif_assign = 0
@@ -1518,14 +1520,6 @@ This is only relevant when Minimum Work Time is Enabled for an Assignment'''
               ## if dif_assign:
                ##   dif_assign -= 1
             adone = works[0]
-            
-         else:
-
-            # Defines the work inputs
-            # adone serves as the 0th or the starting work value of the assignment
-            works = [adone]
-               
-         if reenter_mode:
 
             # Adjust dynamic_start and fixed_start in the same manner as above
             # Add dynamic_start/fixed_start as a condition because if its x coordinate is 0, keep it a 0
@@ -1545,10 +1539,11 @@ This is only relevant when Minimum Work Time is Enabled for an Assignment'''
                dynamic_start = 0
             if fixed_start < 0:
                fixed_start = 0
-            if dynamic_start > x - 1:
-               dynamic_start = x - 1
-            if fixed_start > x - 1:
-               fixed_start = x - 1
+         else:
+
+            # Defines the work inputs
+            # adone serves as the 0th or the starting work value of the assignment
+            works = [adone]
 
          # If the user doesn't have a due date, set the due date to the x value of when the line with the slope of min_work_time intersects y
          if x == None:
@@ -1577,7 +1572,7 @@ This is only relevant when Minimum Work Time is Enabled for an Assignment'''
                   # or 7*floor(x/(7-len_nwd))
                   
                   # I subtract one at the end of the assignment for the for loop
-                  # And I subtract one in the middle of the equation to fix a wrong week bug (?)
+                  # And I subtract one in the middle of the equation to fix a wrong week bug that isn't worth fixing
                   guess_x = 7*floor(x/(7-len_nwd) - 1) - 1
 
                   # Guesses for the rest of the week
@@ -1593,6 +1588,11 @@ This is only relevant when Minimum Work Time is Enabled for an Assignment'''
                x = ceil(x)
             else:
                x = 1
+         if reenter_mode:
+            if dynamic_start > x - 1:
+               dynamic_start = x - 1
+            if fixed_start > x - 1:
+               fixed_start = x - 1
 
          # Appends all the inputted information to the main file
          #                         0     1  2 3   4       5          6        7        8       9      10          11        12      13         14            15            16
@@ -1981,133 +1981,66 @@ def pset():
          if funct_round < min_work_time:
             cutoff_transition_value = 0
             if a:
-               org_y1 = y1
-               while 1:
+               # The expression (s-b)/a/2 calculates the rate of change "s" on a parabola with the values of a and b
+               
+               # The derivative of an equation is the slope of a line that lies tangent to a curve at a specific point
+               # I want to find when the derivative of the parabola is min_work_time, which I will refer to as "s" for this demonstration
+               # The function of the parabola is in the form: f(x) = ax^2+bx
+               # The derivative of the parabola is f'(x) = 2ax+b, which can be calculated using the power rule
+               # I want to find when 2ax+b is equal to s, so I can make the equation s = 2ax+b
+               # If I solve for x in this equation, I get x = (s-b)/(2*a), or x = (s-b)/a/2
 
-                  # The expression (s-b)/a/2 calculates the rate of change "s" on a parabola with the values of a and b
-                  
-                  # The derivative of an equation is the slope of a line that lies tangent to a curve at a specific point
-                  # I want to find when the derivative of the parabola is min_work_time, which I will refer to as "s" for this demonstration
-                  # The function of the parabola is in the form: f(x) = ax^2+bx
-                  # The derivative of the parabola is f'(x) = 2ax+b, which can be calculated using the power rule
-                  # I want to find when 2ax+b is equal to s, so I can make the equation s = 2ax+b
-                  # If I solve for x in this equation, I get x = (s-b)/(2*a), or x = (s-b)/a/2
+               # I set s to min_work_time_funct_round in the below equation
+               
+               # Round it to the nearest millionth to prevent a roundoff error
+               cutoff_to_use_round = floor(round((min_work_time_funct_round-b)/a/2,6))
 
-                  # I set s to min_work_time_funct_round in the below equation
-                  
-                  # Round it to the nearest millionth to prevent a roundoff error
-                  cutoff_to_use_round = floor(round((min_work_time_funct_round-b)/a/2,6))
+               # Once I have calculated the zero, check whether the cutoff is between the zero and the end of the assignment
+               # If it is not, the cutoff is outside of the graph, making cutoff_transition_value irrelevant
+               # If it is, then calculate the cutoff transition value
+               if funct_zero < cutoff_to_use_round < funct_y:
 
-                  # Once I have calculated the zero, check whether the cutoff is between the zero and the end of the assignment
-                  # If it is not, the cutoff is outside of the graph, making cutoff_transition_value irrelevant
-                  # If it is, then calculate the cutoff transition value
-                  if funct_zero < cutoff_to_use_round < funct_y and x1 != 2:
+                  # This part calculates the cutoff transition value
+                  # The reason why I need this variable is fix the transition in the cutoff
+                  # This is better explained with an example
+                  # pretend the minimum work time is 10 and the cutoff to stop using round is at 9.5
+                  # Let's say the raw unrounded of the function outputs are f(8) = 46, f(9) = 56, f(10) = 66
+                  # Since f(8) and f(9) are before the cutoff, they will both be rounded to the nearest 10, because that is the minimum work time.
+                  # So, the final values of the function outputs are f(8) = 50 and f(9) = 60
+                  # Since f(10) is after the cutoff, it will not be rounded. So, f(10) = 66
+                  # Notice how f(9) = 60 and f(10) = 66
+                  # You will only have to work 6 units even though the minimum work time is 10 units
+                  # To fix this issue, I decided to add a cutoff transition value to all the function outputs after the cutoff
+                  # In this case, after calculating the cutoff transition value, 4 will be added to f(10) and all outputs after it.
+                  # So, f(10) will be 70 instead of 66
+                  # This entire bottom section's purpose is to calculate the cutoff transition value
 
-                     # This part calculates the cutoff transition value
-                     # The reason why I need this variable is fix the transition in the cutoff
-                     # This is better explained with an example
-                     # pretend the minimum work time is 10 and the cutoff to stop using round is at 9.5
-                     # Let's say the raw unrounded of the function outputs are f(8) = 46, f(9) = 56, f(10) = 66
-                     # Since f(8) and f(9) are before the cutoff, they will both be rounded to the nearest 10, because that is the minimum work time.
-                     # So, the final values of the function outputs are f(8) = 50 and f(9) = 60
-                     # Since f(10) is after the cutoff, it will not be rounded. So, f(10) = 66
-                     # Notice how f(9) = 60 and f(10) = 66
-                     # You will only have to work 6 units even though the minimum work time is 10 units
-                     # To fix this issue, I decided to add a cutoff transition value to all the function outputs after the cutoff
-                     # In this case, after calculating the cutoff transition value, 4 will be added to f(10) and all outputs after it.
-                     # So, f(10) will be 70 instead of 66
-                     # This entire bottom section's purpose is to calculate the cutoff transition value
-
-                     # Uses a modified version of funct to find the difference between the output before the after the cutoff
-                     # Then, it calculates the cutoff transition value by finding out how much to add or subtract
-                     first_loop = True
-                     for n in (cutoff_to_use_round,cutoff_to_use_round + 1):
-                        if (a > 0) == (n <= cutoff_to_use_round):
-                           output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
-                        else:
-                           output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
-                        if remainder_mode and output:
-                           output += y_fremainder
-                        if output > y:
-                           output = y
-                        elif output < 0:
-                           output = 0
-                        if first_loop:
-                           difference = output
-                        first_loop = False
-
-                     # Calculates cutoff transition_value to adjust the transition in min work time
-                     if output - difference:
-                        cutoff_transition_value = min_work_time_funct_round - output + difference
+                  # Uses a modified version of funct to find the difference between the output before the after the cutoff
+                  # Then, it calculates the cutoff transition value by finding out how much to add or subtract
+                  first_loop = True
+                  for n in (cutoff_to_use_round,cutoff_to_use_round + 1):
+                     if (a > 0) == (n <= cutoff_to_use_round):
+                        output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
                      else:
+                        output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
+                     if remainder_mode and output:
+                        output += y_fremainder
+                     if output > y:
+                        output = y
+                     elif output < 0:
+                        output = 0
+                     if first_loop:
+                        difference = output
+                     first_loop = False
 
-                        # If the difference before and after the cutoff is zero, leave it alone because 0 represents no work
-                        cutoff_transition_value = 0
-
-                     # This part only runs if ignore_ends is enabled
-                     
-                     # Pretend cutoff_transition_value is 0 for now
-                     # In the code, the parabola connects directly to y instead of connecting to the point where it first rounds to y
-                     # For example, pretend y is 50 and it rounds to the nearest 10
-                     # If ignore_ends were disabled, then the last value of the parabola would be at 45, which would round to 50
-                     # Pretend the parabola values are 15,25,35, and 45
-                     # However, since the 45 is rounded to 50, the real values are 5,15,25,35, and 50
-                     # This causes you to work 15 units at the end while on all the other days you work 10, which is weird and unnecessary
-                     # The reason why not connect the parabola directly to y is because it sometimes breaks minimum work time on the very last day of the assignment
-                     # Similarly, if the first working day on the parabola is less than the minimum work time, it adds that value to the next working day value, which can sometimes cause excess work to be done on the first day
-                     # This is what ignore_ends does; when it is enabled it notifies the user that the minimum work time will be ignored on the first and last working days
-                     # On the first day, it runs a check to not combine it with the next day if the value is less than minimum work time
-                     # On the last day, it connects directly to y
-
-                     # Now pretend the cutoff_transition_value is 5 instead of 0
-                     # This would mean all values of the parabola will be added to 5
-                     # Pretend y is 100 and the minimum work time is 10 units
-                     # The parabola values for this example are ...70, 80, 90, 100
-                     # In this situation, since the cutoff transition value is 5, all values will be added to 5
-                     # Since 100 is the end of the assignment, 100 stays at 100
-                     # The new values of the parabola are now ...75, 85, 95, 100
-                     # Since ignore_ends is on in this situation, it is ok that the last working day is less than the minimum work time
-                     # So far, there is nothing wrong with this
-
-                     # Now pretend the cutoff_transition_valus is less than 0, and is -5
-                     # This would mean all values of the parabola will be subtracted
-                     # Pretend y is 100 and the minimum work time is 10 units
-                     # The f(x) values for this example are ...70, 80, 90, 100
-                     # In this situation, since the cutoff transition value is -5, all values will be subtracted 5
-                     # Since 100 is the end of the assignment, 100 stays at 100
-                     # The new values of the parabola are now ...65, 75, 85, 100
-                     # This time, the user will have to work an excess amount on the last working day
-                     # On all the other days, the user will work 10 units but on the last day, the user works 15 units
-                     # The whole point of ignore_ends was the fix this issue, and it is still happening
-                     # Instead of trying to fix the parabola values when it negative, I thought the best way to fix this issue was to make sure it never happened
-                     # The below line of code keeps adding 1 to y1 until the cutoff_transition_value is positive again, making it so that the above situation never happens
-                     # Here is an explation of every expression:
-
-                     # "ignore_ends_mwt"
-                     # All of the above is only valid if ignore_ends is enabled
-
-                     # "a < 0"
-                     # In the above example the problem is present only when the f(x) to the right of cutoff_to_use_round is rounded to the minimum work time
-                     # The parabola only rounds to the minimum work time when a < 0 as explained in funct()
-
-                     # "cutoff_transition_value"
-                     # cutoff_transition_value cannot be 0
-                     # If it is zero, then in the above example, the issue does not apply
-                     # A later expression makes sure cutoff_transition_value is less than 0d
-
-                     # "-cutoff_transition_value < min_work_time_funct_round"
-                     # cutoff_transition_value can only be negative for the issue to apply
-                     # The 2nd to last statement in the line puts a limit to how much can be added to y1
-                     # The last statement is a while loop failsafe if it loops for more than 100 times
-                     if 0 and ignore_ends_mwt and a < 0 and cutoff_transition_value and y1 + cutoff_transition_value <= org_y1 and org_y1 - y1 - cutoff_transition_value < 100:
-                        y1 += 1
-                        a = (x1 * ((y - red_line_start_y)/x1 * skew_ratio) -y1) / (x1 * (1-x1))
-                        b = (x1*x1 * -((y - red_line_start_y)/x1 * skew_ratio) + y1) / (x1 * (1-x1))
-                        continue
+                  # Calculates cutoff transition_value to adjust the transition in min work time
+                  if output - difference:
+                     cutoff_transition_value = min_work_time_funct_round - output + difference
                   else:
+                     # If the difference before and after the cutoff is zero, leave it alone because 0 represents no work
                      cutoff_transition_value = 0
-                  break
-               y1 = org_y1
+               else:
+                  cutoff_transition_value = 0
                      
          # This part calculates return_y_cutoff, or when the parabola exceeds y
          # I found it the most efficient to use a cutoff because I can run a check at the beginning of the funct to return y if the inputted value is after the cutoff, increasing efficiency
@@ -2889,7 +2822,7 @@ def draw(doing_animation=False,do_return=False):
 
             # If mouse_y is False, the mouse is closer to the parabola than to the work inputs and/or there aren't any work inputs on the mouse's x coordinate
             # Convert mouse_y from a boolean to an integer
-            funct_mouse_x = funct(mouse_x)
+            funct_mouse_x = round(funct(mouse_x),6)
             
          # Text next to point
          str_mouse_x = ad+time(mouse_x)
