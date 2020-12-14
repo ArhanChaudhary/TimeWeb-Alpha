@@ -45,7 +45,7 @@ debug_mode = False
 
 # Todo list:
 # command f "document" and document pset()
-# test x1 == 2
+# test ['Xq2', datetime.datetime(2020, 12, 12, 0, 0), 2, 55, [0], 0, 1, 1, 19, (4,), True, 0, 'Minute', False, 0, False, 20]
 # default grouping value when unit == Minute
 # fixed start ALWAYS at (0,0) (with c doesn't work); dynamic start lock if not at date_minus_ad; actually just remove fixed and dynamic mode, when start up dynamic mode in the system but not seen by user, fixed mode enabled when user changes start, make dynamic start change when input_done != todo
 # remove and reformat total mode
@@ -1804,8 +1804,7 @@ This is only relevant when Minimum Work Time is Enabled for an Assignment'''
 def pset():
 
          # This entire function defines these eight global variables
-         global a, b, skew_ratio, cutoff_transition_value, cutoff_to_use_round, return_y_cutoff, return_0_cutoff, add
-         add = 0 # (may be redefined later)
+         global a, b, skew_ratio, cutoff_transition_value, cutoff_to_use_round, return_y_cutoff, return_0_cutoff
 
          # The goal of the first part of this function is to calculate the a and b variables for the parabola
          # Three points are defined, one of which is (0,0), to generate a and b variables such that the parabola passes through all three of them
@@ -1948,36 +1947,60 @@ def pset():
          # Why this happens isn't important, but since it is greater than x, it is outside of the assignment
          # And since I am ignoring all outputs < 0 and > x
          
-         # If "not a" is True, the parabola is actually just a line. Since it passes at the origin, its zero is at 0
+         # If "a == 0" is True, the parabola is actually just a line. Since it passes at the origin, its zero is at 0
 
          # "a * b > 0"
-         # If the expression ever reaches this statement, then "skew_ratio >= 1" didn't run from earlier on in the statement
+         # If the expression ever reaches this statement, then "a < 0" didn't run from earlier on in the statement
          # So, a > 0 must be True. This will also mean the parabola opens upwards and a is positive
          # Now suppose b is calculated to be a positive number
          # As calculated below, the second zero will be at -b/a. Plugging in b as a positive number and a as a positive number yields a negative value for -b/a
          # Since we are ignoring all outputs < 0 as stated at the beginning of this function, a negative value for -b/a isn't valid
-         # So, if a and b are both positive, set funct_zero to the second zero of f(x) = ax^2 + bx, which is 0
+         # So, if a and b are both positive, set funct_zero to 0
 
          # As a note, you may think it is possible for a and b to both be negative, making a * b > 0 True
          # However, it is impossible for a and b to be negative at the same time because f(x) = ax^2 + bx will always return a negative number for every positive value of x
-         if a < 0 or not a or a * b > 0:
+         if a <= 0 or a * b > 0:
 
             # f(0) is always 0
             funct_zero = 0
          else:
 
-            # If the parabola opens upwards, its first zero is at 0 by the logic stated above and its second at -b/a by the logic stated below
-            # f(x) = ax^2+bx can be rewritten as 0 = ax^2+bx, which simplifies to 0 = x(ax+b)
+            # If the parabola opens upwards, its first zero is at 0 and its second zero at -b/a
+            # f(x) = ax^2+bx can be rewritten as 0 = x(ax+b)
             # Either x = 0, which is a zero we already know, or ax+b = 0, which simplifies to x = -b/a
             funct_zero = -b/a
-         if a < 0:
-            funct_y = round(((b*b+4*a*y1)**0.5-b)/a/2,6)
-         else:
-            funct_y = x1
-         
-         # FIRST READ THE COMMENTS IN FUNCT() BEFORE READING THE COMMENTS HERE
-         # The goal of this entire section is to calculate the cutoff, the cutoff transition value, and the return y cutoff
 
+         # Same thing with funct_zero but with funct_y
+         # Because round(((b*b+4*a*y1)**0.5-b)/a/2,6) automatically picks the leftmost zero, the a * b > 0 problem from above doesnt apply
+         if a >= 0:
+            funct_y = x1
+         else:
+            funct_y = round(((b*b+4*a*y1)**0.5-b)/a/2,6)
+         
+         # The goal of this entire section is to calculate cutoff_to_use_round, the cutoff_transition_value, and return_y_cutoff
+         # To understand what these all mean, first read this
+         # The goal of minimum work time is to make sure you never work less than the minimum work time
+         # However, if that day is not a working day, then you can work 0 and do nothing
+         # The main challenge with this is that you need to know the previous function output in order to make sure you work
+         # at least minimum work time units every working day
+         # Originally, I tried to make a list of every single function output from the start to the end of the assignment
+         # Then, I would loop through the list and modify each function output such that they are either at least min_work_time distance away (or zero which represents a not working day)
+         # This obviously was extremely inefficient because it took so much memory that longer assignments could overflow and corrupt the memory
+         # I also cannot do this lazily inside this function because tht
+         
+         # On my second attempt, I thought of utilizing rounding
+         # Rounding doesn't require knowing the previous function output, which makes things a lot easier
+         # Rounding works when the slope of the graph is low, meaning you would work once every couple days
+         # However, rounding does not work when there is a higher slope.
+         # For example, if I were rounding to the nearest 10, It might accidentally round to 20, which
+         # makes no sense to a user considering the only thing inputted was the minimum work time to be 10
+         
+         # I then thought of finding a cutoff to begin to use rounding on a parabola
+         # The logic with the cutoff is to only use rounding when there is a low slope and then run the function normally once the rate of change is greater than the minimum work time
+         # When the rate of change of a parabola is greater than the minimum work time, by definition you will work at least the minimum work time amount of units each day
+         # If I make a tangent line with a certain slope to the parabola, I can find the point on the parabola where the rate of change is that certain slope
+         # If I set that slope to be the minimum work time, I can find this cutoff
+         # So, I used some basic calculus shown below to calculate the cutoff and applied it to implement to minimum work time
          if funct_round < min_work_time:
             cutoff_transition_value = 0
             if a:
@@ -1993,7 +2016,7 @@ def pset():
                # I set s to min_work_time_funct_round in the below equation
                
                # Round it to the nearest millionth to prevent a roundoff error
-               cutoff_to_use_round = floor(round((min_work_time_funct_round-b)/a/2,6))
+               cutoff_to_use_round = round((min_work_time_funct_round-b)/a/2,6)
 
                # Once I have calculated the zero, check whether the cutoff is between the zero and the end of the assignment
                # If it is not, the cutoff is outside of the graph, making cutoff_transition_value irrelevant
@@ -2017,25 +2040,24 @@ def pset():
 
                   # Uses a modified version of funct to find the difference between the output before the after the cutoff
                   # Then, it calculates the cutoff transition value by finding out how much to add or subtract
-                  first_loop = True
-                  for n in (cutoff_to_use_round,cutoff_to_use_round + 1):
-                     if (a > 0) == (n <= cutoff_to_use_round):
-                        output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
-                     else:
-                        output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
-                     if remainder_mode and output:
-                        output += y_fremainder
+                  for n in (floor(cutoff_to_use_round),floor(cutoff_to_use_round + 1)):
+
+                     # I wrote (a > 0) == (n < cutoff_to_use_round) instead of n < cutoff_to_use_round
+                     # This is because cutoff_to_use_round is mirrored when the parabola opens up and down
+                     # When a > 0, meaning the parabola opens upwards, round to the minimum work time if n < cutoff_to_use_round
+                     # When a < 0, meaning the parabola opens downwards, round to the minimum work time if n > cutoff_to_use_round
+                     # In simpler terms, (a > 0) == (n < cutoff_to_use_round) is the same as (a > 0 and n < cutoff_to_use_round) or (a < 0 and n > cutoff_to_use_round)
+                     output = funct(n,False)
                      if output > y:
                         output = y
                      elif output < 0:
                         output = 0
-                     if first_loop:
-                        difference = output
-                     first_loop = False
+                     if n == floor(cutoff_to_use_round):
+                        prev_output = output
 
                   # Calculates cutoff transition_value to adjust the transition in min work time
-                  if output - difference:
-                     cutoff_transition_value = min_work_time_funct_round - output + difference
+                  if output - prev_output:
+                     cutoff_transition_value = min_work_time_funct_round - output + prev_output
                   else:
                      # If the difference before and after the cutoff is zero, leave it alone because 0 represents no work
                      cutoff_transition_value = 0
@@ -2043,8 +2065,9 @@ def pset():
                   cutoff_transition_value = 0
                      
          # This part calculates return_y_cutoff, or when the parabola exceeds y
-         # I found it the most efficient to use a cutoff because I can run a check at the beginning of the funct to return y if the inputted value is after the cutoff, increasing efficiency
-         # Using cutoffs also al1lows me to directly control the value on the x axis when y will be returned
+         # I found it the most efficient to use a cutoff because I can run a check at the beginning of the funct to return y if the inputted value is after the cutoff
+         # If I were to run a check that caps each output at y, 
+         # Using cutoffs also allows me to directly control the value on the x axis when y will be returned, making weird-looking graphs cleaner-
          
          # y_value_to_cutoff is the y value that is set to be the y position of return_y_cutoff
          # Then, the quadratic equation is used to find its corresponding x position
@@ -2053,16 +2076,12 @@ def pset():
          # The below expression first enters in y1 as y_value_to_cutoff then converts that into return_y_cutoff using the quadratic formula
          # Then, it plugs that in as n in funct() to determine whether the function output rounds to the minimum work time or not at the return_y_cutoff
          r = 2
-         if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (a > 0) == (funct_y <= cutoff_to_use_round)):
-            if ignore_ends_mwt:
-               y_value_to_cutoff = y1 - min_work_time / r
-            else:
-               y_value_to_cutoff = y1 - min_work_time_funct_round / 2
+         if ignore_ends_mwt:
+            y_value_to_cutoff = y1 - min_work_time / r
+         elif funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (a > 0) == (funct_y < cutoff_to_use_round)):
+            y_value_to_cutoff = y1 - min_work_time_funct_round / 2
          else:
-            if ignore_ends_mwt:
-               y_value_to_cutoff = y1 - min_work_time / r
-            else:
-               y_value_to_cutoff = y1 - min_work_time_funct_round + funct_round / 2
+            y_value_to_cutoff = y1 - min_work_time_funct_round + funct_round / 2
                   
          if y_value_to_cutoff > 0 and y > red_line_start_y and (a or b):
             if a:
@@ -2081,51 +2100,25 @@ def pset():
             # use floor to define prev_output
             for n in range(floor(return_y_cutoff),x1):
                prev_output = output
-               if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (a > 0) == (n <= cutoff_to_use_round)):
-                  output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
-                  if a < 0:
-                     output += cutoff_transition_value
-                  else:
-                     output -= cutoff_transition_value
-               else:
-                  output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
-               if remainder_mode:
-                  output += y_fremainder
+               output = funct(n,False)
                if prev_output != None:
-                  if ignore_ends_mwt and output > y - red_line_start_y - min_work_time + min_work_time / r or not ignore_ends_mwt and output > y - red_line_start_y - min_work_time:
+                  if output == prev_output or (ignore_ends_mwt and output > y - red_line_start_y - min_work_time + min_work_time / r or not ignore_ends_mwt and output > y - red_line_start_y - min_work_time):
                      break
-                  elif output == prev_output:
-                     # don't -= 1 because its presence itself accounts for it
-                     
-                     #return_y_cutoff -= 1
-                     break
+                     # don't return_y_cutoff -= 1 because its presence itself accounts for it
                   return_y_cutoff += 1
          else:
             for n in range(floor(return_y_cutoff),0,-1):
-               if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (a > 0) == (n <= cutoff_to_use_round)):
-                  output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
-                  if a < 0:
-                     output += cutoff_transition_value
-                  else:
-                     output -= cutoff_transition_value
-               else:
-                  output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
-               if remainder_mode:
-                  output += y_fremainder
+               output = funct(n,False)
                if ignore_ends_mwt and output <= y - red_line_start_y - min_work_time + min_work_time / r or not ignore_ends_mwt and output <= y - red_line_start_y - min_work_time:
                   break
                return_y_cutoff -= 1
-
-         if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (a > 0) == (funct_zero <= cutoff_to_use_round)):
-            if ignore_ends_mwt:
-               y_value_to_cutoff = min_work_time / r
-            else:
-               y_value_to_cutoff = min_work_time_funct_round / 2
+         if ignore_ends_mwt:
+            y_value_to_cutoff = min_work_time / r
+         elif funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (a > 0) == (funct_zero < cutoff_to_use_round)):
+            y_value_to_cutoff = min_work_time_funct_round / 2
          else:
-            if ignore_ends_mwt:
-               y_value_to_cutoff = min_work_time / r
-            else:
-               y_value_to_cutoff = min_work_time_funct_round - funct_round / 2
+            y_value_to_cutoff = min_work_time_funct_round - funct_round / 2
+            
          if y_value_to_cutoff > 0 and y > red_line_start_y and (a or b):
             if a:
                return_0_cutoff = round((-b + (b*b + 4*a*y_value_to_cutoff)**0.5)/a/2,6)
@@ -2140,132 +2133,83 @@ def pset():
             output = None
             for n in range(ceil(return_0_cutoff),0,-1):
                prev_output = output
-               if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (skew_ratio < 1) == (n <= cutoff_to_use_round)):
-                  output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
-                  if skew_ratio > 1:
-                     output += cutoff_transition_value
-                  else:
-                     output -= cutoff_transition_value
-               else:
-                  output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
-               if remainder_mode and output:
-                  output += y_fremainder
+               output = funct(n,False)
                if prev_output != None:
-                  if ignore_ends_mwt and output < min_work_time - min_work_time / r or not ignore_ends_mwt and output < min_work_time:
-                     break
-                  elif output == prev_output:
+                  if output == prev_output or (ignore_ends_mwt and output < min_work_time - min_work_time / r or not ignore_ends_mwt and output < min_work_time):
                      break
                   return_0_cutoff -= 1
          else:
             for n in range(ceil(return_0_cutoff),x1):
-               if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (skew_ratio < 1) == (n <= cutoff_to_use_round)):
-                  output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
-                  if skew_ratio > 1:
-                     output += cutoff_transition_value
-                  else:
-                     output -= cutoff_transition_value
-               else:
-                  output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
-               if remainder_mode and output:
-                  output += y_fremainder
+               output = funct(n,False)
                if ignore_ends_mwt and output >= min_work_time - min_work_time / r or not ignore_ends_mwt and output >= min_work_time:
                   break
                return_0_cutoff += 1
 # Receives an output on the parabola for input value n
-def funct(n):
+def funct(n,translate=True):
+
+   if translate:
+      # If the start is not at the origin, then translate the graph back to the origin
+      n -= red_line_start_x
       
-   # If the start is not at the origin, then translate the graph back to the origin
-   n -= red_line_start_x
-   
-   # This part handles not working days
-   # The main problem of this is finding the number of any chosen weekday between two dates
-   
-   # For demonstration, I will choose the starting date to be the Monday 1st of January, the ending date to be Wednesday 31st of January, and the chosen weekday to be Tuesday
-   # The first way I thought of to find the number of any chosen weekday between two dates is to loop through every single day between the start and the end
-   # Then, add one to a counter variable if that day is one of the chosen weekdays
-   # This clearly did not work out because it is extremely inefficient over long periods of time
-   
-   # To make explaining my second attempt simpler, instead of thinking as the ending date to be January 31,
-   # think of the end date to be the amount of days between the end date and the start date, in this case 30
-   # I know in each 7 consecutive days of the 30 days, there will always be exactly on tuesday
-   # I can take advantage of this property by splitting the 30 days into 7 days at a time like this:
-   # 30 days --> 7 days + 7 days + 7 days + 7 days + 2 days
-   # I know in each of those 7 days there will be one tuesday
-   # And since there are four 7 days, I know there are at least 4 tuesdays between January 1 and January 31
-   # Finally, what about the remaining 2 days? What if those days contain a 5th tuesday? That problem is solved with the tuple mods
-   # Mods simply goes through the remanding days and determines if there is a tuesday and adds to the counter if there is
-   
-   # What if I have multiple chosen weekdays, for example tuesday and wednesday?
-   # The same logic still works. I know two of 7 consecutive days will always be either tuesday or wednesday
-   # If I break the 30 days down again:
-   # 30 days --> 7 days + 7 days + 7 days + 7 days + 2 days
-   # Instead of one for every 7 days, I know there are two tuesday or wednesdays for every 7 days
-   # So, I know there are at least 8 tuesdays or wednesdays between January 1 and January 31
-   # From above, just multiply the 4 tuesdays by two to get 8 tuesdays and wednesdays
-   # This is the purpose of the variable len_nwd, the amount of chosen weekdays
-   # Then, the tuple mods handles the last two days to get a result of 10 tuesdays or wednesdays
+      # This part handles not working days
+      # The main problem of this is finding the number of any chosen weekday between two dates
+      
+      # For demonstration, I will choose the starting date to be the Monday 1st of January, the ending date to be Wednesday 31st of January, and the chosen weekday to be Tuesday
+      # The first way I thought of to find the number of any chosen weekday between two dates is to loop through every single day between the start and the end
+      # Then, add one to a counter variable if that day is one of the chosen weekdays
+      # This clearly did not work out because it is extremely inefficient over long periods of time
+      
+      # To make explaining my second attempt simpler, instead of thinking as the ending date to be January 31,
+      # think of the end date to be the amount of days between the end date and the start date, in this case 30
+      # I know in each 7 consecutive days of the 30 days, there will always be exactly on tuesday
+      # I can take advantage of this property by splitting the 30 days into 7 days at a time like this:
+      # 30 days --> 7 days + 7 days + 7 days + 7 days + 2 days
+      # I know in each of those 7 days there will be one tuesday
+      # And since there are four 7 days, I know there are at least 4 tuesdays between January 1 and January 31
+      # Finally, what about the remaining 2 days? What if those days contain a 5th tuesday? That problem is solved with the tuple mods
+      # Mods simply goes through the remanding days and determines if there is a tuesday and adds to the counter if there is
+      
+      # What if I have multiple chosen weekdays, for example tuesday and wednesday?
+      # The same logic still works. I know two of 7 consecutive days will always be either tuesday or wednesday
+      # If I break the 30 days down again:
+      # 30 days --> 7 days + 7 days + 7 days + 7 days + 2 days
+      # Instead of one for every 7 days, I know there are two tuesday or wednesdays for every 7 days
+      # So, I know there are at least 8 tuesdays or wednesdays between January 1 and January 31
+      # From above, just multiply the 4 tuesdays by two to get 8 tuesdays and wednesdays
+      # This is the purpose of the variable len_nwd, the amount of chosen weekdays
+      # Then, the tuple mods handles the last two days to get a result of 10 tuesdays or wednesdays
 
-   # So, why do I need to know the amount of any chosen weekdays between two dates?
-   # I needed to develop this algorithm because of how not working days work
-   # First, to make things simpler, let's use the above example
-   # The starting date is January 1 and the due date is in 30 days
-   # I know there are 10 tuesdays and wednesdays between January 1 and January 31 by using the above algorithm
-   # The next step is to remove all the not working days from the 30 days
-   # So, instead of 30 days, subtract 10 and get 20 days
-   # The reason why this is done is because you are not supposed to do work on the not working days
-   # Then, the pset() function defines a and b variables for the parabola that pass through 20 days instead of 30
-   # Lastly, the not working days are "added back in"
-   # In this example, days 8 and 9 are tuesdays and wednesdays
-   # f(6) is the 6th value on the parabola
-   # f(7) is the 7th value on the parabola
-   # Since day 8 is a tuesday, meaning you won't do any work, f(8) will also be the 7th value on the parabola
-   # Since day 9 is a wednesday, meaning you still won't do any work, f(9) will also be the 7th value on the parabola
-   # Then f(10) is the 8th value on the parabola and f(11) is the 9th value on the parabola and so on
-   # For any f(n), it subtracts the amount of not working days between the starting date and the starting date plus n days
-   # This in a way "adds back in" in the not working days
+      # So, why do I need to know the amount of any chosen weekdays between two dates?
+      # I needed to develop this algorithm because of how not working days work
+      # First, to make things simpler, let's use the above example
+      # The starting date is January 1 and the due date is in 30 days
+      # I know there are 10 tuesdays and wednesdays between January 1 and January 31 by using the above algorithm
+      # The next step is to remove all the not working days from the 30 days
+      # So, instead of 30 days, subtract 10 and get 20 days
+      # The reason why this is done is because you are not supposed to do work on the not working days
+      # Then, the pset() function defines a and b variables for the parabola that pass through 20 days instead of 30
+      # Lastly, the not working days are "added back in"
+      # In this example, days 8 and 9 are tuesdays and wednesdays
+      # f(6) is the 6th value on the parabola
+      # f(7) is the 7th value on the parabola
+      # Since day 8 is a tuesday, meaning you won't do any work, f(8) will also be the 7th value on the parabola
+      # Since day 9 is a wednesday, meaning you still won't do any work, f(9) will also be the 7th value on the parabola
+      # Then f(10) is the 8th value on the parabola and f(11) is the 9th value on the parabola and so on
+      # For any f(n), it subtracts the amount of not working days between the starting date and the starting date plus n days
+      # This in a way "adds back in" in the not working days
 
-   # This equation subtracts the amount of not working days between the starting date and the starting date plus x days
-   if nwd:
-      n -= n//7 * len_nwd + mods[n % 7]
+      # This equation subtracts the amount of not working days between the starting date and the starting date plus x days
+      if nwd:
+         n -= n//7 * len_nwd + mods[n % 7]
 
-   # If the input is greater than return_y_cutoff, defined in the pset() function, return y
-   if n > return_y_cutoff:
-      return y
-   
-   # If the input is less than return_0_cutoff, defined in the pset() function, return red_line_start_y, the lowest possible output value
-   elif n < return_0_cutoff:
-      return red_line_start_y
-
-   # This section handles minimum work time
-   # The goal of minimum work time is to make sure you never work less than the minimum work time
-   # However, if that day is not a working day, then you can work 0 and do nothing
-   # The main challenge with this is that you need to know the previous function output in order to make sure you work
-   # at least minimum work time units every working day
-   # Originally, I tried to make a list of every single function output from the start to the end of the assignment
-   # Then, I would loop through the list and modify each function output such that they are either at least min_work_time distance away (or zero which represents a not working day)
-   # This obviously was extremely inefficient because it took so much memory that longer assignments could overflow and corrupt the memory
-   # I also cannot do this lazily inside this function because tht
-   
-   # On my second attempt, I thought of utilizing rounding
-   # Rounding doesn't require knowing the previous function output, which makes things a lot easier
-   # Rounding works when the slope of the graph is low, meaning you would work once every couple days
-   # However, rounding does not work when there is a higher slope.
-   # For example, if I were rounding to the nearest 10, It might accidentally round to 20, which
-   # makes no sense to a user considering the only thing inputted was the minimum work time to be 10
-   
-   # I then thought of finding a cutoff to begin to use rounding on a parabola
-   # The logic with the cutoff is to only use rounding when there is a low slope and then run the function normally once the rate of change is greater than the minimum work time
-   # When the rate of change of a parabola is greater than the minimum work time, by definition you will work at least the minimum work time amount of units each day
-   # If I make a tangent line with a certain slope to the parabola, I can find the point on the parabola where the rate of change is that certain slope
-   # If I set that slope to be the minimum work time, I can find this cutoff
-   # So, I used some basic calculus to calculate the cutoff and applied it to implement to minimum work time
-   # If you came here from the pset() function, you can go back to reading the code and comments over there now
-
-   # I wrote (a > 0) == (n <= cutoff_to_use_round) instead of n <= cutoff_to_use_round
-   # This is because cutoff_to_use_round is mirrored when the parabola opens up and down
-   # For example, when a > 0, meaning the parabola opens upwards, round to the minimum work time if the input number n is <= cutoff_to_use_round
-   # When a < 0, meaning the parabola opens upwards, round to the minimum work time if the input number n is > cutoff_to_use_round
-   if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (a > 0) == (n <= cutoff_to_use_round)):
+      # If the input is greater than return_y_cutoff, defined in the pset() function, return y
+      if n > return_y_cutoff:
+         return y
+      
+      # If the input is less than return_0_cutoff, defined in the pset() function, return red_line_start_y, the lowest possible output value
+      elif n < return_0_cutoff:
+         return red_line_start_y
+   if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (a > 0) == (n < cutoff_to_use_round)):
       
       # If the input number is before the cutoff, round it to the minimum work time
                                                    
@@ -2281,7 +2225,7 @@ def funct(n):
          output += cutoff_transition_value
       else:
 
-         # However, when skew_ratio <= 1, meaning round to min_work_time_funct_round on the LEFT side of the divider,
+         # However, when a >= 0, meaning round to min_work_time_funct_round on the LEFT side of the divider,
          # don't add cutoff_transition_value to all of the parabola outputs on the right side
          # Instead of adding cutoff_transition_value to the entire right side, subtract cutoff_transition_value to the entire left side, which results in the same thing
          # This makes it consistent by only affecting the side that is rounded to min_work_time_funct_round by cutoff_transition_value, making a lot of things smoother and easier
@@ -2292,10 +2236,6 @@ def funct(n):
       # If the input number n is after the cutoff, the slope is high enough to satisfy the minimum work time
       # So, round it to the grouping value and run everything normally
       output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
-
-   # Makes certain linear distributions better if ignore_ends is True
-   if add and n == ceil(return_y_cutoff - 1):
-      output += add
                                                       
    # This part handles the remainder
    # Pretend y is 23 and the grouping value is 5
@@ -2314,7 +2254,7 @@ def funct(n):
       output += y_fremainder
             
    # Returns the final output plus red_line_start_y, which untranslates the graph back to where it originally was
-   return output + red_line_start_y
+   return output + red_line_start_y * translate
 
 # Debug mode unrounded funct()
 if debug_mode:
@@ -2324,8 +2264,7 @@ if debug_mode:
          n -= n//7 * len_nwd + mods[n % 7]
       return n*(a*n+b) + red_line_start_y
 
-# I didn't write any comments for the next few because its not really important what happens inside this function, just know what they do
-
+# I didn't write any comments for the next few functions because its not really important what happens inside them, just know what they do
 # Function to get the mod days when using not working days (explained in funct())
 def set_mod_days():
    global mods
@@ -2347,9 +2286,9 @@ def calc_skew_ratio_lim():
    if nwd:
       skew_ratio_lim -= skew_ratio_lim//7 * len_nwd + mods[skew_ratio_lim % 7]
    if y - red_line_start_y == y_fremainder:
-      skew_ratio_lim = ceil(skew_ratio_lim*10)/10
+      skew_ratio_lim = ceil(skew_ratio_lim)
    else:
-      skew_ratio_lim = ceil((y-red_line_start_y)*skew_ratio_lim/(y - red_line_start_y - y_fremainder)*10)/10
+      skew_ratio_lim = ceil((y-red_line_start_y)*skew_ratio_lim/(y - red_line_start_y - y_fremainder))
      
 # Formats minutes
 def format_minutes(total_minutes):
