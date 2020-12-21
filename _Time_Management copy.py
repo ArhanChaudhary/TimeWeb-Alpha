@@ -30,8 +30,8 @@ from os.path import exists # Checks if a file exists
 from os import remove # Removes backups if they are disabled
 
 # File Directory where the data will be stored
-file_directory = 'Time Management'
-debug_mode = False
+file_directory = 'Demo'
+debug_mode = True
 # Adding/removing settings procedure:
 # Add/remove it on the boolean settings and adjust values for other settings
 # Change range value x2
@@ -44,17 +44,16 @@ debug_mode = False
 # Add to the big list of setting data (command f "date_last_closed,width,")
 
 # Todo list:
-# command f "document" and document pset()
-# test ['Xq2', datetime.datetime(2020, 12, 12, 0, 0), 2, 55, [0], 0, 1, 1, 19, (4,), True, 0, 'Minute', False, 0, False, 20]
-# default grouping value when unit == Minute
+# add science lab to tm
+# command f "document" and document pset()-
 # fixed start ALWAYS at (0,0) (with c doesn't work); dynamic start lock if not at date_minus_ad; actually just remove fixed and dynamic mode, when start up dynamic mode in the system but not seen by user, fixed mode enabled when user changes start, make dynamic start change when input_done != todo
 # remove and reformat total mode
-# "Try not to underestimate" at ctime input, "if you dont remember ad enter "today" at ad input, "first letters auto capitalized" for file_sel input
 # remove manual set start
 # "y - red_line_start_y - y_fremainder" can be < 0 or == 0
 # dynamic start change using fixed mode linear todo as reference rather than dynamic mode todo
 # go over in_progress equation, document it, and make it consistent; is today_minus_dfc >= 0 really needed when there is today_minus_dfc == len_works-1
 
+# default grouping value when unit == Minute
 # +/- to zoom in and out
 # if y=100,mwt_funct_round=20 and you have (51 71 91 9), keep it like that dont change to (51 71 100 0); make return_y_cutoff smart and consider both options
 # AI to predict how much you overestimate or underestimate, AI for REAL estimated completion time
@@ -285,7 +284,7 @@ def home(last_sel=0):
             # ignore_ends is a boolean setting that ignores the minimum work time for the first and last working days
             # ignore_ends_mwt is referenced in the code instead of ignore_ends. For it to be true, ignore_ends must be True and min_work_time must be actively used in the assignment
             # The last argument makes sure y is greater than or equal to double min_work_time_funct_round
-            ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
+            ignore_ends_mwt = ignore_ends and min_work_time
 
             y_fremainder = (y - red_line_start_y) % funct_round # Remainder when the total number of units left in the assignment is divided by funct_round
                      
@@ -345,7 +344,7 @@ def home(last_sel=0):
                               red_line_start_y = works[red_line_start_x - dif_assign]
                               if nwd:
                                  set_mod_days()
-                              ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
+                              ignore_ends_mwt = ignore_ends and min_work_time
                               pset()
                      if has_autofilled:
 
@@ -437,7 +436,7 @@ def home(last_sel=0):
                len_works -= in_progress
                if nwd:
                   set_mod_days()
-               ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
+               ignore_ends_mwt = ignore_ends and min_work_time
                pset()
 
                # todo*ctime is the total amount of minutes it will take to complete the work for that day
@@ -519,12 +518,14 @@ def home(last_sel=0):
             for j in ordli:
                if j[0] < 5:
                   if maxsp and j[0] == displayed_status_value:
-                     li_daysleft[j[2]-1] += f' Priority: {floor(j[1] / maxsp * 100 + 1e-10)}%'
+                     if j[1] / maxsp * 100 + 1e-10 < 1:
+                        li_daysleft[j[2]-1] += f' Priority: 1%'
+                     else:
+                        li_daysleft[j[2]-1] += f' Priority: {floor(j[1] / maxsp * 100 + 1e-10)}%'
                   elif maxsp:
                      li_daysleft[j[2]-1] += ' Priority: NA'
                      displayed_na = True
                   else:
-
                      # If maxsp is zero, that means all the assignments have no priority
                      li_daysleft[j[2]-1] += ' Priority: 0%'
          except:
@@ -725,7 +726,7 @@ def home(last_sel=0):
                                  len_nwd = len(nwd)
                                  if nwd:
                                     set_mod_days()
-                                 ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
+                                 ignore_ends_mwt = ignore_ends and min_work_time
                                  y_fremainder = (y - red_line_start_y) % funct_round
                                  pset()
                                  todo = funct(day+dif_assign+1) - lw
@@ -1132,12 +1133,12 @@ This is only relevant when Minimum Work Time is Enabled for an Assignment'''
             # Name of the assignment
             while 1:
                if reenter_mode:
-                  file_sel = capitalize_each_word(qinput(f'\nPress Return at any time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" instead of Returning at any time to stop re-entering the Inputs and keep the original Version\nEnter in "undo" to undo an input\n\nWhat would you Like to Rename this Assignment (Old Value: {selected_assignment[0]})\n').strip())
+                  file_sel = qinput(f'\nPress Return at any time to Skip Re-Entering the Input and Keep its Old Value\nEnter in "cancel" instead of Returning at any time to stop re-entering the Inputs and keep the original Version\nEnter in "undo" to undo an input\n\nWhat would you Like to Rename this Assignment (Old Value: {selected_assignment[0]})\n').strip()
                   if not file_sel:
                      file_sel = selected_assignment[0]
                      return
                else:
-                  file_sel = capitalize_each_word(qinput('\nEnter in "cancel" instead of Returning at any time to stop entering in the Inputs\nEnter in "undo" to undo an input\n\nWhat would you Like to Name this Assignment\n').strip())
+                  file_sel = qinput('\nEnter in "cancel" instead of Returning at any time to stop entering in the Inputs\nEnter in "undo" to undo an input\n\nWhat would you Like to Name this Assignment\n').strip()
                if file_sel == 'Cancel':
                   outercon = True
                   return
@@ -1158,12 +1159,12 @@ This is only relevant when Minimum Work Time is Enabled for an Assignment'''
             while 1:
                try:
                   if reenter_mode:
-                     ad = qinput(f'Re-enter the Assignment Date of this assignment or Enter "today" (Old Value: {selected_assignment[1]:%-m/%-d/%Y})\nFormat: Month/Day/Year\nThe year is optional and defaults to the current year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nYou can Assign in the Future\n').replace(' ','').lower()
+                     ad = qinput(f'Re-enter the Assignment Date of this assignment or Enter "today" (Old Value: {selected_assignment[1]:%-m/%-d/%Y})\nFormat: Month/Day/Year\nThe year is optional and defaults to the current year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16) or as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nOr, enter "today" if the assignment date is today or you don\'t remember the assignment date\nYou can Assign in the Future\n').replace(' ','').lower()
                      if not ad:
                         ad = selected_assignment[1]
                         return
                   else:
-                     ad = qinput(f'Enter the Assignment Date of this assignment or Enter "today"\nFormat: Month/Day/Year\nThe year is optional and defaults to the current year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16)\nOr, the month and day can be written as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nYou can Assign in the Future\n').replace(' ','').lower()
+                     ad = qinput(f'Enter the Assignment Date of this assignment or Enter "today"\nFormat: Month/Day/Year\nThe year is optional and defaults to the current year if omitted\nThe month and day be written as its numeric value (ex. 1, 5, 16) or as an abbreviation of its first three letters (ex. jan, tue, fri, nov)\nOr, enter "today" if the assignment date is today or you don\'t remember the assignment date\nYou can Assign in the Future\n').replace(' ','').lower()
                   if ad == 'cancel':
                      outercon = True
                   elif ad == 'undo':
@@ -1233,13 +1234,13 @@ This is only relevant when Minimum Work Time is Enabled for an Assignment'''
                if unit == 'none':
                   unit = 'Minute'
                elif unit:
-                  unit = capitalize_each_word(unit.rstrip('s'))
+                  unit = unit.rstrip('s')
                else:
                   unit = selected_assignment[12]
             else:
                unit = qinput('Enter the name of each Unit of Work in this Assignment\nThis is how your assignment will be divided up\nExample: If this assignment is a book, enter "page"\nIf you are not sure what to name each unit of work, Press Return\n').strip().lower()
                if unit:
-                  unit = capitalize_each_word(unit.rstrip('s'))
+                  unit = unit.rstrip('s')
                else:
                   unit = 'Minute'
             if unit == 'Cancel':
@@ -1341,12 +1342,12 @@ This is only relevant when Minimum Work Time is Enabled for an Assignment'''
                while 1:
                    try:
                         if reenter_mode:
-                           ctime = qinput(f'Re-enter the Estimated amount of time to Complete each {unit} in Minutes (Allows Decimal Inputs) (Old Value: {selected_assignment[7]})\nIf you want, complete one {unit} in this assignment and input how long that takes for a good estimation\n').lower()
+                           ctime = qinput(f'Re-enter the Estimated amount of time to Complete each {unit} in Minutes (Allows Decimal Inputs) (Old Value: {selected_assignment[7]})\nIf you want, complete one {unit} in this assignment and input how long that takes for a good estimation\nTry not to underestimate this value\n').lower()
                            if not ctime:
                               ctime = selected_assignment[7]
                               return
                         else:
-                           ctime = qinput(f'Enter the Estimated amount of Minutes to Complete each {unit} (Allows Decimal Inputs)\nIf you want, complete one {unit} in this assignment and input how long that takes for a good estimation\n').lower()
+                           ctime = qinput(f'Enter the Estimated amount of Minutes to Complete each {unit} (Allows Decimal Inputs)\nIf you want, complete one {unit} in this assignment and input how long that takes for a good estimation\nTry not to underestimate this value\n').lower()
                         if 'cancel' in ctime:
                            outercon = True
                         elif 'undo' in ctime:
@@ -1643,7 +1644,7 @@ This is only relevant when Minimum Work Time is Enabled for an Assignment'''
       len_nwd = len(nwd)
       if nwd:
          set_mod_days()
-      ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
+      ignore_ends_mwt = ignore_ends and min_work_time
 
       y_fremainder = (y - red_line_start_y) % funct_round
 
@@ -1746,7 +1747,7 @@ This is only relevant when Minimum Work Time is Enabled for an Assignment'''
 
          # Redefines variables dependent on x and y
          y_fremainder = (y - red_line_start_y) % original_funct_round
-         ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
+         ignore_ends_mwt = ignore_ends and min_work_time
 
          # Defines y1 from the pset() function and caps the variables to their limits
          if ignore_ends_mwt:
@@ -2075,9 +2076,8 @@ def pset():
          # This equation determines whether the function output rounds to the minimum work time or not at the return_y_cutoff
          # The below expression first enters in y1 as y_value_to_cutoff then converts that into return_y_cutoff using the quadratic formula
          # Then, it plugs that in as n in funct() to determine whether the function output rounds to the minimum work time or not at the return_y_cutoff
-         r = 2
          if ignore_ends_mwt:
-            y_value_to_cutoff = y1 - min_work_time / r
+            y_value_to_cutoff = y1
          elif funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (a > 0) == (funct_y < cutoff_to_use_round)):
             y_value_to_cutoff = y1 - min_work_time_funct_round / 2
          else:
@@ -2085,69 +2085,114 @@ def pset():
                   
          if y_value_to_cutoff > 0 and y > red_line_start_y and (a or b):
             if a:
-               return_y_cutoff = round(((b*b+4*a*y_value_to_cutoff)**0.5-b)/a/2,6)
+               #-1e-10 so it doesnt be a whole number
+               return_y_cutoff = round(((b*b+4*a*y_value_to_cutoff)**0.5-b)/a/2,6)-1e-10
             else:
-               return_y_cutoff = round(y_value_to_cutoff/b,6)
+               return_y_cutoff = round(y_value_to_cutoff/b,6)-1e-10
          else:
             return_y_cutoff = 0
-         if ignore_ends_mwt and return_y_cutoff < x1 - 1 and -cutoff_transition_value > 0:
-            output = None
-            # Use ceil because
-            # n checks if output <= y
-            # If it is, then return_y_cutoff += 1 to equal n
-            # repeat until above is false
 
-            # use floor to define prev_output
-            for n in range(floor(return_y_cutoff),x1):
-               prev_output = output
-               output = funct(n,False)
-               if prev_output != None:
-                  if output == prev_output or (ignore_ends_mwt and output > y - red_line_start_y - min_work_time + min_work_time / r or not ignore_ends_mwt and output > y - red_line_start_y - min_work_time):
+         # want the first output, counting backwards from floor(return_y_cutoff), that is <= y - red_line_start_y - min_work_time_funct_round
+
+         # if floor(return_y_cutoff) == 0
+         # is equal to
+         # if return_y_cutoff < 1
+         # if that happens then everything will be y1
+         # so, since we want first output <= y - red_line_start_y - min_work_time_funct_round, output will be 0
+
+         # exact samething with upper, output will still be 0
+         # since return_y_cutoff doesnt change, if this happens, lower == upper must be true
+         # so the expression (upper,lower)[min_work_time_funct_round * 2 - lower[1] > upper[1]][0] will choose either lower or upper
+         # and since they are the same, it will have the same result no matter what, and the expression will be equal to lower[0]
+         # since return_y_cutoff will not change at all, the entire expression will be return_y_cutoff = return_y_cutoff
+         # So, don't run if return_y_cutoff < 1
+         # if don't run when return_y_cutoff < 1, run when return_y_cutoff >= 1
+         # Since return_y_cutoff can't be exactly one, the final expression is 1 < return_y_cutoff
+         if return_y_cutoff < 1000:
+            if return_y_cutoff < 1:
+               output = 0
+            else:
+               for n in range(floor(return_y_cutoff),0,-1):
+                  output = funct(n,False)
+                  if output <= y - min_work_time_funct_round:
                      break
-                     # don't return_y_cutoff -= 1 because its presence itself accounts for it
+                  return_y_cutoff -= 1
+            if ignore_ends_mwt:
+               lower = (return_y_cutoff,y-red_line_start_y-output)
+               # want the output BEFORE first output, counting fowards from ceil(return_y_cutoff), that is > y - red_line_start_y
+
+               did_not_loop = True
+               for n in range(ceil(return_y_cutoff),x1):
+                  pre_output = funct(n,False)
+                  if pre_output >= y:
+                     break
+                  did_not_loop = False
+                  output = pre_output
                   return_y_cutoff += 1
-         else:
-            for n in range(floor(return_y_cutoff),0,-1):
-               output = funct(n,False)
-               if ignore_ends_mwt and output <= y - red_line_start_y - min_work_time + min_work_time / r or not ignore_ends_mwt and output <= y - red_line_start_y - min_work_time:
-                  break
-               return_y_cutoff -= 1
+               if did_not_loop:
+                  upper = (return_y_cutoff,y-red_line_start_y-output)
+                  # y = 100
+                  # (55 75 95 100) => (55 75 100 100)
+                  # lower = 25, upper = 5
+
+                  # lower = 30, upper = 5
+                  # lower = 40, upper = 0
+
+                  # (58 78 98 100) => (58 78 100 100)
+                  # lower = 22, upper = 2
+                  
+                  #(51 71 91 100), keep it like that dont change to (51 71 100 0); make return_y_cutoff smart and consider both options
+                  #    20 20 9                                          20 19  0
+
+                  # (55, 55)
+                  #
+
+                  # if upper is negative, then that is good because the below expression will always be true, choosing lower
+                  return_y_cutoff = (upper,lower)[min_work_time_funct_round * 2 - lower[1] > upper[1]][0]
          if ignore_ends_mwt:
-            y_value_to_cutoff = min_work_time / r
+            y_value_to_cutoff = 0
          elif funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (a > 0) == (funct_zero < cutoff_to_use_round)):
             y_value_to_cutoff = min_work_time_funct_round / 2
          else:
             y_value_to_cutoff = min_work_time_funct_round - funct_round / 2
             
-         if y_value_to_cutoff > 0 and y > red_line_start_y and (a or b):
+         if y_value_to_cutoff < y1 and y > red_line_start_y and (a or b):
             if a:
-               return_0_cutoff = round((-b + (b*b + 4*a*y_value_to_cutoff)**0.5)/a/2,6)
+               return_0_cutoff = round((-b + (b*b + 4*a*y_value_to_cutoff)**0.5)/a/2,6)-1e-10
             else:
-               return_0_cutoff = round(y_value_to_cutoff/b,6)
+               return_0_cutoff = round(y_value_to_cutoff/b,6)-1e-10
          else:
             return_0_cutoff = 1
 
-         # > 1 to make sure it doesn't become negative AND make sure a > 0
-         # -cutoff_transition_value > 0 (if a > 0) will not allow (22,20,20,20,20) and instead (2,20,20,20)
-         if ignore_ends_mwt and return_0_cutoff > 1 and -cutoff_transition_value > 0:
-            output = None
-            for n in range(ceil(return_0_cutoff),0,-1):
-               prev_output = output
-               output = funct(n,False)
-               if prev_output != None:
-                  if output == prev_output or (ignore_ends_mwt and output < min_work_time - min_work_time / r or not ignore_ends_mwt and output < min_work_time):
+         if x1 - return_0_cutoff < 1000:
+            if x1 - return_0_cutoff < 1:
+               output = 0
+            else:
+               for n in range(ceil(return_0_cutoff),x1):
+                  output = funct(n,False)
+                  if output >= min_work_time_funct_round:
                      break
+                  return_0_cutoff += 1
+            if ignore_ends_mwt:
+               upper = (return_y_cutoff,output)
+
+               did_not_loop = True
+               for n in range(floor(return_0_cutoff),0,-1):
+                  pre_output = funct(n,False)
+                  if pre_output <= 0:
+                     break
+                  did_not_loop = False
+                  output = pre_output
                   return_0_cutoff -= 1
-         else:
-            for n in range(ceil(return_0_cutoff),x1):
-               output = funct(n,False)
-               if ignore_ends_mwt and output >= min_work_time - min_work_time / r or not ignore_ends_mwt and output >= min_work_time:
-                  break
-               return_0_cutoff += 1
-# Receives an output on the parabola for input value n
+               if did_not_loop:
+                  lower = (return_y_cutoff,output)
+                  return_y_cutoff = (lower,upper)[min_work_time_funct_round * 2 - upper[1] > lower[1]][0]
+
+# Lazily generates an output on the parabola for input integer n
 def funct(n,translate=True):
 
    if translate:
+      
       # If the start is not at the origin, then translate the graph back to the origin
       n -= red_line_start_x
       
@@ -2198,15 +2243,11 @@ def funct(n,translate=True):
       # For any f(n), it subtracts the amount of not working days between the starting date and the starting date plus n days
       # This in a way "adds back in" in the not working days
 
-      # This equation subtracts the amount of not working days between the starting date and the starting date plus x days
+      # This equation subtracts the amount of not working days between the starting date and the finish date from n
       if nwd:
          n -= n//7 * len_nwd + mods[n % 7]
-
-      # If the input is greater than return_y_cutoff, defined in the pset() function, return y
       if n > return_y_cutoff:
          return y
-      
-      # If the input is less than return_0_cutoff, defined in the pset() function, return red_line_start_y, the lowest possible output value
       elif n < return_0_cutoff:
          return red_line_start_y
    if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (a > 0) == (n < cutoff_to_use_round)):
@@ -2254,15 +2295,32 @@ def funct(n,translate=True):
       output += y_fremainder
             
    # Returns the final output plus red_line_start_y, which untranslates the graph back to where it originally was
-   return output + red_line_start_y * translate
+   return output + red_line_start_y
 
 # Debug mode unrounded funct()
 if debug_mode:
-   def rfunct(n):
-      n -= red_line_start_x
-      if nwd:
-         n -= n//7 * len_nwd + mods[n % 7]
-      return n*(a*n+b) + red_line_start_y
+   if 0:
+      def rfunct(n):
+         n -= red_line_start_x
+         if nwd:
+            n -= n//7 * len_nwd + mods[n % 7]
+         return n*(a*n+b) + red_line_start_y
+   else:
+      def rfunct(n):
+         n -= red_line_start_x
+         if nwd:
+            n -= n//7 * len_nwd + mods[n % 7]
+         if funct_round < min_work_time and (not a and b < min_work_time_funct_round or a and (a > 0) == (n < cutoff_to_use_round)):
+            output = min_work_time_funct_round * ceil(n*(a*n+b)/min_work_time_funct_round-0.5+1e-10)
+            if a < 0:
+               output += cutoff_transition_value
+            else:
+               output -= cutoff_transition_value
+         else:
+            output = funct_round * ceil(n*(a*n+b)/funct_round-0.5+1e-10)
+         if remainder_mode and output:
+            output += y_fremainder
+         return output + red_line_start_y
 
 # I didn't write any comments for the next few functions because its not really important what happens inside them, just know what they do
 # Function to get the mod days when using not working days (explained in funct())
@@ -2289,7 +2347,7 @@ def calc_skew_ratio_lim():
       skew_ratio_lim = ceil(skew_ratio_lim)
    else:
       skew_ratio_lim = ceil((y-red_line_start_y)*skew_ratio_lim/(y - red_line_start_y - y_fremainder))
-     
+      
 # Formats minutes
 def format_minutes(total_minutes):
    hour = str(floor(total_minutes / 60))
@@ -2371,9 +2429,6 @@ def gw(font,text):
 def center(text,y_pos):
    screen.blit(font.render(text,1,black),((width+45-gw(font,text))/2,y_pos))
 
-def capitalize_each_word(text):
-   return ' '.join(word[0].upper() + word[1:] for word in text.split())
-
 # Draws graph
 def draw(doing_animation=False,do_return=False):
 
@@ -2426,7 +2481,7 @@ def draw(doing_animation=False,do_return=False):
             y_fremainder = (y - red_line_start_y) % funct_round
             if nwd:
                set_mod_days()
-            ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
+            ignore_ends_mwt = ignore_ends and min_work_time
             calc_skew_ratio_lim()
          elif draw_point:
 
@@ -3180,7 +3235,7 @@ Make sure you read all of the instructions, as some things are important to know
                                        selected_assignment[11] = dynamic_start
                                     if nwd:
                                        set_mod_days()
-                                    ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
+                                    ignore_ends_mwt = ignore_ends and min_work_time
                                  else:
                                     print('Successfully Escaped from Input\n')
                                  break
@@ -3634,7 +3689,7 @@ Make sure you read all of the instructions, as some things are important to know
                y_fremainder = (y - red_line_start_y) % funct_round
                if nwd:
                   set_mod_days()
-               ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
+               ignore_ends_mwt = ignore_ends and min_work_time
                draw()
 
             # Interprets user inputs
@@ -3788,7 +3843,7 @@ Make sure you read all of the instructions, as some things are important to know
                                     y_fremainder = (y - red_line_start_y) % funct_round
                                     if nwd:
                                        set_mod_days()
-                                    ignore_ends_mwt = ignore_ends and min_work_time and y >= min_work_time_funct_round * 2
+                                    ignore_ends_mwt = ignore_ends and min_work_time
                                     calc_skew_ratio_lim()
                              save_data()
                              day = len_works
