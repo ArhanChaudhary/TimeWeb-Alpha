@@ -30,7 +30,7 @@ from os.path import exists # Checks if a file exists
 from os import remove # Removes backups if they are disabled
 
 # File Directory where the data will be stored
-file_directory = 'Time Management'
+file_directory = 'TimeManagement'
 debug_mode = False
 # Adding/removing settings procedure:
 # Add/remove it on the boolean settings and adjust values for other settings
@@ -42,20 +42,6 @@ debug_mode = False
 # Add:
 # Global setting
 # Add to the big list of setting data (command f "date_last_closed,width,")
-
-# remove and reformat total mode
-# default grouping value when unit == Minute
-# +/- to zoom in and out
-# AI to predict how much you overestimate or underestimate for REAL estimated completion time
-# next_day (make it values 0,1,2,3,etc), function to set date_now that takes into account "next_day" variable; make it so that BEFORE "next" it automatically set to fixed mode (with an input to undo that) (DO NOT do this on SP, do something like: lw == funct(len_works) with fixed_mode on), THEN display "next"; also put second estimated completion time (showing if every assignment was fixed_mode); make todo linear then y if all assignments completed
-# go over ##
-# Good job, you are ahead of schedule
-# custom nwd using binary search https://www.geeksforgeeks.org/count-smaller-equal-elements-sorted-array/
-# dont know the amount of units? only if due date is known ("none" with y); daily assignments (x and y will change with the assignment, x will always be (DUE TOMORROW!!!), todo will always be the min_work_time); UI: "Enter asdaily assignment" and show more to explain what they are if display_instructions is true 
-# maximum work time (with "would you like y to change?" option)
-# multiple points to hit (piecewise) (combining assignments into one big graph)
-# replace "change skew ratio" to "change a property for all assignments" in settings (skew_ratio, nwd, fixed_mode, total mode, min_work_time)
-# time table, use (this assignment is complete because there is no time left in today), (add in "enter in the times you are at work/school(don't need to enter when you wake up, do that automatically) classes)
    
 # Gets today's date
 date_now = date.now()
@@ -68,7 +54,7 @@ try:
       dat = load(datfile)
    if debug_mode:
       print(dat,'\n')
-   first_run = False       
+   first_run = False
 except:
 
    # If the data is not found, create a new file which will hold all the data
@@ -1443,10 +1429,6 @@ This is only relevant when Minimum Work Time is Enabled for an Assignment'''
                   
             if removed_works_start <= removed_works_end:
                works = [works[n] - works[0] + adone for n in range(removed_works_start,removed_works_end+1)]
-            ##if not works:
-             ##  works = [adone]
-              ## if dif_assign:
-               ##   dif_assign -= 1
             adone = works[0]
 
             # Adjust dynamic_start and fixed_start in the same manner as above
@@ -1510,6 +1492,13 @@ This is only relevant when Minimum Work Time is Enabled for an Assignment'''
                x = ceil(x)
             else:
                x = 1
+            
+            # Redefine variables dependent on x
+#            if reenter_mode and removed_works_end >= x - dif_assign:
+#               removed_works_end = x - dif_assign
+#               if works[removed_works_end] != y:
+#                  removed_works_end -= 1
+            if reenter_mode and removed_works_end == x - dif_assign
          if reenter_mode and dynamic_start > x - 1:
             dynamic_start = x - 1
 
@@ -1760,6 +1749,8 @@ def pset():
                   b = y1
                   skew_ratio = skew_ratio_lim
                   return_y_cutoff = 0
+                  return_0_cutoff = 1
+                  cutoff_transition_value = 0
                   return
                
                # Handles how the mouse deals with not working days, isn't really important
@@ -1911,7 +1902,7 @@ def pset():
                # I set s to min_work_time_funct_round in the below equation
                
                # Round it to the nearest millionth to prevent a roundoff error
-               cutoff_to_use_round = round((min_work_time_funct_round-b)/a/2,6)
+               cutoff_to_use_round = round((min_work_time_funct_round-b)/a/2,6)-1e-10
 
                # Once I have calculated the zero, check whether the cutoff is between the zero and the end of the assignment
                # If it is not, the cutoff is outside of the graph, making cutoff_transition_value irrelevant
@@ -2016,15 +2007,15 @@ def pset():
                lower = (return_y_cutoff,y-red_line_start_y-output)
                # want the output BEFORE first output, counting fowards from ceil(return_y_cutoff), that is > y1
 
-               did_not_loop = True
+               did_loop = False
                for n in range(ceil(return_y_cutoff),x1):
                   pre_output = funct(n,False)
                   if pre_output >= y:
                      break
-                  did_not_loop = False
+                  did_loop = True
                   output = pre_output
                   return_y_cutoff += 1
-               if did_not_loop:
+               if did_loop:
                   upper = (return_y_cutoff,y-red_line_start_y-output)
                   # y = 100
                   # (55 75 95 100) => (55 75 100 100)
@@ -2053,9 +2044,13 @@ def pset():
             
          if y_value_to_cutoff < y1 and y > red_line_start_y and (a or b):
             if a:
-               return_0_cutoff = round((-b + (b*b + 4*a*y_value_to_cutoff)**0.5)/a/2,6)-1e-10
+               return_0_cutoff = round(((b*b + 4*a*y_value_to_cutoff)**0.5-b)/a/2,6)-1e-10
             else:
                return_0_cutoff = round(y_value_to_cutoff/b,6)-1e-10
+
+            # return_0_cutoff can be -1e-10 and not return 0 for f(0)
+            if return_0_cutoff < 0:
+               return_0_cutoff += 1
          else:
             return_0_cutoff = 1
 
@@ -2069,19 +2064,19 @@ def pset():
                      break
                   return_0_cutoff += 1
             if ignore_ends_mwt:
-               upper = (return_y_cutoff,output)
+               upper = (return_0_cutoff,output)
 
-               did_not_loop = True
+               did_loop = False
                for n in range(floor(return_0_cutoff),0,-1):
                   pre_output = funct(n,False)
                   if pre_output <= red_line_start_y:
                      break
-                  did_not_loop = False
+                  did_loop = True
                   output = pre_output
                   return_0_cutoff -= 1
-               if did_not_loop:
-                  lower = (return_y_cutoff,output)
-                  return_y_cutoff = (lower,upper)[min_work_time_funct_round * 2 - upper[1] > lower[1]][0]
+               if did_loop:
+                  lower = (return_0_cutoff,output)
+                  return_0_cutoff = (lower,upper)[min_work_time_funct_round * 2 - upper[1] > lower[1]][0]
 
 # Lazily generates an output on the parabola for input integer n
 def funct(n,translate=True):
@@ -2386,14 +2381,9 @@ def draw(doing_animation=False,do_return=False):
             return
          last_mouse_x = mouse_x
          last_mouse_y = mouse_y
-      else:
-         # Initializes the parabola
-         old_parabola_values = (a,b)
-         pset()
          
-         # Returns if the parabola values are the same
-         if do_return and set_skew_ratio and not draw_point and (a,b) == old_parabola_values:
-            return
+      # Initializes the parabola
+      pset()
       
       # Determines circle radius
       circle_r = ceil(2*wCon - 0.5)
@@ -2402,7 +2392,7 @@ def draw(doing_animation=False,do_return=False):
       elif circle_r < 3:
          circle_r = 3
       if circle_r == 3:
-         blwidth = circle_r - 1
+         blwidth = 2
       else:
          blwidth = circle_r - 2
 
@@ -2476,7 +2466,7 @@ def draw(doing_animation=False,do_return=False):
       y_axis_scale = 10**floor(log10(y)) * ceil(int(str(y)[0],10)/ceil((height-100)/100))
       if y >= 10:
          small_y_axis_scale = y_axis_scale / 5
-         font_size = ceil(27.5-(len(str(ceil(y - y % y_axis_scale))))*2.5)
+         font_size = ceil(27.5-len(str(ceil(y - y % y_axis_scale)))*2.5)
          if font_size < 19:
             font_size = 19
          font5 = pygame.font.Font(font_type,ceil((font_size-4)*font_scale))
@@ -2971,7 +2961,7 @@ Make sure you read all of the instructions, as some things are important to know
 
            # Draws every time mouse is moved
            if etype == pygame.MOUSEMOTION:
-              draw(False,True)
+              draw(False,draw_point)
 
            # When the mouse is pressed, the interactive mouse stops
            elif etype == pygame.MOUSEBUTTONDOWN:
@@ -3004,7 +2994,7 @@ Make sure you read all of the instructions, as some things are important to know
         # If draw_point is disabled, enable it if the user clicks
         if not draw_point and etype == pygame.MOUSEBUTTONDOWN:
               draw_point = True
-              draw(False,True)
+              draw()
         elif etype == pygame.KEYDOWN:
             key = event.key
 
@@ -3019,7 +3009,7 @@ Make sure you read all of the instructions, as some things are important to know
                if change_day_mouse:
                   change_day_upper = lw >= funct(len_works+dif_assign)
                set_skew_ratio = True
-               draw(False,True)
+               draw()
                print('\nManual Set Skew Ratio Enabled\nHover Over the Graph and Click to set the Skew Ratio of the Red Line')
 
             # Allows user to manually type in the skew ratio or the start of the red line
