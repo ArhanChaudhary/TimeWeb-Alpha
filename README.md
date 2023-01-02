@@ -1,7 +1,7 @@
-# Time-Management
+# TimeWeb-Alpha
 
-Original python version of timeweb
+This is the pre-Django version of TimeWeb, made entirely in Python and developed during late 2019 to late 2020.
+Yes, it is entirely text-based.
+And yes, I used Pygame to display the graph visuals.
 
-Python code for my time management program, which is a tool that prioritizes, organizes, and lists daily assignments
-This project is aimed to be as convenient and useful as possible to other students
-Currently, I am building a front-end for this
+TimeWeb was my 2nd real coding project, hence the peculiar codebase and tech stack. Shut up.
